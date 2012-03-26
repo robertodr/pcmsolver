@@ -112,7 +112,7 @@ int main(int argc, char* argv[])
 
 /* Topologie bestimmen */
     init_interpolate(&T, U, p, M);
-    np = gennet(&P, &F, U, p, M);
+    np = gennet_SK(&P, &F, U, p, M);
     free_points(&U, p, M);
     volume(F, T, p, M);
 

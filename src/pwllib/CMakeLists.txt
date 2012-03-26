@@ -18,7 +18,6 @@ set (pwl_C_SOURCES
   phi.c
   postproc_pwl.c
   precond_pwl.c
-  topology_pwl.c
   trafos_pwl.c
   volume_pwl.c
   )
@@ -44,7 +43,6 @@ install(FILES mask_pwl.h         DESTINATION include)
 install(FILES phi.h              DESTINATION include)
 install(FILES postproc_pwl.h     DESTINATION include)
 install(FILES precond_pwl.h      DESTINATION include)
-install(FILES topology_pwl.h     DESTINATION include)
 install(FILES trafos_pwl.h       DESTINATION include)
 install(FILES volume_pwl.h       DESTINATION include)
 

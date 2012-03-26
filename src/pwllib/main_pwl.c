@@ -29,9 +29,9 @@
 #include "interpolate_pwl.h"
 #include "read_points.h"
 #include "postproc_pwl.h"
-#include "topology_pwl.h"
 #include "precond_pwl.h"
 #include "energy_pwl.h"
+#include "topology.h"
 #include "volume.h"
 #include "kern.h"
 #include "molecule.h"
@@ -115,7 +115,7 @@ int main(int argc, char* argv[])
 
     /* Topologie bestimmen */
     init_interpolate_pwl(&T, U, p, M);
-    np = gennet_pwl(&P, &F, U, p, M);
+    np = gennet_DK(&P, &F, U, p, M);
     free_points(&U, p, M);
     volume(F, T, p, M);
 
@@ -229,7 +229,7 @@ int main(int argc, char* argv[])
     free_waveletlist_pwl(&W, np);
     free_elementlist_pwl(&E, p, M);
     free_interpolate_pwl(&T, p, M);
-    free_patchlist_pwl(&F, nf);
+    free_patchlist(&F, nf);
     free_sparse2(&S_i);
     free(rhs);
     free(P);

@@ -31,4 +31,4 @@ const double eps = 1e-10;
 const unsigned int delta = 10;
 
 /* Genaugikeit bei Punktevergleich */
-const double tol = 1e-10;
+const double tol = 1e-6;

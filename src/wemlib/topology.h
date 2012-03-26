@@ -13,7 +13,8 @@ extern "C" {
  *====================================*/
 
 
-    unsigned int gennet(vector3 **P, unsigned int ***F, vector3 ***T, unsigned int p, unsigned int m);
+    unsigned int gennet_DK(vector3 **P, unsigned int ***F, vector3 ***T, unsigned int p, unsigned int m);
+    unsigned int gennet_SK(vector3 **P, unsigned int ***F, vector3 ***T, unsigned int p, unsigned int m);
 /* berechnet Punkt- und Patchliste */
 
 
