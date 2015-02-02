@@ -49,13 +49,14 @@
 #include "IGreensFunction.hpp"
 #include "WaveletCavity.hpp"
 
+#include "LoggerInterface.hpp"
 static IGreensFunction *gf;
 
 static double SingleLayer (Vector3 x, Vector3 y)
 {
     Eigen::Vector3d vx(x.x, x.y, x.z);
     Eigen::Vector3d vy(y.x, y.y, y.z);
-    Eigen::Vector3d foo = Eigen::Vector3d::Zero();
+    //Eigen::Vector3d foo = Eigen::Vector3d::Zero();
     double value = gf->function(vx, vy);
     return value;
 }
@@ -65,7 +66,7 @@ static double DoubleLayer (Vector3 x, Vector3 y, Vector3 n_y)
     Eigen::Vector3d vx(x.x, x.y, x.z);
     Eigen::Vector3d vy(y.x, y.y, y.z);
     Eigen::Vector3d vn_y(n_y.x, n_y.y, n_y.z);
-    Eigen::Vector3d foo = Eigen::Vector3d::Zero();
+    //Eigen::Vector3d foo = Eigen::Vector3d::Zero();
     double value = gf->derivative(vn_y, vx, vy);
     return value;
 }
@@ -164,9 +165,13 @@ void PWLSolver::buildSystemMatrix(const Cavity & cavity)
 	// IMPORTANT ! interpolationGrade has to be decided based on the number of refinements
 	// for the patch. It has to be 2 if we have nLevels_ = 2 (not enough points otherwise!)
 	interpolationGrade = std::min(waveletCavity.getNLevels(), (unsigned int)3);
+        timerON("preSystemMatrix");
         initInterpolation();
         constructWavelets();
+        timerOFF("preSystemMatrix");
+        timerON("SystemMatrix");
         constructSystemMatrix();
+        timerOFF("SystemMatrix");
     } catch (const std::bad_cast & e) {
         throw std::runtime_error(e.what() +
                                  std::string(" Wavelet type cavity needed for wavelet solver."));
@@ -177,7 +182,7 @@ void PWLSolver::initInterpolation(){
     af->interCoeff = new Interpolation(pointList, interpolationGrade, interpolationType, af->nLevels, af->nPatches);
     af->nNodes = af->genNet(pointList);
     double volume = calculateVolume(af);
-    printf("Volume                     %lf\n",volume);
+    LOG("Volume                     ",volume);
 #ifdef DEBUG2
     FILE* debugFile = fopen("debug.out", "a");
     fprintf(debugFile,">>> PPOINTLIST\n");
@@ -209,8 +214,8 @@ void PWLSolver::constructWavelets(){
     af->setQuadratureLevel();
     af->simplifyWaveletList();
     af->completeElementList();
-    et_node* pF = af->elementTree.element;
 #ifdef DEBUG2
+    et_node* pF = af->elementTree.element;
     FILE* debugFile = fopen("debug.out","a");
     fprintf(debugFile,">>> WAVELET_TREE_SIMPLIFY\n");
     for(unsigned int m = 0; m<af->waveletList.sizeWaveletList; ++m){
@@ -266,7 +271,12 @@ void PWLSolver::constructSi(){
             throw std::runtime_error("Unknown integral equation type.");
     }
     gf = greenInside_;
+    timerON("compression");
     apriori1_ = af->compression(&S_i_);
+    timerOFF("compression");
+    LOG("1.A-priori compression          ",apriori1_);
+    LOG("sizeWaveletList(fullMat)        ",af->waveletList.sizeWaveletList*af->waveletList.sizeWaveletList);
+    LOG("NonZero(sparseMat)              ",af->waveletList.sizeWaveletList*af->waveletList.sizeWaveletList*apriori1_/100);
 #ifdef DEBUG2
     FILE* debugFile = fopen("debug.out", "a");
 	  fprintf(debugFile,">>> SYSTEMMATRIX AC\n");
@@ -281,7 +291,9 @@ void PWLSolver::constructSi(){
 	  fflush(debugFile);
 	  fclose(debugFile);
 #endif
+    timerON("WEM");
     WEM(af, &S_i_, SingleLayer, DoubleLayer, factor);
+    timerOFF("WEM");
 #ifdef DEBUG2
     debugFile = fopen("debug.out", "a");
 	  fprintf(debugFile,">>> SYSTEMMATRIX AW\n");
@@ -296,7 +308,11 @@ void PWLSolver::constructSi(){
 	  fflush(debugFile);
 	  fclose(debugFile);
 #endif
+    timerON("postProc");
     aposteriori1_ = af->postProc(&S_i_);
+    timerOFF("postProc");
+    LOG("1.A-posteriori compression      ",aposteriori1_);
+    LOG("NonZero(sparseMat) a posteriori ",af->waveletList.sizeWaveletList*af->waveletList.sizeWaveletList*aposteriori1_/100);
 #ifdef DEBUG2
     debugFile = fopen("debug.out", "a");
 	  fprintf(debugFile,">>> SYSTEMMATRIX AP\n");
@@ -316,8 +332,10 @@ void PWLSolver::constructSi(){
 void PWLSolver::constructSe(){
     gf = greenOutside_; // sets the global pointer to pass GF to C code
     apriori2_ = af->compression(&S_e_);
+    LOG("2.A-priori compression          ",apriori2_);
     WEM(af, &S_e_, SingleLayer, DoubleLayer, -2*M_PI);
     aposteriori2_ = af->postProc(&S_e_);
+    LOG("2.A-posteriori compression      ",aposteriori2_);
 }
 
 void PWLSolver::computeCharge(const Eigen::VectorXd & potential,

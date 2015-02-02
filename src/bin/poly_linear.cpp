@@ -9,7 +9,6 @@
 #include <Eigen/Dense>
 
 #include "DerivativeTypes.hpp"
-#include "PWCSolver.hpp"
 #include "PWLSolver.hpp"
 #include "UniformDielectric.hpp"
 #include "Vacuum.hpp"
@@ -18,6 +17,7 @@
 
 #include "LoggerInterface.hpp"
 std::string fileName;
+
 void read_data(const std::string &filename, Compression *comp,  std::vector<double> *charge_, std::vector<Eigen::Vector3d> *atoms_){
 
     unsigned int nAtoms;
@@ -51,7 +51,11 @@ void read_data(const std::string &filename, Compression *comp,  std::vector<doub
 }
 
 
-
+/** commandline arguments are as follows:
+ *  argv[1] - the geometry file from maharavo
+ *  argv[2] - the data file which contains also the parameters a, dp , b, and unused eps
+ *  argv[3] - the logname
+ */
 int main(int argc, char* argv[]) {
     fileName = std::string(argv[3]);
     //read_sphere();
@@ -83,7 +87,7 @@ int main(int argc, char* argv[]) {
     fclose(debugFile);
 #endif
     LOG(">>> PCMSOLVER");
-    PWCSolver solver(gfInside, gfOutside, comp, firstKind);
+    PWLSolver solver(gfInside, gfOutside, comp, firstKind);
     solver.buildSystemMatrix(cavity);
     cavity.uploadPoints(solver.getQuadratureLevel(), solver.getT_());
 

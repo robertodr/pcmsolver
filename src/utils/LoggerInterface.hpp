@@ -6,6 +6,8 @@
 #include "Logger.hpp"
 #include "Timer.hpp"
 
+extern std::string fileName;
+
 #define LOG logging::logger<logging::FileLogPolicy>::Instance().print<logging::printLevel::coarse>
 #define LOG_FINE logging::logger<logging::FileLogPolicy>::Instance().print<logging::printLevel::fine>
 #define LOG_ALL logging::logger<logging::FileLogPolicy>::Instance().print<logging::printLevel::everything>

@@ -35,6 +35,7 @@
 #include "Compression.hpp"
 #include "DerivativeTypes.hpp"
 #include "PWCSolver.hpp"
+#include "PWLSolver.hpp"
 #include "UniformDielectric.hpp"
 #include "Vacuum.hpp"
 #include "WaveletCavity.hpp"
@@ -43,7 +44,7 @@
 #include "LoggerInterface.hpp"
 
 void pwc_C6H6();
-
+std::string fileName;
 void read_sphere() {
     // Set up cavity, read it from Maharavo's file benzene2.dat
     WaveletCavity cavity("sphere2.dat");
@@ -59,6 +60,7 @@ void read_sphere() {
 }
 
 int main() {
+    fileName = "";
     //read_sphere();
     pwc_C6H6();
     LOG_TIME;

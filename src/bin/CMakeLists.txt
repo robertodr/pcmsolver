@@ -22,3 +22,6 @@ add_executable(poly_wavelet.x poly_wavelet.cpp)
 target_link_libraries(poly_wavelet.x solver green bi_operators cavity wemFiles wemSolvers wavcav utils ${ZLIB_LIBRARY} "${external_libraries}")
 add_reference(${CMAKE_SOURCE_DIR}/examples/C32H66_lev2.dat ${CMAKE_CURRENT_BINARY_DIR})
 add_reference(${CMAKE_SOURCE_DIR}/examples/C8H18_lev2.dat ${CMAKE_CURRENT_BINARY_DIR})
+
+add_executable(poly_linear.x poly_linear.cpp)
+target_link_libraries(poly_linear.x solver green bi_operators cavity wemFiles wemSolvers wavcav utils ${ZLIB_LIBRARY} "${external_libraries}")

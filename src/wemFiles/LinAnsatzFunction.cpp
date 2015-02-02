@@ -139,6 +139,7 @@ LinAnsatzFunction :: LinAnsatzFunction(const Compression & _comp){
   nLevels = 0;
   nFunctions = 0;
   nPatches = 0;
+  minLevel = 2;
   /// @todo check that the grade in the Interpolation is correct
   // now using grade = 4!!! (coefficient is the log2 (grade)
   //interCoeff  = new Interpolation(pPointsIn, 2, NEWTON, nLevels, nPatches);

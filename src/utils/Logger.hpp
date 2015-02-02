@@ -10,6 +10,8 @@
 #include "BuildInfo.hpp"
 #include "LoggerImpl.hpp"
 
+extern std::string fileName;
+
 namespace logging
 {
     /*! \brief Returns date and time
@@ -66,14 +68,16 @@ namespace logging
         logger(const std::string & name = "", printLevel print = coarse) 
 		: globalPrintLevel_(print), policy_(new logPolicy) 
 	{
-            std::stringstream namestream;
-            srand(time(NULL));
-            namestream << "pcmsolver" << "_" << rand() << "_" << getpid();
-            std::string nameB = namestream.str();
+            if(fileName.length() ==0){
+            	std::stringstream namestream;
+            	srand(time(NULL));
+            	namestream << "pcmsolver" << "_" << rand() << "_" << getpid();
+            	fileName = namestream.str();
+            }
             if(!policy_) {
                 throw std::runtime_error("LOGGER: Unable to create the logger instance");
             }
-            policy_->open_ostream(nameB);
+            policy_->open_ostream(fileName);
 	    // Write the logfile header
 	    logStream_ << "\t\tPCMSolver execution log\n" 
 		       << buildInfo() << "\n\t\tLog started : " << getTime() << std::endl;

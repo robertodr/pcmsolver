@@ -291,6 +291,8 @@ void PWCSolver::constructSi(){
     apriori1_ = af->compression(&S_i_);
     timerOFF("compression");
     LOG("1.A-priori compression          ",apriori1_);
+    LOG("sizeWaveletList(fullMat)        ",af->waveletList.sizeWaveletList*af->waveletList.sizeWaveletList);
+    LOG("NonZero(sparseMat)              ",af->waveletList.sizeWaveletList*af->waveletList.sizeWaveletList*apriori1_/100);
 #ifdef DEBUG2
     FILE* debugFile = fopen("debug.out", "a");
 	  fprintf(debugFile,">>> SYSTEMMATRIX AC\n");
@@ -326,6 +328,7 @@ void PWCSolver::constructSi(){
     aposteriori1_ = af->postProc(&S_i_);
     timerOFF("postProc");
     LOG("1.A-posteriori compression      ",aposteriori1_);
+    LOG("NonZero(sparseMat) a posteriori ",af->waveletList.sizeWaveletList*af->waveletList.sizeWaveletList*aposteriori1_/100);
 #ifdef DEBUG2
     debugFile = fopen("debug.out", "a");
 	  fprintf(debugFile,">>> SYSTEMMATRIX AP\n");
