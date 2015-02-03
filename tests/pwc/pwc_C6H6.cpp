@@ -43,6 +43,9 @@
 #include "WaveletCavity.hpp"
 
 #include "PhysicalConstants.hpp"
+
+std::string fileName;
+
 /*! \class PWCSolver
  *  \test \b C6H6 tests PWCSolver using benzene and a wavelet cavity
  */

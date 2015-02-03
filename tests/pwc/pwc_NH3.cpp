@@ -41,6 +41,8 @@
 #include "Vacuum.hpp"
 #include "WaveletCavity.hpp"
 
+std::string fileName;
+
 /*! \class PWCSolver
  *  \test \b NH3 tests PWCSolver using ammonia and a wavelet cavity
  */

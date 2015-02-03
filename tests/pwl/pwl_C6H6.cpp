@@ -43,6 +43,9 @@
 #include "WaveletCavity.hpp"
 
 #include "PhysicalConstants.hpp"
+
+std::string fileName;
+
 /*! \class PWLSolver
  *  \test \b C6H6 tests PWLSolver using ammonia and a wavelet cavity
  */

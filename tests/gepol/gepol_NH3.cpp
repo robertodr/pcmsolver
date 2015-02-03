@@ -42,6 +42,8 @@
 #include "TestingMolecules.hpp"
 #include "Symmetry.hpp"
 
+std::string fileName;
+
 struct GePolCavityNH3Test {
     GePolCavity cavity;
     GePolCavityNH3Test() { SetUp(); }
