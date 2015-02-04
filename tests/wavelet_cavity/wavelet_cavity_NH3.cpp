@@ -41,6 +41,8 @@
 #include "UniformDielectric.hpp"
 #include "WaveletCavity.hpp"
 
+std::string fileName;
+
 struct WaveletCavityNH3Test {
     WaveletCavity cavity;
     WaveletCavityNH3Test() { SetUp(); }

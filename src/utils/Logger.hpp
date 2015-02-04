@@ -110,7 +110,6 @@ namespace logging
             return loggerInstance;
         }
     };
-
 } // close namespace logging
 
 #endif // LOGGER_HPP
