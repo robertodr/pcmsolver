@@ -190,7 +190,7 @@ unsigned int GenericAnsatzFunction :: genNet(Vector3 ***U) {
  * @brief{calculates the compression pattern. which integrals need to be
  * computed and which can be left out of the system matrix calculation}
  */
-double GenericAnsatzFunction :: compression(SparseMatrix *T){
+unsigned int GenericAnsatzFunction :: compression(SparseMatrix *T){
   double maxRadius = 0.0;
   double **c1, **c2;
   double d1, d2;
@@ -407,10 +407,10 @@ double GenericAnsatzFunction :: compression(SparseMatrix *T){
   free (c1);
   free (c2);
   freeBoundingBoxes();
-  return 100.0*nnz/waveletList.sizeWaveletList/waveletList.sizeWaveletList;
+  return nnz;
 }
 
-double GenericAnsatzFunction :: postProc(SparseMatrix *T){
+unsigned int GenericAnsatzFunction :: postProc(SparseMatrix *T){
   double		**c;        // cut-off parameter
   double		*D1, *D2;   // diagonal entries of the systemmatrix
   unsigned int    nnz;  // number of non-zero elements of systemmatrix
@@ -470,7 +470,7 @@ double GenericAnsatzFunction :: postProc(SparseMatrix *T){
   free(D1);
   free(D2);
   free(c);
-  return 100.0*nnz/T->n/T->n;
+  return nnz;
 }
 
 void GenericAnsatzFunction :: elementElementInteraction(double *c, unsigned int ind1, unsigned int ind2, double prec, Cubature * Q, double SingleLayer(Vector3, Vector3), double DoubleLayer(Vector3, Vector3, Vector3), double Identity){

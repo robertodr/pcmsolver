@@ -133,8 +133,8 @@ public:
 
   virtual void setQuadratureLevel() = 0;
 
-  double compression(SparseMatrix *T);
-  double postProc(SparseMatrix *T);
+  unsigned int compression(SparseMatrix *T);
+  unsigned int postProc(SparseMatrix *T);
 
   virtual void computeBoundingBoxes() = 0;
   virtual void freeBoundingBoxes() = 0;

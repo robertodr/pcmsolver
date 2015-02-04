@@ -290,9 +290,6 @@ void PWCSolver::constructSi(){
     timerON("compression");
     apriori1_ = af->compression(&S_i_);
     timerOFF("compression");
-    LOG("1.A-priori compression          ",apriori1_);
-    LOG("sizeWaveletList(fullMat)        ",af->waveletList.sizeWaveletList*af->waveletList.sizeWaveletList);
-    LOG("NonZero(sparseMat)              ",af->waveletList.sizeWaveletList*af->waveletList.sizeWaveletList*apriori1_/100);
 #ifdef DEBUG2
     FILE* debugFile = fopen("debug.out", "a");
 	  fprintf(debugFile,">>> SYSTEMMATRIX AC\n");
@@ -327,8 +324,6 @@ void PWCSolver::constructSi(){
     timerON("postProc");
     aposteriori1_ = af->postProc(&S_i_);
     timerOFF("postProc");
-    LOG("1.A-posteriori compression      ",aposteriori1_);
-    LOG("NonZero(sparseMat) a posteriori ",af->waveletList.sizeWaveletList*af->waveletList.sizeWaveletList*aposteriori1_/100);
 #ifdef DEBUG2
     debugFile = fopen("debug.out", "a");
 	  fprintf(debugFile,">>> SYSTEMMATRIX AP\n");
@@ -348,10 +343,8 @@ void PWCSolver::constructSi(){
 void PWCSolver::constructSe(){
     gf = greenOutside_; // sets the global pointer to pass GF to C code
     apriori2_ = af->compression(&S_e_);
-    LOG("2.A-priori compression          ",apriori2_);
     WEM(af, &S_e_, SingleLayer, DoubleLayer, -2*M_PI);
     aposteriori2_ = af->postProc(&S_e_);
-    LOG("2.A-posteriori compression      ",aposteriori2_);
 }
 
 void PWCSolver::computeCharge(const Eigen::VectorXd & potential,
@@ -513,6 +506,20 @@ void PWCSolver::solveFull(const Eigen::VectorXd & potential,
 std::ostream & PWCSolver::printSolver(std::ostream & os)
 {
     os << "Solver Type: Wavelet, piecewise constant functions" << std::endl;
-    os << *af;
+    os << *af << std::endl;
+    os << "1. apriori compression NNZ "<< apriori1_ << std::endl;
+    os << "2. apriori compression NNZ "<< apriori2_ << std::endl;
+    os << "1. aposteriori compression NNZ "<< aposteriori1_ << std::endl;
+    os << "2. aposteriori compression NNZ "<< aposteriori2_ << std::endl;
+
+    os << "1. apriori compression % "<< 100*apriori1_/(af->sizeWaveletList*af->sizeWaveletList) << std::endl;
+    os << "2. apriori compression % "<< 100*apriori2_/(af->sizeWaveletList*af->sizeWaveletList) << std::endl;
+    os << "1. aposteriori compression % "<< 100*aposteriori1_/(af->sizeWaveletList*af->sizeWaveletList) << std::endl;
+    os << "2. aposteriori compression % "<< 100*aposteriori2_/(af->sizeWaveletList*af->sizeWaveletList) << std::endl;
+
+    os << "1. apriori compression MB "<< apriori1_*sizeof(double)/1024 << std::endl;
+    os << "2. apriori compression MB "<< apriori2_*sizeof(double)/1024 << std::endl;
+    os << "1. aposteriori compression MB "<< aposteriori1_*sizeof(double)/1024 << std::endl;
+    os << "2. aposteriori compression MB "<< aposteriori2_*sizeof(double)/1024;
     return os;
 }

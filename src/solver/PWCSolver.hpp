@@ -105,8 +105,8 @@ protected:
 
     Vector3 *** pointList; // the old U
     
-    double apriori1_, aposteriori1_;    // System matrix sparsities
-    double apriori2_, aposteriori2_;    // System matrix sparsities
+    unsigned int apriori1_, aposteriori1_;    // System matrix sparsities
+    unsigned int apriori2_, aposteriori2_;    // System matrix sparsities
     int integralEquation;
 
     enum EquationType {FirstKind, SecondKind, Full};

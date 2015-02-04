@@ -1412,10 +1412,12 @@ LinAnsatzFunction::~LinAnsatzFunction(){
 
 std::ostream & LinAnsatzFunction::printAnsatzFunction(std::ostream & os) 
 {
-  os << "A priori compression" << std::endl;      
+  os << "Quadrature level = " << quadratureLevel_ << std::endl;
+  os << "A priori compression parameters" << std::endl;      
   os << " a  = " << a << std::endl;
   os << " d' = " << dp << std::endl;
-  os << "A posteriori compression" << std::endl;
-  os << " b  = " << b;
+  os << "A posteriori compression parameter" << std::endl;
+  os << " b  = " << b << std::endl;
+  os << "SizeWaveletList = " << af->sizeWaveletList;
   return os;
 }

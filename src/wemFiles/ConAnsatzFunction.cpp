@@ -1045,10 +1045,11 @@ ConAnsatzFunction::~ConAnsatzFunction(){
 std::ostream & ConAnsatzFunction::printAnsatzFunction(std::ostream & os) 
 {
   os << "Quadrature level = " << quadratureLevel_ << std::endl;
-  os << "A priori compression" << std::endl;      
+  os << "A priori compression parameters" << std::endl;      
   os << " a  = " << a << std::endl;
   os << " d' = " << dp << std::endl;
-  os << "A posteriori compression" << std::endl;
+  os << "A posteriori compression parameter" << std::endl;
   os << " b  = " << b << std::endl;
+  os << "SizeWaveletList = " << af->sizeWaveletList;
   return os;
 }
