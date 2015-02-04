@@ -41,16 +41,15 @@
 #include "UniformDielectric.hpp"
 #include "Vacuum.hpp"
 #include "WaveletCavity.hpp"
-
+#include "LoggerInteface.hpp"
 #include "PhysicalConstants.hpp"
-
-std::string fileName;
 
 /*! \class PWLSolver
  *  \test \b C6H6 tests PWLSolver using ammonia and a wavelet cavity
  */
 BOOST_AUTO_TEST_CASE(C6H6)
 {
+    LOG_INIT();
     double f = 1.2; /// constant from Tomasi Persico 1994
     // Set up cavity
     Eigen::Vector3d C1( 5.274,  1.999, -8.568);

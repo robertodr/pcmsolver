@@ -16,40 +16,8 @@
 #include "PhysicalConstants.hpp"
 
 #include "LoggerInterface.hpp"
-std::string fileName;
 
-void read_data(const std::string &filename, Compression *comp,  std::vector<double> *charge_, std::vector<Eigen::Vector3d> *atoms_){
-
-    unsigned int nAtoms;
-    double charge;
-    double x,y,z;
-    double a,dp,b, eps;
-
-    std::ifstream file;
-    file.open(filename);
-
-    if(file.is_open()) {
-        LOG(">>> DATA_FILE");
-        file >> a >> dp >> b >> eps;
-        LOG(a, " ", dp, " ", b, " ", eps);
-    	comp->aPrioriA = a;
-    	comp->aPrioridPrime = dp;
-    	comp->aPosterioriB = b;
-        file >> nAtoms;
-        LOG(nAtoms);
-        for(unsigned int i = 0; i < nAtoms; ++i){
-            file >> charge >> x >> y >> z;
-            LOG(charge, " ", x," ", y, " ", z);
-            Eigen::Vector3d position(x,y,z);
-            atoms_->push_back(position);
-            charge_->push_back(charge);
-        }
-        LOG("<<< DATA_FILE");
-    } else {
-        throw std::runtime_error("Data file could not be opened");
-    }
-}
-
+void read_data(const std::string &filename, Compression *comp,  std::vector<double> *charge_, std::vector<Eigen::Vector3d> *atoms_);
 
 /** commandline arguments are as follows:
  *  argv[1] - the geometry file from maharavo
@@ -57,7 +25,7 @@ void read_data(const std::string &filename, Compression *comp,  std::vector<doub
  *  argv[3] - the logname
  */
 int main(int argc, char* argv[]) {
-    fileName = std::string(argv[3]);
+    LOG_INIT(std::string(argv[3]));
     //read_sphere();
     Compression comp;
     std::vector<double> charge_;
@@ -123,4 +91,37 @@ int main(int argc, char* argv[]) {
     LOG_TIME;
     LOG("<<< TIMING");
     LOG("# vim: foldmarker=>>>,<<< foldlevel=0 foldmethod=marker");
+}
+
+void read_data(const std::string &filename, Compression *comp,  std::vector<double> *charge_, std::vector<Eigen::Vector3d> *atoms_)
+{
+
+    unsigned int nAtoms;
+    double charge;
+    double x,y,z;
+    double a,dp,b, eps;
+
+    std::ifstream file;
+    file.open(filename);
+
+    if(file.is_open()) {
+        LOG(">>> DATA_FILE");
+        file >> a >> dp >> b >> eps;
+        LOG(a, " ", dp, " ", b, " ", eps);
+    	comp->aPrioriA = a;
+    	comp->aPrioridPrime = dp;
+    	comp->aPosterioriB = b;
+        file >> nAtoms;
+        LOG(nAtoms);
+        for(unsigned int i = 0; i < nAtoms; ++i){
+            file >> charge >> x >> y >> z;
+            LOG(charge, " ", x," ", y, " ", z);
+            Eigen::Vector3d position(x,y,z);
+            atoms_->push_back(position);
+            charge_->push_back(charge);
+        }
+        LOG("<<< DATA_FILE");
+    } else {
+        throw std::runtime_error("Data file could not be opened");
+    }
 }

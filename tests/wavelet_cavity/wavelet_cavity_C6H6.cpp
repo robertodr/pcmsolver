@@ -40,13 +40,13 @@
 #include "Vacuum.hpp"
 #include "UniformDielectric.hpp"
 #include "WaveletCavity.hpp"
-
-std::string fileName;
+#include "LoggerInterface.hpp"
 
 struct WaveletCavityC6H6Test {
     WaveletCavity cavity;
     WaveletCavityC6H6Test() { SetUp(); }
     void SetUp() {
+	LOG_INIT();
         Eigen::Vector3d C1( 5.274,  1.999, -8.568);  
         Eigen::Vector3d C2( 6.627,  2.018, -8.209);
         Eigen::Vector3d C3( 7.366,  0.829, -8.202);

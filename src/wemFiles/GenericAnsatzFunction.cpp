@@ -733,7 +733,7 @@ double GenericAnsatzFunction::distance(int e1, int e2){
   else return scalingFactor*dist/c1;
 }
 
-int GenericAnsatzFunction::print_geometry(double* rho, char* dname) {
+int GenericAnsatzFunction::print_geometry(double* rho, const char * dname) {
   unsigned int i = 0;
   unsigned int max = 0;
   FILE *f = NULL;

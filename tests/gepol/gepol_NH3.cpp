@@ -42,13 +42,13 @@
 #include "TestingMolecules.hpp"
 #include "Symmetry.hpp"
 
-std::string fileName;
 
 struct GePolCavityNH3Test {
     GePolCavity cavity;
     GePolCavityNH3Test() { SetUp(); }
     void SetUp() {
 	Molecule molec = NH3();
+        LOG_INIT();
 
         double area = 0.3 / convertBohr2ToAngstrom2;
         double probeRadius = 1.385 / convertBohrToAngstrom;

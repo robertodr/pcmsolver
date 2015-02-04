@@ -112,7 +112,7 @@ Vector3 df(Vector3 a){
     return(c);
 }
 
-void WEMRHS2M_test(double **rhs, double *potential, GenericAnsatzFunction *af){
+void WEMRHS2M_test(double **rhs, double * /* potential */, GenericAnsatzFunction *af){
   unsigned int n = 1 << af->nLevels;
   double h = 1./n;
   Cubature *Q;

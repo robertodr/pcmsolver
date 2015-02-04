@@ -65,7 +65,7 @@ public:
   void completeElementList();
   virtual void simplifyWaveletList() = 0;
   
-  int print_geometry(double * rho, char* dname);
+  int print_geometry(double * rho, const char * dname);
   int printElement(char *dname, int element);
 
   /**

@@ -63,7 +63,7 @@ void mask_T13(SparseMatrix* T, unsigned int m) {
 
 
 // linear - defines the mask T on level m, 2 vanishing moments
-void mask_T22(SparseMatrix *T, unsigned int m, unsigned int M) {
+void mask_T22(SparseMatrix *T, unsigned int m, unsigned int /* M */) {
   unsigned int    n = 1 << m;
   unsigned int    i;
 
@@ -112,7 +112,7 @@ void mask_T22(SparseMatrix *T, unsigned int m, unsigned int M) {
 }
 
 // linear - defines the mask T on level m, 4 vanishing moments
-void mask_T24(SparseMatrix *T, unsigned int m, unsigned int M) {
+void mask_T24(SparseMatrix *T, unsigned int m, unsigned int /* M */) {
   unsigned int    n = 1 << m;
   unsigned int    i;
 
@@ -172,7 +172,7 @@ void mask_T24(SparseMatrix *T, unsigned int m, unsigned int M) {
 
 
 // choose the correct mask according to level
-template <> void dwtMask(SparseMatrix *T, SparseMatrix *L, unsigned int m, unsigned int M, LinAnsatzFunction *linAF) {
+template <> void dwtMask(SparseMatrix *T, SparseMatrix * /* L */, unsigned int m, unsigned int M, LinAnsatzFunction *linAF) {
   linAF->minLevel = 2;
   if (m <= 2) mask_T22(T,m,M);
   else        mask_T24(T,m,M);
@@ -180,7 +180,7 @@ template <> void dwtMask(SparseMatrix *T, SparseMatrix *L, unsigned int m, unsig
 }
 
 // choose the correct mask according to level
-template <> void dwtMask(SparseMatrix *T, SparseMatrix *L, unsigned int m, unsigned int M, ConAnsatzFunction *conAF) {
+template <> void dwtMask(SparseMatrix *T, SparseMatrix * /* L */, unsigned int m, unsigned int /* M */, ConAnsatzFunction *conAF) {
   conAF->minLevel = 1;
   if (m < 3) {  mask_T11(T,m);  }
   else       {  mask_T13(T,m);  }

@@ -539,7 +539,7 @@ void ConAnsatzFunction::calculateIntegral(double* a, double *c){
  * helper function that adds to the vector c the weight times the basis
  * functions evaluated at point xi
  */
-void ConAnsatzFunction::calculateCRHS(double* c, double w, Vector2 xi){
+void ConAnsatzFunction::calculateCRHS(double* c, double w, Vector2 /* xi */){
   c[0] += w;
   return;
 }
@@ -556,7 +556,7 @@ void ConAnsatzFunction::calculateYRHS(double** y, int i){
 /**
  * helper function that stores into the energy vector the value at point xi
  **/
-double ConAnsatzFunction::calculateUEnergy(double *u, Vector2 xi, unsigned int zi){
+double ConAnsatzFunction::calculateUEnergy(double *u, Vector2 /* xi */, unsigned int zi){
   return u[zi];
 }
 
@@ -842,7 +842,7 @@ void ConAnsatzFunction::integratePatch(double *c, unsigned int i1, Cubature * Q,
 }
 
 /// integration function for - common edge
-void ConAnsatzFunction::integrateEdge(double *c, unsigned int i1, unsigned int i2, unsigned int ind_s, unsigned int ind_t, Cubature *Q, double SingleLayer(Vector3, Vector3), double DoubleLayer(Vector3, Vector3, Vector3), double Identity) {
+void ConAnsatzFunction::integrateEdge(double *c, unsigned int i1, unsigned int i2, unsigned int ind_s, unsigned int ind_t, Cubature *Q, double SingleLayer(Vector3, Vector3), double DoubleLayer(Vector3, Vector3, Vector3), double /* Identity */) {
   unsigned int i, j;
   double w, d11, d12, d21, d22, d31, d32, t1, t2, t3, t4;
   Vector2 xi, eta, a, b, s, t;
@@ -927,7 +927,7 @@ void ConAnsatzFunction::integrateEdge(double *c, unsigned int i1, unsigned int i
 
 /// integration function for - common node in origin
 void ConAnsatzFunction::integratePoint(double *c, unsigned int i1, unsigned int i2, unsigned int ind_s,
-		unsigned int ind_t, Cubature *Q, double SingleLayer(Vector3, Vector3), double DoubleLayer(Vector3, Vector3, Vector3), double Identity) {
+		unsigned int ind_t, Cubature *Q, double SingleLayer(Vector3, Vector3), double DoubleLayer(Vector3, Vector3, Vector3), double /* Identity */) {
   unsigned int i, j;
   double w, d1, d2, d3;
   Vector2 xi, eta, a, s, t;

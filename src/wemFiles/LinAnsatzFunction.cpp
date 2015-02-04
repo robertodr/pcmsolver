@@ -656,7 +656,7 @@ void LinAnsatzFunction::integratePatch(double *c, unsigned int i1, Cubature * Q,
 }
 
 /// integration function for - common edge
-void LinAnsatzFunction::integrateEdge(double *c, unsigned int i1, unsigned int i2, unsigned int ind_s, unsigned int ind_t, Cubature *Q, double SingleLayer(Vector3, Vector3), double DoubleLayer(Vector3, Vector3, Vector3), double Identity) {
+void LinAnsatzFunction::integrateEdge(double *c, unsigned int i1, unsigned int i2, unsigned int ind_s, unsigned int ind_t, Cubature *Q, double SingleLayer(Vector3, Vector3), double DoubleLayer(Vector3, Vector3, Vector3), double /* Identity */) {
 	double d1, d2, d3, w, t1, t2, t3, t4;
 	Vector2 xi, eta, a, b, u, v, s, t;
 	Vector3 x, y;
@@ -774,7 +774,7 @@ void LinAnsatzFunction::integrateEdge(double *c, unsigned int i1, unsigned int i
 
 /// integration function for - common node in origin
 void LinAnsatzFunction::integratePoint(double *c, unsigned int i1, unsigned int i2, unsigned int ind_s,
-		unsigned int ind_t, Cubature *Q, double SingleLayer(Vector3, Vector3), double DoubleLayer(Vector3, Vector3, Vector3), double Identity) {
+		unsigned int ind_t, Cubature *Q, double SingleLayer(Vector3, Vector3), double DoubleLayer(Vector3, Vector3, Vector3), double /* Identity */) {
 	double d1, d2, d3, w;
 	Vector2 xi, eta, a, u, a1, a2, b1, b2, s, t;
 	Vector3 x1, n_x1, x2, n_x2, y1, n_y1, y2, n_y2, z, n_z;

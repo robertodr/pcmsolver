@@ -7,12 +7,10 @@
 
 namespace logging
 {
-    enum printLevel {
-	timings,
-        coarse,
-        fine,
-        everything
-    };
+    const int timings    = 0;
+    const int coarse     = 1;
+    const int fine       = 2;
+    const int everything = 3;
 
     /*! \class ILogPolicy
      *  \brief ABC for logging policy classes

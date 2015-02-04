@@ -40,14 +40,14 @@
 #include "UniformDielectric.hpp"
 #include "Vacuum.hpp"
 #include "WaveletCavity.hpp"
-
-std::string fileName;
+#include "LoggerInterface.hpp"
 
 /*! \class PWCSolver
  *  \test \b NH3 tests PWCSolver using ammonia and a wavelet cavity
  */
 BOOST_AUTO_TEST_CASE(NH3)
 {
+    LOG_INIT();
     // Set up cavity
     Eigen::Vector3d N( -0.000000000,   -0.104038047,    0.000000000);
     Eigen::Vector3d H1(-0.901584415,    0.481847022,   -1.561590016);

@@ -38,15 +38,15 @@
 #include "Vacuum.hpp"
 #include "WaveletCavity.hpp"
 #include "PhysicalConstants.hpp"
-
-std::string fileName;
+#include "LoggerInterface.hpp"
 
 void pwc_NH3(int patchLevel);
 
 void pwc_C6H6(int patchLevel);
 
-int main() {
-    fileName = "";
+int main() 
+{
+    LOG_INIT("pcmsolver.execution.log");
     for (int patchLevel = 2; patchLevel < 8; ++patchLevel) {
 	pwc_NH3(patchLevel);
 	pwc_C6H6(patchLevel);

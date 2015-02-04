@@ -44,8 +44,18 @@
 #include "LoggerInterface.hpp"
 
 void pwc_C6H6();
-std::string fileName;
-void read_sphere() {
+
+void read_sphere(); 
+
+int main() {
+    LOG_INIT("pcmsolver.execution.log");
+    //read_sphere();
+    pwc_C6H6();
+    LOG_TIME;
+}
+
+void read_sphere() 
+{
     // Set up cavity, read it from Maharavo's file benzene2.dat
     WaveletCavity cavity("sphere2.dat");
     double permittivity = 78.39;
@@ -58,14 +68,6 @@ void read_sphere() {
     PWCSolver solver(gfInside, gfOutside, comp, firstKind);
     solver.buildSystemMatrix(cavity);
 }
-
-int main() {
-    fileName = "";
-    //read_sphere();
-    pwc_C6H6();
-    LOG_TIME;
-}
-
 
 void pwc_C6H6()
 {

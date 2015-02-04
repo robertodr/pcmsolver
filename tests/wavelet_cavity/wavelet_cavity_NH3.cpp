@@ -40,13 +40,13 @@
 #include "Vacuum.hpp"
 #include "UniformDielectric.hpp"
 #include "WaveletCavity.hpp"
-
-std::string fileName;
+#include "LoggerInterface.hpp"
 
 struct WaveletCavityNH3Test {
     WaveletCavity cavity;
     WaveletCavityNH3Test() { SetUp(); }
     void SetUp() {
+	LOG_INIT();
         Eigen::Vector3d N( -0.000000000,   -0.104038047,    0.000000000);
         Eigen::Vector3d H1(-0.901584415,    0.481847022,   -1.561590016);
         Eigen::Vector3d H2(-0.901584415,    0.481847022,    1.561590016);
