@@ -517,9 +517,10 @@ std::ostream & PWCSolver::printSolver(std::ostream & os)
     os << "1. aposteriori compression % "<< 100*aposteriori1_/(af->sizeWaveletList*af->sizeWaveletList) << std::endl;
     os << "2. aposteriori compression % "<< 100*aposteriori2_/(af->sizeWaveletList*af->sizeWaveletList) << std::endl;
 
-    os << "1. apriori compression MB "<< apriori1_*sizeof(double)/1024 << std::endl;
-    os << "2. apriori compression MB "<< apriori2_*sizeof(double)/1024 << std::endl;
-    os << "1. aposteriori compression MB "<< aposteriori1_*sizeof(double)/1024 << std::endl;
-    os << "2. aposteriori compression MB "<< aposteriori2_*sizeof(double)/1024;
+    int toMegaBytes = 1024 * 1024;
+    os << "1. apriori compression MB "<< apriori1_*sizeof(double)/toMegaBytes << std::endl;
+    os << "2. apriori compression MB "<< apriori2_*sizeof(double)/toMegaBytes << std::endl;
+    os << "1. aposteriori compression MB "<< aposteriori1_*sizeof(double)/toMegaBytes << std::endl;
+    os << "2. aposteriori compression MB "<< aposteriori2_*sizeof(double)/toMegaBytes;
     return os;
 }

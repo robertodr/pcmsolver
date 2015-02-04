@@ -35,6 +35,8 @@ namespace logging
         std::stringstream logStream_;
         logPolicy * policy_;
         std::mutex writeMutex_;
+	std::string logFile_;
+	bool initialized_;
     
         /*! @name Core printing functionality
          *
@@ -61,11 +63,11 @@ namespace logging
         }
         /// @}
        /*! Constructor
-        *  \param[in] name name for the log file
+        *  \param[in] print the print level
 	*  
 	*  The build parameters are logged first
          */
-        logger(const std::string & name = "", printLevel print = coarse) 
+        logger(printLevel print = coarse) 
 		: globalPrintLevel_(print), policy_(new logPolicy) 
 	{
             if(fileName.length() ==0){
@@ -105,10 +107,16 @@ namespace logging
                writeMutex_.unlock();
 	    }
         }
-        static logger& Instance(){
+        static logger& Instance() {
             static logger<FileLogPolicy> loggerInstance;
             return loggerInstance;
         }
+	void initialize(const std::string & fname) {
+	    if (!initialized_) {
+		logFile_ = fname;
+		initialized_ = true;
+	    }
+	}
     };
 } // close namespace logging
 
