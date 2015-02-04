@@ -495,10 +495,11 @@ std::ostream & PWLSolver::printSolver(std::ostream & os)
     os << "1. aposteriori compression NNZ "<< aposteriori1_ << std::endl;
     os << "2. aposteriori compression NNZ "<< aposteriori2_ << std::endl;
 
-    os << "1. apriori compression % "<< 100*apriori1_/(af->sizeWaveletList*af->sizeWaveletList) << std::endl;
-    os << "2. apriori compression % "<< 100*apriori2_/(af->sizeWaveletList*af->sizeWaveletList) << std::endl;
-    os << "1. aposteriori compression % "<< 100*aposteriori1_/(af->sizeWaveletList*af->sizeWaveletList) << std::endl;
-    os << "2. aposteriori compression % "<< 100*aposteriori2_/(af->sizeWaveletList*af->sizeWaveletList) << std::endl;
+    int sizeWavList = af->waveletList.sizeWaveletList;
+    os << "1. apriori compression % "<< 100*apriori1_/(sizeWavList*sizeWavList) << std::endl;
+    os << "2. apriori compression % "<< 100*apriori2_/(sizeWavList*sizeWavList) << std::endl;
+    os << "1. aposteriori compression % "<< 100*aposteriori1_/(sizeWavList*sizeWavList) << std::endl;
+    os << "2. aposteriori compression % "<< 100*aposteriori2_/(sizeWavList*sizeWavList) << std::endl;
 
     int toMegaBytes = 1024 * 1024;
     os << "1. apriori compression MB "<< apriori1_*sizeof(double)/toMegaBytes << std::endl;

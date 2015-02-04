@@ -1050,6 +1050,6 @@ std::ostream & ConAnsatzFunction::printAnsatzFunction(std::ostream & os)
   os << " d' = " << dp << std::endl;
   os << "A posteriori compression parameter" << std::endl;
   os << " b  = " << b << std::endl;
-  os << "SizeWaveletList = " << af->sizeWaveletList;
+  os << "SizeWaveletList = " << waveletList.sizeWaveletList;
   return os;
 }
