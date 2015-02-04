@@ -41,7 +41,7 @@
 #include "UniformDielectric.hpp"
 #include "Vacuum.hpp"
 #include "WaveletCavity.hpp"
-#include "LoggerInteface.hpp"
+#include "LoggerInterface.hpp"
 #include "PhysicalConstants.hpp"
 
 /*! \class PWLSolver
