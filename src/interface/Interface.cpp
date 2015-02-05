@@ -101,6 +101,7 @@ extern "C" void set_up_pcm(int * host_provides_input)
 	    from_host = true;
     }
     setupInput(from_host);
+    LOG_INIT();
     initCavity();
     initSolver();
 }
