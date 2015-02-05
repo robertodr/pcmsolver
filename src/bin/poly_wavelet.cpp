@@ -84,7 +84,7 @@ int main(int argc, char* argv[]) {
     LOG("Energy       = ", energy);
     LOG("<<< PCMSOLVER");
     LOG(">>> TIMING");
-    LOG_TIME();
+    LOG_TIME;
     LOG("<<< TIMING");
     LOG("# vim: foldmarker=>>>,<<< foldlevel=0 foldmethod=marker");
 }

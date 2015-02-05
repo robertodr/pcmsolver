@@ -113,6 +113,8 @@ void PWLSolver::initWEMMembers()
     af->elementTree.nop = 0;
     af->waveletList.W = NULL;
     af->waveletList.sizeWaveletList = 0;
+    apriori1_ = 0; aposteriori1_ = 0;
+    apriori2_ = 0; aposteriori2_ = 0;
 }
 
 PWLSolver::~PWLSolver()
@@ -491,21 +493,33 @@ std::ostream & PWLSolver::printSolver(std::ostream & os)
 {
     os << "Solver Type: Wavelet, piecewise linear functions" << std::endl;
     os << *af << std::endl;
-    os << "1. apriori compression NNZ "<< apriori1_ << std::endl;
-    os << "2. apriori compression NNZ "<< apriori2_ << std::endl;
-    os << "1. aposteriori compression NNZ "<< aposteriori1_ << std::endl;
-    os << "2. aposteriori compression NNZ "<< aposteriori2_ << std::endl;
-
     int sizeWavList = af->waveletList.sizeWaveletList;
-    os << "1. apriori compression % "<< 100*apriori1_/(sizeWavList*sizeWavList) << std::endl;
-    os << "2. apriori compression % "<< 100*apriori2_/(sizeWavList*sizeWavList) << std::endl;
-    os << "1. aposteriori compression % "<< 100*aposteriori1_/(sizeWavList*sizeWavList) << std::endl;
-    os << "2. aposteriori compression % "<< 100*aposteriori2_/(sizeWavList*sizeWavList) << std::endl;
-
     int toMegaBytes = 1024 * 1024;
-    os << "1. apriori compression MB "<< apriori1_*sizeof(double)/toMegaBytes << std::endl;
-    os << "2. apriori compression MB "<< apriori2_*sizeof(double)/toMegaBytes << std::endl;
-    os << "1. aposteriori compression MB "<< aposteriori1_*sizeof(double)/toMegaBytes << std::endl;
-    os << "2. aposteriori compression MB "<< aposteriori2_*sizeof(double)/toMegaBytes;
+
+    if (integralEquation != FirstKind) {
+       os << "1. apriori compression NNZ "<< apriori1_ << std::endl;                                         
+       os << "2. apriori compression NNZ "<< apriori2_ << std::endl;
+       os << "1. aposteriori compression NNZ "<< aposteriori1_ << std::endl;
+       os << "2. aposteriori compression NNZ "<< aposteriori2_ << std::endl;
+                                                                                                             
+       os << "1. apriori compression % "<< 100.0 * apriori1_/(sizeWavList*sizeWavList) << std::endl;
+       os << "2. apriori compression % "<< 100.0 * apriori2_/(sizeWavList*sizeWavList) << std::endl;
+       os << "1. aposteriori compression % "<< 100.0 * aposteriori1_/(sizeWavList*sizeWavList) << std::endl;
+       os << "2. aposteriori compression % "<< 100.0 * aposteriori2_/(sizeWavList*sizeWavList) << std::endl;
+                                                                                                             
+       os << "1. apriori compression MB "<< apriori1_ * sizeof(double)/toMegaBytes << std::endl;
+       os << "2. apriori compression MB "<< apriori2_ * sizeof(double)/toMegaBytes << std::endl;
+       os << "1. aposteriori compression MB "<< aposteriori1_ * sizeof(double)/toMegaBytes << std::endl;
+       os << "2. aposteriori compression MB "<< aposteriori2_ * sizeof(double)/toMegaBytes;
+    } else {
+       os << "1. apriori compression NNZ "<< apriori1_ << std::endl;                                         
+       os << "1. aposteriori compression NNZ "<< aposteriori1_ << std::endl;
+                                                                                                             
+       os << "1. apriori compression % "<< 100.0 * apriori1_/(sizeWavList*sizeWavList) << std::endl;
+       os << "1. aposteriori compression % "<< 100.0 * aposteriori1_/(sizeWavList*sizeWavList) << std::endl;
+                                                                                                             
+       os << "1. apriori compression MB "<< apriori1_ * sizeof(double)/toMegaBytes << std::endl;
+       os << "1. aposteriori compression MB "<< aposteriori1_ * sizeof(double)/toMegaBytes << std::endl;
+    }
     return os;
 }
