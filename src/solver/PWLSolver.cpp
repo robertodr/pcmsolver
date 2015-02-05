@@ -48,8 +48,9 @@
 #include "Cavity.hpp"
 #include "IGreensFunction.hpp"
 #include "WaveletCavity.hpp"
-
 #include "LoggerInterface.hpp"
+#include "Timer.hpp"
+
 static IGreensFunction *gf;
 
 static double SingleLayer (Vector3 x, Vector3 y)

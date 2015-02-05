@@ -51,7 +51,7 @@ int main() {
     LOG_INIT("pcmsolver.execution.log");
     //read_sphere();
     pwc_C6H6();
-    LOG_TIME;
+    LOG_TIME();
 }
 
 void read_sphere() 

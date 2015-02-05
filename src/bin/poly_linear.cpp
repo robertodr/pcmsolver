@@ -14,7 +14,7 @@
 #include "Vacuum.hpp"
 #include "WaveletCavity.hpp"
 #include "PhysicalConstants.hpp"
-
+#include "Timer.hpp"
 #include "LoggerInterface.hpp"
 
 void read_data(const std::string &filename, Compression *comp,  std::vector<double> *charge_, std::vector<Eigen::Vector3d> *atoms_);
@@ -88,7 +88,7 @@ int main(int argc, char* argv[]) {
     LOG("Energy       = ", energy);
     LOG("<<< PCMSOLVER");
     LOG(">>> TIMING");
-    LOG_TIME;
+    LOG_TIME();
     LOG("<<< TIMING");
     LOG("# vim: foldmarker=>>>,<<< foldlevel=0 foldmethod=marker");
 }
@@ -102,7 +102,7 @@ void read_data(const std::string &filename, Compression *comp,  std::vector<doub
     double a,dp,b, eps;
 
     std::ifstream file;
-    file.open(filename);
+    file.open(filename.c_str());
 
     if(file.is_open()) {
         LOG(">>> DATA_FILE");

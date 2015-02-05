@@ -47,8 +47,8 @@
 #include "Cavity.hpp"
 #include "IGreensFunction.hpp"
 #include "WaveletCavity.hpp"
-
 #include "LoggerInterface.hpp"
+#include "Timer.hpp"
 
 static IGreensFunction *gf;
 
