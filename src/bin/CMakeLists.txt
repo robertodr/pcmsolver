@@ -25,3 +25,6 @@ add_reference(${CMAKE_SOURCE_DIR}/examples/C8H18_lev2.dat ${CMAKE_CURRENT_BINARY
 
 add_executable(poly_linear.x poly_linear.cpp)
 target_link_libraries(poly_linear.x solver green bi_operators cavity wemFiles wemSolvers wavcav utils ${ZLIB_LIBRARY} "${external_libraries}")
+
+add_executable(molecule_wavcav_wavelet.x molecule_wavcav_wavelet.cpp)
+target_link_libraries(molecule_wavcav_wavelet.x solver green bi_operators cavity wemFiles wemSolvers wavcav utils ${ZLIB_LIBRARY} "${external_libraries}")
