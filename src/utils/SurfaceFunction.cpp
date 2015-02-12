@@ -126,7 +126,7 @@ std::ostream & SurfaceFunction::printObject(std::ostream & os)
     if (!allocated_)
         throw std::runtime_error("Surface function not allocated!");
 
-    os << values_.transpose();
+    os << values_;
 
     return os;
 }

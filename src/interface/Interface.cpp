@@ -118,6 +118,7 @@ extern "C" void tear_down_pcm()
 
 extern "C" void compute_asc(char * potString, char * chgString, int * irrep)
 {
+
     std::string potFuncName(potString);
     std::string chgFuncName(chgString);
 
@@ -407,8 +408,8 @@ extern "C" void clear_surface_function(char * name)
     std::string functionName(name);
 
     SharedSurfaceFunctionMap::const_iterator iter = functions.find(name);
-
-    iter->second->clear();
+    // Clear contents if found
+    if (iter != functions.end() ) iter->second->clear();
 }
 
 extern "C" void append_surface_function(char * name)
