@@ -1,8 +1,8 @@
 # List here all directories that contain *.h or *.hpp
 # header files. This is needed in order to set the list
 # of directories where CMake will go look for headers
-set(header_dir_list 
-	${CMAKE_CURRENT_SOURCE_DIR}/cavity 
+set(header_dir_list
+	${CMAKE_CURRENT_SOURCE_DIR}/cavity
 	${CMAKE_CURRENT_SOURCE_DIR}/green
 	${CMAKE_CURRENT_SOURCE_DIR}/interface
 	${CMAKE_CURRENT_SOURCE_DIR}/bi_operators # Stands for Boundary Integral operators
@@ -11,13 +11,13 @@ set(header_dir_list
 if(DEVELOPMENT_CODE)
         set(header_dir_list_DEVELOPMENT
             ${CMAKE_CURRENT_SOURCE_DIR}/wemSolvers
-            ${CMAKE_CURRENT_SOURCE_DIR}/wemFiles      
-       	    ${CMAKE_CURRENT_SOURCE_DIR}/wavcav
+            ${CMAKE_CURRENT_SOURCE_DIR}/wemFiles
+            ${CMAKE_CURRENT_SOURCE_DIR}/wavcav
             ${CMAKE_CURRENT_SOURCE_DIR}/wem
            )
 	list(APPEND header_dir_list "${header_dir_list_DEVELOPMENT}")
 	list(SORT header_dir_list)
-endif()	
+endif()
 include_directories(${header_dir_list})
 
 init_Includer()
