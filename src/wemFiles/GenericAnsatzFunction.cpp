@@ -968,7 +968,8 @@ unsigned int GenericAnsatzFunction::compare(unsigned int e1, unsigned int e2,
     unsigned int *ind1, unsigned int *ind2) {
   unsigned int *F1 = elementTree.element[e1].vertex;
   unsigned int *F2 = elementTree.element[e2].vertex;
-  if(elementTree.element[e1].patch == elementTree.element[e2].patch){
+  //if(elementTree.element[e1].patch == elementTree.element[e2].patch){
+  if(1 == 0){
     // same patch
     for (*ind1 = 0; *ind1 < 4; ++(*ind1)){
       //common point?
@@ -979,15 +980,15 @@ unsigned int GenericAnsatzFunction::compare(unsigned int e1, unsigned int e2,
           if( F1[3] == F2[(*ind2+1)%4]){
             *ind1 = 3;
             return 3;
-          } else if (F1[(*ind1+1)%4] == F2[(*ind2+3)%4]) {
+				  } else if (F1[(*ind1+1)%4] == F2[(*ind2+3)%4]) {
 					  // normal case
             *ind2 = (*ind2+3)%4;
-            return(3);
-          }
-          else return(4);
-        }
-      }
-    }
+					  return(3);
+				  }
+				  else return(4);
+			  }
+		  }
+	  }
     return 1;
   }else{
     //different patches, calculate difference vector

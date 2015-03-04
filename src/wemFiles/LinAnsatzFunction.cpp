@@ -1154,7 +1154,8 @@ void LinAnsatzFunction :: simplifyWaveletList() {
 	unsigned int	minLevelLocal;   // minimal level for quadrature
 
 	minLevelLocal = minQuadratureLevel;          // minimal level for quadrature
-	
+	minLevelLocal = 0;          // minimal level for quadrature
+printf("EPSEPSEPS %g\n",eps);	
   // 1. simplify the wavelets
   for (unsigned int i=0; i<waveletList.sizeWaveletList; ++i){
     // check if elements can be replaced by father and replace weight of
