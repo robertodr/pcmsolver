@@ -97,10 +97,10 @@ Vector3 Interpolation::Chi(Vector2 a, int patch){
   x = (unsigned int) floor(a.x*n);
   y = (unsigned int) floor(a.y*n);
   
+  a.x = n*a.x - x;
+  a.y = n*a.y - y;
   if(x == n) --x;
   if(y == n) --y;
-  a.x = n*a.x - floor(a.x*n);
-  a.y = n*a.y - floor(a.y*n);
 	//if(x > 0) if((grade*x/h - a.x)*(grade*x/h - a.x) < 1e-10) --x;
   //if(y > 0) if((grade*y/h - a.y)*(grade*y/h - a.y) < 1e-10) --y;
 			

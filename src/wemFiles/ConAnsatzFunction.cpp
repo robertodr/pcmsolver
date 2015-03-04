@@ -241,6 +241,7 @@ void ConAnsatzFunction::simplifyWaveletList(){
   unsigned int  minLevelLocal;   // minimal quadrature level, here copied from Constants
 
   minLevelLocal = minQuadratureLevel;
+  minLevelLocal = 0;
 
   // 1. simplify the wavelets
   for (unsigned int i=0; i<waveletList.sizeWaveletList; ++i){
