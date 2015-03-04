@@ -205,11 +205,11 @@ unsigned int GenericAnsatzFunction :: compression(SparseMatrix *T){
   for(unsigned int i = 0; elementTree.element[i].level == 0; ++i)
     if( maxRadius < elementTree.element[i].radius)
       maxRadius = elementTree.element[i].radius;
-  c1 = (double**) calloc(1,sizeof(double*)*(nLevels+1));
-  c2 = (double**) calloc(1,sizeof(double*)*(nLevels+1));
+  c1 = (double**) malloc(sizeof(double*)*(nLevels+1));
+  c2 = (double**) malloc(sizeof(double*)*(nLevels+1));
   for(unsigned int i = 0; i <= nLevels; ++i){
-    c1[i] = (double*) calloc(1,sizeof(double)*(i+1));
-    c2[i] = (double*) calloc(1,sizeof(double)*(i+1));
+    c1[i] = (double*) malloc(sizeof(double)*(i+1));
+    c2[i] = (double*) malloc(sizeof(double)*(i+1));
     for(unsigned int j = 0; j <= i; ++j){
       c1[i][j] = a*pow(2,(nLevels*(2*dp-op)-(i+j)*(dp+td))/(2*td+op));
       d1 = pow(2,(nLevels*(2*dp-op)-(i+j)*dp-i*td)/(td+op));    // alter Parameter
@@ -434,8 +434,8 @@ unsigned int GenericAnsatzFunction :: postProc(SparseMatrix *T){
       //c[i][j] = pow(0.5,(nLevels-0.5*(i+j))*(2*dp-op)/(2*td+op)); // false?!
       c[i][j] = pow(0.5,(2*nLevels-(i+j))*(2*dp-op)/(2*td+op));
       if (c[i][j] > pow(0.5,fabs(i-j))) c[i][j] = pow(0.5,fabs(i-j));
-      //c[i][j] *= b * pow(0.5,(dp-0.5*op)*(2*nLevels-(i+j)));// added -op*nLevels
-      c[i][j] *= b * pow(0.5,(dp)*(2*nLevels-(i+j)));
+      c[i][j] *= b * pow(0.5,(dp-0.5*op)*(2*nLevels-(i+j)));// added -op*nLevels
+      //c[i][j] *= b * pow(0.5,(dp)*(2*nLevels-(i+j)));
     }
   }
 
@@ -777,12 +777,15 @@ int GenericAnsatzFunction::print_geometry(double* rho, const char * dname) {
   fprintf(f, "\n");
 
   // print z-values of the geometry and solved density for visualization
-  fprintf(f, "POINT_DATA %d\n", max);
-  fprintf(f, "SCALARS Z-value FLOAT\n");
-  fprintf(f, "LOOKUP_TABLE default\n");
-  for (i = 0; i < max; ++i)
-    fprintf(f, "%20.16f\n", nodeList[i].z);
-  fprintf(f, "\n");
+  if(rho !=NULL){
+    fprintf(f, "POINT_DATA %d\n", max);
+    fprintf(f, "SCALARS Z-value FLOAT\n");
+    fprintf(f, "LOOKUP_TABLE default\n");
+    for (i = 0; i < nFunctions; ++i){
+      fprintf(f, "%20.16f\n", rho[i]);
+    }
+    fprintf(f, "\n");
+  }
 
   fprintf(f, "CELL_DATA %d\n", nFunctions);
   fprintf(f, "SCALARS Cell_Density FLOAT\n");
@@ -996,7 +999,7 @@ unsigned int GenericAnsatzFunction::compare(unsigned int e1, unsigned int e2,
         d.x = nodeList[F1[*ind1]].x - nodeList[F2[*ind2]].x;
         d.y = nodeList[F1[*ind1]].y - nodeList[F2[*ind2]].y;
         d.z = nodeList[F1[*ind1]].z - nodeList[F2[*ind2]].z;
-        if (d.x * d.x + d.y * d.y + d.z * d.z < 1e-6) {
+        if (d.x * d.x + d.y * d.y + d.z * d.z < 1e-8) {
           // found common point, search common edge
           d.x = nodeList[F1[(*ind1 + 1) % 4]].x
             - nodeList[F2[(*ind2 + 3) % 4]].x;
@@ -1004,7 +1007,7 @@ unsigned int GenericAnsatzFunction::compare(unsigned int e1, unsigned int e2,
             - nodeList[F2[(*ind2 + 3) % 4]].y;
           d.z = nodeList[F1[(*ind1 + 1) % 4]].z
             - nodeList[F2[(*ind2 + 3) % 4]].z;
-          if (d.x * d.x + d.y * d.y + d.z * d.z < 1e-6) {
+          if (d.x * d.x + d.y * d.y + d.z * d.z < 1e-8) {
             *ind2 = (*ind2 + 3) % 4;// normal case: second point at ind1+1, ind1-1
             return (3);
           } else if (*ind1 == 0) {
@@ -1014,7 +1017,7 @@ unsigned int GenericAnsatzFunction::compare(unsigned int e1, unsigned int e2,
               - nodeList[F2[(*ind2 + 1) % 4]].y; 
             d.z = nodeList[F1[3]].z
               - nodeList[F2[(*ind2 + 1) % 4]].z;
-            if (d.x * d.x + d.y * d.y + d.z * d.z < 1e-6) {
+            if (d.x * d.x + d.y * d.y + d.z * d.z < 1e-8) {
               *ind1 = 3;
               return (3);
             }
