@@ -17,6 +17,7 @@
 #include "PhysicalConstants.hpp"
 
 #include "LoggerInterface.hpp"
+#include "Timer.hpp"
 #include "Atom.hpp"
 
 void read_data(const std::string &filename, Compression *comp,  std::vector<double> *charge_, std::vector<Eigen::Vector3d> *atoms_, std::vector<double> *radii_);
@@ -108,7 +109,7 @@ void read_data(const std::string &filename, Compression *comp,  std::vector<doub
     double a,dp,b, eps;
 
     std::ifstream file;
-    file.open(filename);
+    file.open(filename.c_str());
 
     if(file.is_open()) {
         LOG(">>> DATA_FILE");
