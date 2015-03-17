@@ -236,11 +236,10 @@ void Input::reader(const cavityInput & cav, const solverInput & solv,
 
 void Input::semanticCheck()
 {
-#if not defined (WAVELET_DEVELOPMENT) || not defined (TSLESS_DEVELOPMENT)
-    if (type_ == "GEPOL" || type_ == "TSLESS") {
+    if (type_ == "GEPOL") {
         if (solverType_ == "WAVELET"
             || solverType_ ==
-            "LINEAR") { // User asked for GePol or TsLess cavity with wavelet solvers
+            "LINEAR") { // User asked for GePol cavity with wavelet solvers
             throw std::runtime_error("GePol cavity can be used only with traditional solvers.");
         }
     } else if (type_ ==
@@ -250,7 +249,6 @@ void Input::semanticCheck()
             throw std::runtime_error("Wavelet cavity can be used only with wavelet solvers.");
         }
     }
-#endif
 }
 
 cavityData Input::cavityParams()

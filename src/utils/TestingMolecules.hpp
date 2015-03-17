@@ -39,6 +39,22 @@
 #include "Sphere.hpp"
 #include "Symmetry.hpp"
 
+/*! Returns the ammonia molecule
+ */
+Molecule NH3();
+
+/*! Returns the CH3+ molecule
+ */
+Molecule CH3();
+
+/*! Returns the C2H4 molecule
+ */
+Molecule C2H4();
+
+/*! Returns the benzene molecule
+ */
+Molecule C6H6();
+
 /*! Returns a single dummy atom, centered at the origin and with the given radius
  */
 template <int group>
