@@ -20,6 +20,8 @@
 #include "Timer.hpp"
 #include "Atom.hpp"
 
+double scalingConstant = 1;
+
 void read_data(const std::string &filename, Compression *comp,  std::vector<double> *charge_, std::vector<Eigen::Vector3d> *atoms_, std::vector<double> *radii_);
 
 int main(int argc, char* argv[]) {
@@ -37,14 +39,18 @@ int main(int argc, char* argv[]) {
       spheres.push_back(sph);
     }
  
-    double probeRadius = 1.8; // Probe Radius for water
+    double probeRadius = 1.4; // Probe Radius for water
+    probeRadius *= scalingConstant;
     int patchLevel = 5;
     double coarsity = 0.2;
 
+    std::cout << "Setting up the cavity" << std::endl;
     WaveletCavity cavity(spheres, probeRadius, patchLevel, coarsity);
     cavity.readCavity("molec_dyadic.dat");
+    std::cout << "Done the cavity" << std::endl;
     // Set up cavity, read it from Maharavo's file 
     //cavity.scaleCavity(1./convertBohrToAngstrom);
+    cavity.scaleCavity(1./scalingConstant);
 
     double permittivity = 78.39;
     double totalASC = 0;
@@ -107,6 +113,7 @@ void read_data(const std::string &filename, Compression *comp,  std::vector<doub
     double charge;
     double x,y,z,r;
     double a,dp,b, eps;
+    std::vector<Atom> &Bondi =  Atom::initBondi();
 
     std::ifstream file;
     file.open(filename.c_str());
@@ -121,8 +128,14 @@ void read_data(const std::string &filename, Compression *comp,  std::vector<doub
         file >> nAtoms;
         LOG(nAtoms);
         for(unsigned int i = 0; i < nAtoms; ++i){
-            file >> charge >> x >> y >> z >> r;
-            LOG(charge, " ", x," ", y, " ", z);
+            //file >> charge >> x >> y >> z >> r;
+            file >> charge >> x >> y >> z;
+            x *= scalingConstant;
+            y *= scalingConstant;
+            z *= scalingConstant;
+            r = Bondi[(int)charge-1].atomRadius();
+            r *= scalingConstant;
+            LOG(charge, " ", x," ", y, " ", z, " ", r);
             Eigen::Vector3d position(x,y,z);
             atoms_->push_back(position);
             charge_->push_back(charge);
