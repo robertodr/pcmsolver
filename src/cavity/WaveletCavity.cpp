@@ -2,22 +2,22 @@
 /*
  *     PCMSolver, an API for the Polarizable Continuum Model
  *     Copyright (C) 2013 Roberto Di Remigio, Luca Frediani and contributors
- *     
+ *
  *     This file is part of PCMSolver.
- *     
- *     PCMSolver is free software: you can redistribute it and/or modify       
+ *
+ *     PCMSolver is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Lesser General Public License as published by
  *     the Free Software Foundation, either version 3 of the License, or
  *     (at your option) any later version.
- *     
+ *
  *     PCMSolver is distributed in the hope that it will be useful,
  *     but WITHOUT ANY WARRANTY; without even the implied warranty of
  *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *     GNU Lesser General Public License for more details.
- *     
+ *
  *     You should have received a copy of the GNU Lesser General Public License
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
- *     
+ *
  *     For information on the complete list of contributors to the
  *     PCMSolver API, see: <http://pcmsolver.github.io/pcmsolver-doc>
  */
@@ -70,11 +70,7 @@ void WaveletCavity::makeCavity()
     int check = 0;
     std::string infile = "cavity.inp";
     writeInput(infile);
-#if defined (WAVELET_DEVELOPMENT)
     check = waveletCavityDrv_(probeRadius_, coarsity_, patchLevel_, infile.c_str());
-#else
-    check = 1;
-#endif
     if (check != 0) {
         throw std::runtime_error("Problem with the wavelet cavity inside makeCavity method");
     }
@@ -89,13 +85,13 @@ void WaveletCavity::readCavity(const std::string & filename)
     std::ifstream file;
     file.open(filename.c_str());
     if (file.is_open()) {
-        file >> nLevels_ >> nPatches_;           
-                                                
+        file >> nLevels_ >> nPatches_;
+
         int nNodes = (1 << nLevels_) + 1;
-                                                
+
         nPoints_ = nPatches_ * nNodes * nNodes;
 
-                                                
+
         for (size_t l = 0; l < nPoints_; ++l) {
             file >> i >> j >> k >> x >> y >> z;
             Eigen::Vector3i index(i, k, j);
@@ -103,7 +99,7 @@ void WaveletCavity::readCavity(const std::string & filename)
             Eigen::Vector3d point(x, y, z);
             nodePoint_.push_back(point);
         }
-                                                
+
         file.close();
         uploadedDyadic_ = true;
     } else {
@@ -179,7 +175,7 @@ std::ostream & WaveletCavity::printCavity(std::ostream & os)
     os << "Number of levels  = " << nLevels_  << std::endl;
     os << "Number of potential points = " << nElements_;
     /*
-    os << std::endl; 
+    os << std::endl;
     os << "-------------- Potential points printout " << std::endl;
     for(int i = 0; i < nElements_; i++) {
     	os << std::endl;
@@ -200,7 +196,7 @@ std::ostream & WaveletCavity::printCavity(std::ostream & os)
     	os << sphereRadius_(i) << " ";
     }
     */
-    /*	
+    /*
     if (uploadedDyadic_) {
         os << "Printing nodes" << std::endl;
     	for(int i = 0; i < nPoints_; i++) {

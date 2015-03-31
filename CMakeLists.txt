@@ -16,7 +16,7 @@ project(PCMSolver CXX C Fortran)
 option(ENABLE_MPI              "Enable MPI parallelization"                                       OFF)
 option(ENABLE_OPENMP           "Enable OpenMP parallelization"                                    OFF)
 option(ENABLE_VECTORIZATION    "Enable vectorization"                                             OFF)
-option(ENABLE_TESTS            "Enable compilation of unit tests"                                 OFF)
+option(ENABLE_TESTS            "Enable compilation of unit tests"                                 ON)
 option(ENABLE_CODE_COVERAGE    "Enable code coverage"                                             OFF)
 option(DISABLE_EIGEN_OWN       "Do not use Eigen3 headers shipped with the module"                OFF)
 option(ENABLE_EIGEN_MKL        "Enable Eigen3 automatic fallback to some of Intel MKL algorithms" OFF)
@@ -43,9 +43,8 @@ include(CheckIncludeFile)
 include(ConfigCompilerFlags)
 include(PerTargetCompilerFlags)
 include(ConfigDocumentation)
-include(ConfigExternal)
+include(ExternalProject)
 include(GenericMacros)
-include(ConfigGitRevision) # Has to come after ConfigVersion.cmake
 include(MergeStaticLibs)
 # Access to the fortran_enabler macro
 include(FortranEnabler)
@@ -120,9 +119,17 @@ set(GetkwCMakeArgs
    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
    -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
    -DBOOST_INCLUDEDIR=${Boost_INCLUDE_DIRS}
-   -DBOOST_LIBRARYDIR=${Boost_LIBRARY_DIRS})
+   -DBOOST_LIBRARYDIR=${Boost_LIBRARY_DIRS}
+   )
 
-add_external(libgetkw "" "${GetkwCMakeArgs}")
+ExternalProject_Add(libgetkw
+	PREFIX ${CMAKE_SOURCE_DIR}/external
+	SOURCE_DIR ${CMAKE_SOURCE_DIR}/external/libgetkw
+	BINARY_DIR ${CMAKE_BINARY_DIR}/external/libgetkw-build
+    STAMP_DIR ${CMAKE_BINARY_DIR}/external/libgetkw-stamp
+    TMP_DIR ${CMAKE_BINARY_DIR}/external/libgetkw-tmp
+    INSTALL_DIR ${CMAKE_BINARY_DIR}/external
+    CMAKE_ARGS ${GetkwCMakeArgs})
 # In case we need to build Boost, let libgetkw depend on custom_boost
 # so that's the first thing it's done
 if(BUILD_CUSTOM_BOOST)
@@ -141,10 +148,10 @@ ExternalProject_Add(libtaylor
 	PREFIX ${CMAKE_SOURCE_DIR}/external
 	SOURCE_DIR ${CMAKE_SOURCE_DIR}/external/libtaylor
 	BINARY_DIR ${CMAKE_BINARY_DIR}/external/libtaylor-build
-        STAMP_DIR ${CMAKE_BINARY_DIR}/external/libtaylor-stamp
-        TMP_DIR ${CMAKE_BINARY_DIR}/external/libtaylor-tmp
-        INSTALL_DIR ${CMAKE_BINARY_DIR}/external
-        CMAKE_ARGS ${TaylorCMakeArgs})
+    STAMP_DIR ${CMAKE_BINARY_DIR}/external/libtaylor-stamp
+    TMP_DIR ${CMAKE_BINARY_DIR}/external/libtaylor-tmp
+    INSTALL_DIR ${CMAKE_BINARY_DIR}/external
+    CMAKE_ARGS ${TaylorCMakeArgs})
 
 configure_files()
 
@@ -157,6 +164,10 @@ include_directories(${CMAKE_SOURCE_DIR}
 		    ${CMAKE_BINARY_DIR}/include
                     ${CMAKE_Fortran_MODULE_DIRECTORY})
 
+if(ENABLE_TESTS)
+  # Build also standalone executables in src/bin
+  set(BUILD_STANDALONE TRUE)
+endif()
 add_subdirectory(src)
 include_directories(${header_dir_list})
 
