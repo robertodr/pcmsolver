@@ -21,5 +21,5 @@
 #define LOG_TIME
 
 #endif // HAS_CXX11
- 
+
 #endif // LOGGERINTERFACE_HPP
