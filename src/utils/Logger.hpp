@@ -4,22 +4,39 @@
 #include <ctime>
 #include <mutex>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 
+#include "BuildInfo.hpp"
 #include "LoggerImpl.hpp"
 
 namespace logging
 {
-    std::string getTime();
+    /*! \brief Returns date and time
+     */
+    inline std::string getTime()
+    {
+        std::string time_str;
+        time_t raw_time;
+
+        std::time(&raw_time);
+        time_str = std::ctime(&raw_time);
+
+        // Without the newline character
+        return time_str;
+    }
+
 
     template<typename logPolicy>
     class logger
     {
     private:
-        printLevel globalPrintLevel_;
+        int globalPrintLevel_;
         std::stringstream logStream_;
         logPolicy * policy_;
         std::mutex writeMutex_;
+        std::string logFile_;
+        bool initialized_;
 
         /*! @name Core printing functionality
          *
@@ -33,67 +50,83 @@ namespace logging
          */
         /// @{
         /*! */
-        void printImpl() {
+        void printImpl()
+        {
             policy_->write(logStream_.str());
             logStream_.str("");
         }
+
         template<typename First, typename...Rest>
-        void printImpl(First parm1, Rest...parm) {
-	    logStream_.precision(std::numeric_limits<double>::digits10);
-            logStream_ << parm1 << std::endl;
+        void printImpl(First parm1, Rest...parm)
+        {
+            logStream_.precision(std::numeric_limits<double>::digits10);
+            logStream_ << parm1;
             printImpl(parm...);
         }
         /// @}
-    public:
         /*! Constructor
-         *  \param[in] name name for the log file
-         *  The build parameters are logged first
-         */
-        logger(const std::string & name, printLevel print = coarse)
-		: globalPrintLevel_(print), policy_(new logPolicy)
+         *  \param[in] print the print level
+        *
+        *  The build parameters are logged first
+                */
+        logger(int print = coarse)
+            : globalPrintLevel_(print), policy_(new logPolicy), initialized_(false)
         {
             if(!policy_) {
-                PCMSOLVER_ERROR("LOGGER: Unable to create the logger instance");
+                throw std::runtime_error("LOGGER: Unable to create the logger instance");
             }
-            policy_->open_ostream(name);
             // Write the logfile header
             logStream_ << "\t\tPCMSolver execution log\n"
-                << buildInfo() << "\n\t\tLog started : " << getTime() << std::endl;
+                       << buildInfo() << "\n\t\tLog started : " << getTime() << std::endl;
         }
+
         /// Destructor
-        ~logger() {
+        ~logger()
+        {
             if(policy_) {
                 policy_->close_ostream();
                 delete policy_;
             }
         }
 
-	void globalPrintLevel(int printLvl) { globalPrintLevel_ = printLvl; }
 
+    public:
         /// User interface for the logger class
-        template<printLevel printLvl, typename...Args>
-        void print(Args...args) {
-	    if (globalPrintLevel_ >= printLvl) {
-               writeMutex_.lock();
-               printImpl(args...);
-               writeMutex_.unlock();
-	    }
+        template<int printLvl, typename...Args>
+        void print(Args...args)
+        {
+            if (!initialized_) {
+                throw std::runtime_error("Logger not initialized!");
+            }
+            if (globalPrintLevel_ >= printLvl) {
+                writeMutex_.lock();
+                printImpl(args...);
+                writeMutex_.unlock();
+            }
         }
-
+        static logger& Instance()
+        {
+            static logger<FileLogPolicy> loggerInstance;
+            return loggerInstance;
+        }
+        /// Call this to initialize the logger
+        void initialize(const std::string & fname = "", int printLvl = 1)
+        {
+            if (!initialized_) {
+                if (fname.empty()) {
+                    std::stringstream namestream;
+                    srand(time(NULL));
+                    namestream << "pcmsolver" << "_" << rand() << "_" << getpid();
+                    logFile_ = namestream.str();
+                } else {
+                    logFile_ = fname;
+                }
+                policy_->open_ostream(logFile_);
+                globalPrintLevel_ = printLvl;
+                initialized_ = true;
+            }
+        }
     };
-
-    /*! \brief Returns date and time */
-    inline std::string getTime() {
-        std::string time_str;
-        time_t raw_time;
-
-        std::time(&raw_time);
-        time_str = std::ctime(&raw_time);
-
-        // Without the newline character
-        return time_str;
-    }
-
 } // close namespace logging
 
 #endif // LOGGER_HPP

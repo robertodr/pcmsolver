@@ -6,15 +6,15 @@
 #include "Logger.hpp"
 #include "Timer.hpp"
 
-static logging::logger<logging::FileLogPolicy> loggerInstance("pcmsolver.execution.log");
-
-#define LOG loggerInstance.print<logging::printLevel::coarse>
-#define LOG_FINE loggerInstance.print<logging::printLevel::fine>
-#define LOG_ALL loggerInstance.print<logging::printLevel::everything>
-#define LOG_TIME loggerInstance.print<logging::printLevel::timings>(timer::Timer::TheTimer());
+#define LOG_INIT logging::logger<logging::FileLogPolicy>::Instance().initialize
+#define LOG      logging::logger<logging::FileLogPolicy>::Instance().print<logging::coarse>
+#define LOG_FINE logging::logger<logging::FileLogPolicy>::Instance().print<logging::fine>
+#define LOG_ALL  logging::logger<logging::FileLogPolicy>::Instance().print<logging::everything>
+#define LOG_TIME logging::logger<logging::FileLogPolicy>::Instance().print<logging::timings>(Timer::TheTimer())
 
 #else /* ENABLE_LOGGER */
 
+#define LOG_INIT(...)
 #define LOG(...)
 #define LOG_FINE(...)
 #define LOG_ALL(...)

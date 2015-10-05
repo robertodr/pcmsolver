@@ -1,0 +1,6 @@
+set_property(GLOBAL APPEND PROPERTY TestSources ${CMAKE_CURRENT_LIST_DIR}/pwc_NH3.cpp)
+add_test(NAME pwc_NH3 COMMAND unit_tests.x [pwc_NH3])
+set_property(GLOBAL APPEND PROPERTY TestSources ${CMAKE_CURRENT_LIST_DIR}/pwc_C6H6.cpp)
+add_test(NAME pwc_C6H6 COMMAND unit_tests.x [pwc_C6H6])
+set_property(GLOBAL APPEND PROPERTY TestSources ${CMAKE_CURRENT_LIST_DIR}/pwc_secondKind_C6H6.cpp)
+add_test(NAME pwc_secondKind_C6H6 COMMAND unit_tests.x [pwc_secondKind_C6H6])

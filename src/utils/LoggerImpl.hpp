@@ -7,12 +7,10 @@
 
 namespace logging
 {
-    enum printLevel {
-        timings,
-        coarse,
-        fine,
-        everything
-    };
+    const int timings    = 0;
+    const int coarse     = 1;
+    const int fine       = 2;
+    const int everything = 3;
 
     /*! \class ILogPolicy
      *  \brief ABC for logging policy classes
@@ -55,7 +53,7 @@ namespace logging
         virtual void open_ostream(const std::string & name) {
             outStream_->open(name.c_str(), std::ios_base::binary | std::ios_base::out );
             if(!outStream_->is_open()) {
-                PCMSOLVER_ERROR("LOGGER: Unable to open an output stream");
+                throw std::runtime_error("LOGGER: Unable to open an output stream");
             }
         }
         /*! \brief Closes an output stream with the given name

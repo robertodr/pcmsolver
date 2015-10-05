@@ -105,6 +105,8 @@ namespace pcm {
             void initInput();
             /*! Initialize cavity_ */
             void initCavity();
+            /*! Initialize wavelet cavity */
+            void initWaveletCavity();
             /*! Initialize static solver K_0_ */
             void initStaticSolver();
             /*! Initialize dynamic solver K_d_ */

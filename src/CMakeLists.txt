@@ -5,6 +5,9 @@ include_directories(${CMAKE_CURRENT_LIST_DIR}/cavity
                     ${CMAKE_CURRENT_LIST_DIR}/bi_operators
                     ${CMAKE_CURRENT_LIST_DIR}/solver
                     ${CMAKE_CURRENT_LIST_DIR}/utils
+                    ${CMAKE_CURRENT_LIST_DIR}/wavcav
+                    ${CMAKE_CURRENT_LIST_DIR}/wemFiles
+                    ${CMAKE_CURRENT_LIST_DIR}/wemSolvers
                    )
 
 add_subdirectory(cavity)
@@ -15,6 +18,9 @@ add_subdirectory(bi_operators)
 add_subdirectory(pedra)
 add_subdirectory(solver)
 add_subdirectory(utils)
+add_subdirectory(wavcav)
+add_subdirectory(wemFiles)
+add_subdirectory(wemSolvers)
 
 get_property(_pcmsolver_cxx_sources GLOBAL PROPERTY PCMSolver_CXX_SOURCES)
 get_property(_pcmsolver_c_sources GLOBAL PROPERTY PCMSolver_C_SOURCES)

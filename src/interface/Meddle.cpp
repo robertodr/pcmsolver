@@ -378,11 +378,47 @@ namespace pcm {
 
     void Meddle::initCavity()
     {
-        cavity_ = Factory<Cavity, cavityData>::TheFactory().create(input_.cavityType(), input_.cavityParams());
-        cavity_->saveCavity();
+        WaveletCavity wavcav;
+        if (input_.solverType() == "WAVELET" || input_.solverType() == "LINEAR") {
+            initWaveletCavity(wavcav);
+        } else {
+            cavity_ = Factory<Cavity, cavityData>::TheFactory().create(input_.cavityType(), input_.cavityParams());
+            cavity_->saveCavity();
+        }
 
         infoStream_ << "========== Cavity " << std::endl;
         infoStream_ << *cavity_ << std::endl;
+    }
+
+    void Meddle::initWaveletCavity(WaveletCavity & wavcav)
+    {
+        // Just throw at this point if the user asked for a cavity for a single sphere...
+        // the wavelet code will die without any further notice anyway
+        if (input_.spheres().size() == 1) {
+            throw std::runtime_error("Wavelet cavity generator cannot manage a single sphere...");
+        }
+
+        // The wavelet cavity has to be generated in Angstrom and then scaled to atomic units
+        double scaling = bohrToAngstrom(input_.CODATAyear());
+        if (input_.cavityParams().dyadicFile.empty()) { // No dyadic file: create cavity from spheres
+            // spheres is a local copy of the spheres list read on input. The latter is untouched
+            std::vector<Sphere> spheres = input_.spheres();
+            // Iterate by reference to scale!
+            BOOST_FOREACH(Sphere & sph, spheres) {
+                sph.scale(scaling);
+            }
+            double probeRadius = input_.cavityParams().probeRadius;
+            probeRadius *= scaling;
+
+            wavcav = WaveletCavity(spheres, probeRadius,
+                    input_.cavityParams().patchLevel,
+                    input_.cavityParams().coarsity);
+            wavcav.readCavity("molec_dyadic.dat");
+        } else { // Dyadic file given: create cavity from the list of points
+            wavcav = WaveletCavity(input_.cavityParams().dyadicFile);
+        }
+        // Convert back to atomic units the generated cavity
+        wavcav.scaleCavity(1.0/scaling);
     }
 
     void Meddle::initStaticSolver()
@@ -392,9 +428,24 @@ namespace pcm {
         IGreensFunction * gf_o = Factory<IGreensFunction, greenData>::TheFactory().create(input_.greenOutsideType(),
                 input_.outsideStaticGreenParams());
         std::string modelType = input_.solverType();
-        K_0_ = Factory<PCMSolver, solverData>::TheFactory().create(modelType, input_.solverParams());
-        K_0_->buildSystemMatrix(*cavity_, *gf_i, *gf_o);
-
+        if (modelType == "WAVELET") {
+            PWCSolver pwcSolver(input_.compression(), input_.equationType());
+            pwcSolver.buildSystemMatrix(wavcav, *gf_i, *gf_o);
+            wavcav.uploadPoints(pwcSolver.getQuadratureLevel(), pwcSolver.getT_());
+            cavity_ = &wavcav;
+            K_0_ = &pwcSolver;
+            cavity_->saveCavity();
+        } else if (modelType == "LINEAR") {
+            PWLSolver pwlSolver(input_.compression(), input_.equationType());
+            pwlSolver.buildSystemMatrix(wavcav, *gf_i, *gf_o);
+            wavcav.uploadPoints(pwlSolver.getQuadratureLevel(), pwlSolver.getT_());
+            cavity_ = &wavcav;
+            K_0_ = &pwcSolver;
+            cavity_->saveCavity();
+        } else {
+            K_0_ = Factory<PCMSolver, solverData>::TheFactory().create(modelType, input_.solverParams());
+            K_0_->buildSystemMatrix(*cavity_, *gf_i, *gf_o);
+        }
         infoStream_ << "========== Static solver " << std::endl;
         infoStream_ << *K_0_ << std::endl;
         mediumInfo(gf_i, gf_o);
@@ -405,12 +456,27 @@ namespace pcm {
     void Meddle::initDynamicSolver()
     {
         IGreensFunction * gf_i = Factory<IGreensFunction, greenData>::TheFactory().create(input_.greenInsideType(),
-                input_.insideGreenParams());
+          input_.insideGreenParams());
         IGreensFunction * gf_o = Factory<IGreensFunction, greenData>::TheFactory().create(input_.greenOutsideType(),
                 input_.outsideDynamicGreenParams());
-        std::string modelType = input_.solverType();
-        K_d_ = Factory<PCMSolver, solverData>::TheFactory().create(modelType, input_.solverParams());
-        K_d_->buildSystemMatrix(*cavity_, *gf_i, *gf_o);
+        if (modelType == "WAVELET") {
+            PWCSolver pwcSolver(input_.compression(), input_.equationType());
+            pwcSolver.buildSystemMatrix(wavcav, *gf_i, *gf_o);
+            wavcav.uploadPoints(pwcSolver.getQuadratureLevel(), pwcSolver.getT_());
+            cavity_ = &wavcav;
+            K_0_ = &pwcSolver;
+            cavity_->saveCavity();
+        } else if (modelType == "LINEAR") {
+            PWLSolver pwlSolver(input_.compression(), input_.equationType());
+            pwlSolver.buildSystemMatrix(wavcav, *gf_i, *gf_o);
+            wavcav.uploadPoints(pwlSolver.getQuadratureLevel(), pwlSolver.getT_());
+            cavity_ = &wavcav;
+            K_0_ = &pwcSolver;
+            cavity_->saveCavity();
+        } else {
+            K_d_ = Factory<PCMSolver, solverData>::TheFactory().create(modelType, input_.solverParams());
+            K_d_->buildSystemMatrix(*cavity_, *gf_i, *gf_o);
+        }
         hasDynamic_ = true;
 
         infoStream_ << "========== Dynamic solver " << std::endl;

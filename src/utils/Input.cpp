@@ -239,6 +239,19 @@ void Input::reader(const cavityInput & cav, const solverInput & solv,
 
 void Input::semanticCheck()
 {
+    if (type_ == "GEPOL") {
+        if (solverType_ == "WAVELET"
+            || solverType_ ==
+            "LINEAR") { // User asked for GePol cavity with wavelet solvers
+            throw std::runtime_error("GePol cavity can be used only with traditional solvers.");
+        }
+    } else if (type_ ==
+               "WAVELET" ) { // Hoping that the user knows what's going on if he asks for a restart...
+        if (solverType_ == "IEFPCM"
+            || solverType_ == "CPCM") { // User asked for wavelet cavity with traditional solvers
+            throw std::runtime_error("Wavelet cavity can be used only with wavelet solvers.");
+        }
+    }
 }
 
 void Input::initMolecule()

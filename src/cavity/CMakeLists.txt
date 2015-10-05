@@ -1,8 +1,8 @@
 # List of headers
-list(APPEND headers_list Cavity.hpp Element.hpp GePolCavity.hpp RegisterCavityToFactory.hpp RestartCavity.hpp)
+list(APPEND headers_list Cavity.hpp Element.hpp GePolCavity.hpp RegisterCavityToFactory.hpp RestartCavity.hpp WaveletCavity.hpp)
 
 # List of sources
-list(APPEND sources_list Cavity.cpp Element.cpp GePolCavity.cpp RestartCavity.cpp)
+list(APPEND sources_list Cavity.cpp Element.cpp GePolCavity.cpp RestartCavity.cpp WaveletCavity.cpp)
 
 # Update bar chart
 if(BUILD_CHARTS)
