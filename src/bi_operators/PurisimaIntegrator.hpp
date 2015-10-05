@@ -38,7 +38,9 @@
 #include "Element.hpp"
 #include "AnisotropicLiquid.hpp"
 #include "IonicLiquid.hpp"
+#include "MetalNP.hpp"
 #include "SphericalDiffuse.hpp"
+#include "SphericalSharp.hpp"
 #include "UniformDielectric.hpp"
 #include "Vacuum.hpp"
 
@@ -207,6 +209,28 @@ struct PurisimaIntegrator
             }
         }
         return D;
+    }
+    /**@}*/
+
+    /**@{ Single and double layer potentials for a SphericalSharp Green's function by collocation */
+    template <typename DerivativeTraits>
+    Eigen::MatrixXd singleLayer(const SphericalSharp<DerivativeTraits, PurisimaIntegrator> & /* gf */, const std::vector<Element> & /* e */) const {
+        PCMSOLVER_ERROR("PurisimaIntegrator::singleLayer not implemented yet for SphericalSharp");
+    }
+    template <typename DerivativeTraits>
+    Eigen::MatrixXd doubleLayer(const SphericalSharp<DerivativeTraits, PurisimaIntegrator> & /* gf */, const std::vector<Element> & /* e */) const {
+        PCMSOLVER_ERROR("PurisimaIntegrator::doubleLayer not implemented yet for SphericalSharp");
+    }
+    /**@}*/
+
+    /**@{ Single and double layer potentials for a MetalNP Green's function by collocation */
+    template <typename DerivativeTraits>
+    Eigen::MatrixXd singleLayer(const MetalNP<DerivativeTraits, PurisimaIntegrator> & /* gf */, const std::vector<Element> & /* e */) const {
+        PCMSOLVER_ERROR("PurisimaIntegrator::singleLayer not implemented yet for MetalNP");
+    }
+    template <typename DerivativeTraits>
+    Eigen::MatrixXd doubleLayer(const MetalNP<DerivativeTraits, PurisimaIntegrator> & /* gf */, const std::vector<Element> & /* e */) const {
+        PCMSOLVER_ERROR("PurisimaIntegrator::doubleLayer not implemented yet for MetalNP");
     }
     /**@}*/
 

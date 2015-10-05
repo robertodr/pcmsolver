@@ -171,7 +171,7 @@ private:
         DerivativeTraits G_img = factor * (q_img / sp_image - q_img / sp_origin_norm);
         DerivativeTraits f_0 = radius / (sp_origin_norm * pp_origin_norm);
         DerivativeTraits f_L = f_0;
-        for (int L = 1; L <= 200; ++L) {
+        for (size_t L = 1; L <= 200; ++L) {
             f_L = f_L * radius * f_0;
             double C_0_L = (eps - epsSolv) * L / ((eps + epsSolv) * L + epsSolv);
             DerivativeTraits pl_x = Legendre::Pn<DerivativeTraits>(L, cos_gamma);

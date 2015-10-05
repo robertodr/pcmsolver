@@ -8,3 +8,8 @@ set_property(GLOBAL APPEND PROPERTY TestSources ${CMAKE_CURRENT_LIST_DIR}/green_
 add_test(NAME green_anisotropic_liquid COMMAND unit_tests.x [green_anisotropic_liquid])
 set_property(GLOBAL APPEND PROPERTY TestSources ${CMAKE_CURRENT_LIST_DIR}/green_spherical_diffuse.cpp)
 add_test(NAME green_spherical_diffuse COMMAND unit_tests.x [green_spherical_diffuse])
+set_property(GLOBAL APPEND PROPERTY TestSources ${CMAKE_CURRENT_LIST_DIR}/green_spherical_sharp.cpp)
+add_test(NAME green_spherical_sharp COMMAND unit_tests.x [green_spherical_sharp])
+# Not added because Taylor is currently not working with complex types
+#set_property(GLOBAL APPEND PROPERTY TestSources ${CMAKE_CURRENT_LIST_DIR}/green_metalnp.cpp)
+#add_test(NAME green_metalnp COMMAND unit_tests.x [green_metalnp])
