@@ -41,6 +41,8 @@
 #include "RegisterGreensFunctionToFactory.hpp"
 #include "PCMSolver.hpp"
 #include "RegisterSolverToFactory.hpp"
+#include "TDPCMSolver.hpp"
+#include "RegisterTDSolverToFactory.hpp"
 #include "Atom.hpp"
 #include "Citation.hpp"
 #include "cnpyPimpl.hpp"
@@ -129,6 +131,18 @@ double pcmsolver_compute_polarization_energy(pcmsolver_context_t * context,
 }
 
 PCMSOLVER_API
+void pcmsolver_initialize_propagation(pcmsolver_context_t * context)
+{
+    AS_TYPE(pcm::Meddle, context)->initializePropagation();
+}
+
+PCMSOLVER_API
+double pcmsolver_propagate_asc(pcmsolver_context_t * context, double dt, int irrep)
+{
+    return (AS_TYPE(pcm::Meddle, context)->propagateASC(dt, irrep));
+}
+
+PCMSOLVER_API
 void pcmsolver_get_surface_function(pcmsolver_context_t * context,
                                     size_t size, double values[], const char * name)
 {
@@ -176,6 +190,7 @@ namespace pcm {
         initCavity();
         initStaticSolver();
         if (input_.isDynamic()) initDynamicSolver();
+        if (input_.isTD()) initTDSolver();
         // Reserve space for Tot-MEP/ASC, Nuc-MEP/ASC and Ele-MEP/ASC
         functions_.reserve(6);
     }
@@ -185,6 +200,7 @@ namespace pcm {
         delete cavity_;
         delete K_0_;
         if (hasDynamic_) delete K_d_;
+        if (hasTD_) delete TD_K_;
     }
 
     size_t Meddle::getCavitySize() const
@@ -250,6 +266,50 @@ namespace pcm {
         } else { // Create key-value pair
             functions_.insert(std::make_pair(ASC, asc));
         }
+    }
+
+    void Meddle::initializePropagation() const
+    {
+        std::string MEP_current("MEP_t+dt");
+        std::string MEP_previous("MEP_t");
+        // Set previous and current MEP to the static values from converged SCF
+        SurfaceFunction mep_t(cavity_->size(), (functions_["TotMEP"]).vector());
+        functions_.insert(std::make_pair(MEP_previous, mep_t));
+        SurfaceFunction mep_tdt(cavity_->size(), (functions_["TotMEP"]).vector());
+        functions_.insert(std::make_pair(MEP_current, mep_tdt));
+
+        // FIXME should be set from input!
+        std::string ASC_current("ASC_t+dt");
+        std::string ASC_previous("ASC_t");
+        bool init_with_dynamic = false;
+
+        if (!init_with_dynamic) {
+            // Set previous and current ASC to the static values from converged SCF
+            SurfaceFunction asc_t(cavity_->size(), (functions_["TotASC"]).vector());
+            functions_.insert(std::make_pair(ASC_previous, asc_t));
+            SurfaceFunction asc_tdt(cavity_->size(), (functions_["TotASC"]).vector());
+            functions_.insert(std::make_pair(ASC_current, asc_tdt));
+        } else {
+            // Set previous and current ASC to the dynamic values from converged SCF
+            // The initialValueASC function uses the dynamic matrix to calculate charges
+            Eigen::VectorXd dyn_asc = TD_K_->initialValueASC(functions_["TotMEP"].vector());
+            SurfaceFunction asc_t(cavity_->size(), dyn_asc);
+            functions_.insert(std::make_pair(ASC_previous, asc_t));
+            SurfaceFunction asc_tdt(cavity_->size(), dyn_asc);
+            functions_.insert(std::make_pair(ASC_current, asc_tdt));
+        }
+    }
+
+    double Meddle::propagateASC(double dt, int irrep) const
+    {
+        double energy = 0.0;
+        if (input_.isTD()) {
+            energy = delayedASC(dt, irrep);
+        } else {
+            computeASC("MEP_t+dt", "ASC_t+dt", irrep);
+            energy = computePolarizationEnergy("MEP_t+dt", "ASC_t+dt");
+        }
+        return energy;
     }
 
     void Meddle::getSurfaceFunction(size_t size, double values[], const char * name) const
@@ -323,6 +383,42 @@ namespace pcm {
                 functions_.insert(std::make_pair(functionName, func));
             }
         }
+    }
+
+    double Meddle::delayedASC(double dt, int /* irrep */) const
+    {
+        std::string MEP_current("MEP_t+dt");
+        std::string MEP_previous("MEP_t");
+        std::string ASC_current("ASC_t+dt");
+        std::string ASC_previous("ASC_t");
+
+        // Get the proper iterators
+        SurfaceFunctionMap::const_iterator iter_mep_tdt = functions_.find(MEP_current);
+        // Iterators to MEP and ASC at time t
+        // They are non-const as we will overwrite their contents with those of MEP_current and ASC_current
+        // after propagation
+        SurfaceFunctionMap::iterator iter_mep_t = functions_.find(MEP_previous);
+        SurfaceFunctionMap::iterator iter_asc_t = functions_.find(ASC_previous);
+        SurfaceFunctionMap::iterator iter_asc_tdt = functions_.find(ASC_current);
+        SurfaceFunction asc_tdt(cavity_->size());
+        asc_tdt.vector() = TD_K_->propagateASC(dt, iter_mep_tdt->second.vector(),
+                                                   iter_mep_t->second.vector(),
+                                                   iter_asc_t->second.vector());
+
+        // Renormalization of charges: divide by the number of symmetry operations in the group
+        asc_tdt /= double(cavity_->pointGroup().nrIrrep());
+        // Insert it into the map
+        if (functions_.count(ASC_current) == 1) { // Key in map already
+            functions_[ASC_current] = asc_tdt;
+        } else { // Create key-value pair
+            functions_.insert(std::make_pair(ASC_current, asc_tdt));
+        }
+        // Update contents of MEP_previous and ASC_previous surface functions
+        (iter_mep_t->second) = (iter_mep_tdt->second);
+        (iter_asc_t->second) = (iter_asc_tdt->second);
+
+        double energy = iter_mep_tdt->second * iter_asc_tdt->second;
+        return (0.5 * energy);
     }
 
     void Meddle::printer(const std::string & message) const
@@ -434,6 +530,15 @@ namespace pcm {
         tmp << ".... Outside " << std::endl;
         tmp << *gf_o;
         infoStream_ << tmp.str() << std::endl;
+    }
+
+    void Meddle::initTDSolver()
+    {
+        TD_K_ = Factory<TDPCMSolver, TDSolverData>::TheFactory().create(input_.TDsolverType(), input_.TDSolverParams());
+        TD_K_->buildSystemMatrix(*cavity_);
+        hasTD_ = true;
+
+        infoStream_ << *TD_K_ << std::endl;
     }
 
     void Meddle::printInfo() const

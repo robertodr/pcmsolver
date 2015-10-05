@@ -36,11 +36,11 @@
 #include "CavityData.hpp"
 #include "GreenData.hpp"
 #include "SolverData.hpp"
+#include "TDSolverData.hpp"
 #include "InputManager.hpp"
 #include "Molecule.hpp"
 #include "Solvent.hpp"
 #include "Sphere.hpp"
-
 
 /*! \file Input.hpp
  *  \class Input
@@ -92,13 +92,15 @@ public:
     /// @}
 
     /// Medium section input
-    Solvent solvent() const { return solvent_; }
-    bool fromSolvent() const { return hasSolvent_; }
-    std::string solverType() const { return solverType_; }
-    int equationType() const { return equationType_; }
-    double correction() const { return correction_; }
-    bool hermitivitize() const { return hermitivitize_; }
+    Solvent solvent() { return solvent_; }
+    bool fromSolvent() { return hasSolvent_; }
+    std::string solverType() { return solverType_; }
+    int equationType() { return equationType_; }
+    double correction() { return correction_; }
+    bool hermitivitize() { return hermitivitize_; }
     bool isDynamic() const { return isDynamic_; }
+    std::string TDsolverType() { return TDsolverType_; }
+    bool isTD() const { return isTD_; }
     /// @}
 
     /// Green's function section input
@@ -115,6 +117,7 @@ public:
     greenData outsideStaticGreenParams();
     greenData outsideDynamicGreenParams();
     solverData solverParams();
+    TDSolverData TDSolverParams();
     /// @}
 
     /// Operators
@@ -237,6 +240,16 @@ private:
     std::vector<double> origin_;
     /// Molecular geometry
     std::vector<double> geometry_;
+    /// The TD solver type
+    std::string TDsolverType_;
+    /// Whether this is a TD run
+    bool isTD_;
+    /// Solvent relaxation time
+    double tau_;
+    /// Solver relaxation time
+    double tauIEF_;
+    /// Whether to use Cholesky decomposition in TDIEF solver
+    bool cholesky_;
     /// Who performed the syntactic input parsing
     std::string providedBy_;
     /// Input wrapping struct for the cavity
@@ -249,6 +262,8 @@ private:
     greenData outsideDynamicGreenData_;
     /// Input wrapping struct for the solver
     solverData solverData_;
+    /// Input wrapping struct for the TD solver
+    TDSolverData tdSolverData_;
 };
 
 /*! A useful map to convert the Der string to an integer which will be passed to the Green's function CTOR. */

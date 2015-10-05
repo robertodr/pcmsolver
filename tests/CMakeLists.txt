@@ -9,6 +9,7 @@ add_subdirectory(green)
 add_subdirectory(bi_operators)
 add_subdirectory(cpcm)
 add_subdirectory(iefpcm)
+add_subdirectory(td_solver)
 
 get_property(test_sources GLOBAL PROPERTY TestSources)
 

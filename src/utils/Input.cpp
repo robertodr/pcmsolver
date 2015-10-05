@@ -40,6 +40,7 @@
 #include "CavityData.hpp"
 #include "GreenData.hpp"
 #include "SolverData.hpp"
+#include "TDSolverData.hpp"
 #include "InputManager.hpp"
 #include "PhysicalConstants.hpp"
 #include "Solvent.hpp"
@@ -169,6 +170,13 @@ void Input::reader(const std::string & filename)
     correction_ = medium.getDbl("CORRECTION");
     hermitivitize_ = medium.getBool("MATRIXSYMM");
     isDynamic_ = medium.getBool("NONEQUILIBRIUM");
+    isTD_ = medium.getKey<std::string>("TDTYPE").isDefined();
+    if (isTD_) {
+        TDsolverType_ = medium.getStr("TDTYPE");
+        tau_ = medium.getDbl("TAU");
+        tauIEF_ = medium.getDbl("TAUIEF");
+        cholesky_ = medium.getBool("CHOLESKY");
+    }
 
     providedBy_ = std::string("API-side");
 }
@@ -357,6 +365,15 @@ solverData Input::solverParams()
         solverData_ = solverData(correction_, equationType_, hermitivitize_);
     }
     return solverData_;
+}
+
+TDSolverData Input::TDSolverParams()
+{
+    if (tdSolverData_.empty) {
+        tdSolverData_ = TDSolverData(derivativeInsideType_, integratorType_, epsilonStaticOutside_,
+                epsilonDynamicOutside_, tau_, correction_, tauIEF_, cholesky_);
+    }
+    return tdSolverData_;
 }
 
 int derivativeTraits(const std::string & name)

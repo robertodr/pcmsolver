@@ -1,3 +1,26 @@
+!pcmsolver_copyright_start
+!       PCMSolver, an API for the Polarizable Continuum Model
+!       Copyright (C) 2013-2015 Roberto Di Remigio, Luca Frediani and contributors
+!
+!       This file is part of PCMSolver.
+!
+!       PCMSolver is free software: you can redistribute it and/or modify
+!       it under the terms of the GNU Lesser General Public License as published by
+!       the Free Software Foundation, either version 3 of the License, or
+!       (at your option) any later version.
+!
+!       PCMSolver is distributed in the hope that it will be useful,
+!       but WITHOUT ANY WARRANTY; without even the implied warranty of
+!       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!       GNU Lesser General Public License for more details.
+!
+!       You should have received a copy of the GNU Lesser General Public License
+!       along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
+!
+!       For information on the complete list of contributors to the
+!       PCMSolver API, see: <http://pcmsolver.github.io/pcmsolver-doc>
+!pcmsolver_copyright_end
+
 module pcmsolver
 
     implicit none
@@ -14,6 +37,8 @@ module pcmsolver
     public pcmsolver_compute_asc
     public pcmsolver_compute_response_asc
     public pcmsolver_compute_polarization_energy
+    public pcmsolver_initialize_propagation
+    public pcmsolver_propagate_asc
     public pcmsolver_get_surface_function
     public pcmsolver_set_surface_function
     public pcmsolver_save_surface_functions
@@ -104,6 +129,23 @@ module pcmsolver
             character(c_char), intent(in) :: mep_name, asc_name
         end subroutine pcmsolver_compute_polarization_energy
     end interface pcmsolver_compute_polarization_energy
+
+    interface pcmsolver_initialize_propagation
+        subroutine pcmsolver_initialize_propagation(context) bind(C)
+            use, intrinsic :: iso_c_binding, only: c_ptr
+            type(c_ptr), value :: context
+        end subroutine pcmsolver_initialize_propagation
+    end interface pcmsolver_initialize_propagation
+
+    interface pcmsolver_propagate_asc
+        function pcmsolver_propagate_asc(context, dt, irrep) result(energy) bind (C)
+            use, intrinsic :: iso_c_binding, only: c_ptr, c_double, c_int
+            type(c_ptr), value :: context
+            real(c_double), value, intent(in) :: dt
+            integer(c_int), value, intent(in) :: irrep
+            real(c_double)  :: energy
+        end function pcmsolver_propagate_asc
+    end interface pcmsolver_propagate_asc
 
     interface pcmsolver_get_surface_function
         subroutine pcmsolver_get_surface_function(context, f_size, values, name) bind(C)

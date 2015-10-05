@@ -97,7 +97,7 @@ f.write('    update_bar_chart(${CMAKE_CURRENT_LIST_DIR} ' + language + ')\n')
 f.write('endif()\n\n')
 
 if (lang == 'CXX'):
-    f.write('set_property(GLOBAL APPEND PROPERTY PCMSolver_HEADER_DIRS ${{CMAKE_CURRENT_LIST_DIR}})\n')
+    f.write('set_property(GLOBAL APPEND PROPERTY PCMSolver_HEADER_DIRS ${CMAKE_CURRENT_LIST_DIR})\n')
     f.write('foreach(_source ${sources_list})\n')
     f.write('    set_property(GLOBAL APPEND PROPERTY PCMSolver_CXX_SOURCES ${CMAKE_CURRENT_LIST_DIR}/${_source})\n')
     f.write('endforeach()\n')
@@ -106,7 +106,7 @@ if (lang == 'CXX'):
     f.write('    install(FILES ${_header} DESTINATION include/' + libname + ')\n')
     f.write('endforeach()\n')
 elif (lang == 'C'):
-    f.write('set_property(GLOBAL APPEND PROPERTY PCMSolver_HEADER_DIRS ${{CMAKE_CURRENT_LIST_DIR}})\n')
+    f.write('set_property(GLOBAL APPEND PROPERTY PCMSolver_HEADER_DIRS ${CMAKE_CURRENT_LIST_DIR})\n')
     f.write('foreach(_source ${sources_list})\n')
     f.write('    set_property(GLOBAL APPEND PROPERTY PCMSolver_C_SOURCES ${CMAKE_CURRENT_LIST_DIR}/${_source})\n')
     f.write('endforeach()\n')

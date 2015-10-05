@@ -1,0 +1,28 @@
+units = angstrom
+codata = 2002
+medium
+{
+    solvertype = iefpcm
+    tdtype = tdsingleief
+    tauief = 150 # femtoseconds
+    tau = 48.38 # femtoseconds
+    solvent = explicit
+    proberadius = 1.345
+    green<inside>
+    {
+        type = vacuum
+    }
+    green<outside>
+    {
+        type = uniformdielectric
+        eps = 78.39
+        epsdyn = 2.230
+    }
+}
+
+cavity
+{
+    type = gepol
+    area = 10.0
+    mode = implicit
+}

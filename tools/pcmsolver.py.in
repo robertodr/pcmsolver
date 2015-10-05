@@ -27,8 +27,6 @@ executable="@PCMSOLVER_EXECUTABLE@"
 libdir="@GETKW_PYTHON_DIR@"
 isAngstrom = False
 CODATAyear = 2010
-# Dictionary with the au-to-Angstrom conversion factors for various CODATA sets of constants
-CODATAdict = dict([(2010, 0.52917721092), (2006, 0.52917720859), (2002, 0.5291772108), (1998, 0.5291772083)])
 
 import sys
 import re
@@ -58,6 +56,27 @@ else:
     sys.path.append(libdir)
 
 import getkw
+from codata import CODATA, CODATAdict
+
+allowedSolvents = {'Water'                : ('WATER',                'H2O'),
+                   'Methanol'             : ('METHANOL',             'CH3OH'),
+                   'Ethanol'              : ('ETHANOL',              'CH3CH2OH'),
+                   'Chloroform'           : ('CHLOROFORM',           'CHCL3'),
+                   'Methylenechloride'    : ('METHYLENECHLORIDE',    'CH2CL2'),
+                   '1,2-Dichloroethane'   : ('1,2-DICHLOROETHANE',   'C2H4CL2'),
+                   'Carbon Tetrachloride' : ('CARBON TETRACHLORIDE', 'CCL4'),
+                   'Benzene'              : ('BENZENE',              'C6H6'),
+                   'Toluene'              : ('TOLUENE',              'C6H5CH3'),
+                   'Chlorobenzene'        : ('CHLOROBENZENE',        'C6H5CL'),
+                   'Nitromethane'         : ('NITROMETHANE',         'CH3NO2'),
+                   'N-heptane'            : ('N-HEPTANE',            'C7H16'),
+                   'Cyclohexane'          : ('CYCLOHEXANE',          'C6H12'),
+                   'Aniline'              : ('ANILINE',              'C6H5NH2'),
+                   'Acetone'              : ('ACETONE',              'C2H6CO'),
+                   'Tetrahydrofurane'     : ('TETRAHYDROFURANE',     'THF'),
+                   'Dimethylsulfoxide'    : ('DIMETHYLSULFOXIDE',    'DMSO'),
+                   'Acetonitrile'         : ('ACETONITRILE',         'CH3CN'),
+                   'Explicit'             : ('EXPLICIT')}
 
 def iequal(a, b):
     """
@@ -254,7 +273,7 @@ def setup_keywords():
     # Medium section
     medium = getkw.Section('MEDIUM', callback = verify_medium)
     # Type of solver
-    # Valid values: IEFPCM, CPCM, WAVELET or LINEAR
+    # Valid values: IEFPCM, CPCM, WAVELET, LINEAR
     medium.add_kw('SOLVERTYPE',   'STR', 'IEFPCM')
     # Whether nonequilibrium response is to be used
     # Valid for: IEFPCM, CPCM, WAVELET or LINEAR
@@ -262,9 +281,10 @@ def setup_keywords():
     # Default: False
     medium.add_kw('NONEQUILIBRIUM',   'BOOL', False)
     # Solvent
-    # Valid for: IEFPCM, CPCM, Wavelet and PWL solvers
+    # Valid for: IEFPCM, CPCM, Wavelet, PWL and time-dependent solvers
     # Valid values: string
-    medium.add_kw('SOLVENT',      'STR')
+    # Default: Explicit
+    medium.add_kw('SOLVENT',      'STR', 'EXPLICIT')
     # Type of integral equation
     # Valid for: Wavelet and PWL
     # Valid values: FIRSTKIND, SECONDKIND or FULL
@@ -298,6 +318,24 @@ def setup_keywords():
     # Valid values: double in ]0, 1[
     # Default: 0.001
     medium.add_kw('B', 'DBL', 0.001)
+    # Type of time-dependent solver
+    # Valid values: TDIEF, TDCPCM, TDSINGLEIEF, TDONSAGERIEF
+    medium.add_kw('TDTYPE', 'STR', '')
+    # Use of Cholesky decomposition
+    # Valid for: TDIEF
+    # Valid values: boolean
+    # Default: False
+    medium.add_kw('CHOLESKY',   'BOOL', False)
+    # Debye relaxation time for the solvent (in au)
+    # Valid for: TDIEF, TDCPCM, TDSINGLEIEF and TDONSAGERIEF
+    # Valid values: double
+    # Default: 1.0
+    medium.add_kw('TAU', 'DBL', 1.0)
+    # Single relaxation time for the solver (in au)
+    # Valid for: TDSINGLEIEF
+    # Valid values: double
+    # Default: 1.0
+    medium.add_kw('TAUIEF', 'DBL', 1.0)
     top.add_sect(medium)
 
     # Green's function section
@@ -508,25 +546,6 @@ def verify_cavity(section):
                     sys.exit(1)
 
 def verify_medium(section):
-    allowedSolvents = {'Water'                : ('WATER',                'H2O'),
-                       'Methanol'             : ('METHANOL',             'CH3OH'),
-                       'Ethanol'              : ('ETHANOL',              'CH3CH2OH'),
-                       'Chloroform'           : ('CHLOROFORM',           'CHCL3'),
-                       'Methylenechloride'    : ('METHYLENECHLORIDE',    'CH2CL2'),
-                       '1,2-Dichloroethane'   : ('1,2-DICHLOROETHANE',   'C2H4CL2'),
-                       'Carbon Tetrachloride' : ('CARBON TETRACHLORIDE', 'CCL4'),
-                       'Benzene'              : ('BENZENE',              'C6H6'),
-                       'Toluene'              : ('TOLUENE',              'C6H5CH3'),
-                       'Chlorobenzene'        : ('CHLOROBENZENE',        'C6H5CL'),
-                       'Nitromethane'         : ('NITROMETHANE',         'CH3NO2'),
-                       'N-heptane'            : ('N-HEPTANE',            'C7H16'),
-                       'Cyclohexane'          : ('CYCLOHEXANE',          'C6H12'),
-                       'Aniline'              : ('ANILINE',              'C6H5NH2'),
-                       'Acetone'              : ('ACETONE',              'C2H6CO'),
-                       'Tetrahydrofurane'     : ('TETRAHYDROFURANE',     'THF'),
-                       'Dimethylsulfoxide'    : ('DIMETHYLSULFOXIDE',    'DMSO'),
-                       'Acetonitrile'         : ('ACETONITRILE',         'CH3CN'),
-                       'Explicit'             : ('EXPLICIT')}
     solvent = section.get('SOLVENT')
     explicitSolvent = solvent.get() in allowedSolvents['Explicit']
     if (explicitSolvent):
@@ -566,7 +585,7 @@ def verify_medium(section):
         print('Probe radius has to be within [0.1,100] Atomic Units')
         sys.exit(1)
 
-    allowed_types = ('IEFPCM', 'CPCM', 'WAVELET', 'LINEAR')
+    allowed_types = ('IEFPCM', 'CPCM', 'WAVELET', 'LINEAR', 'TDIEF', 'TDCPCM', 'TDSINGLEIEF', 'TDONSAGERIEF')
     key = section.get('SOLVERTYPE')
     val = key.get()
     if (val not in allowed_types):
@@ -595,6 +614,9 @@ def verify_medium(section):
     if (b.get() >= 1.0 and b.get() <= 0.0):
         print('A posteriori compression parameter has to be in ]0.0, 1.0[')
         sys.exit(1)
+
+    convert_time_scalar(section.get('TAU'))
+    convert_time_scalar(section.get('TAUIEF'))
 
 def verify_green(section):
     allowed     = ('VACUUM', 'UNIFORMDIELECTRIC', 'SPHERICALDIFFUSE', 'ALTERNATESPHERICALDIFFUSE', 'METALSPHERE', 'GREENSFUNCTIONSUM')
@@ -683,15 +705,19 @@ def convert_length_array(keyword):
     length=len(keyword.get())
     if (isAngstrom):
         for i in range(length):
-            keyword[i] /= CODATAdict[CODATAyear]
+            keyword[i] /= CODATAdict[CODATAyear].ToAngstrom
 
 def convert_length_scalar(keyword):
     if (isAngstrom):
-        keyword[0] /= CODATAdict[CODATAyear]
+        keyword[0] /= CODATAdict[CODATAyear].ToAngstrom
+
+def convert_time_scalar(keyword):
+    if (isAngstrom):
+        keyword[0] /= CODATAdict[CODATAyear].ToFemtosecond
 
 def convert_area_scalar(keyword):
     if (isAngstrom):
-        keyword[0] /= (CODATAdict[CODATAyear] * CODATAdict[CODATAyear])
+        keyword[0] /= (CODATAdict[CODATAyear].ToAngstrom * CODATAdict[CODATAyear].ToAngstrom)
 
 if __name__ == '__main__':
     main()

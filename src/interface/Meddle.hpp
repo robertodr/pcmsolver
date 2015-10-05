@@ -2,22 +2,22 @@
 /*
  *     PCMSolver, an API for the Polarizable Continuum Model
  *     Copyright (C) 2013-2015 Roberto Di Remigio, Luca Frediani and contributors
- *
+ *     
  *     This file is part of PCMSolver.
- *
+ *     
  *     PCMSolver is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Lesser General Public License as published by
  *     the Free Software Foundation, either version 3 of the License, or
  *     (at your option) any later version.
- *
+ *     
  *     PCMSolver is distributed in the hope that it will be useful,
  *     but WITHOUT ANY WARRANTY; without even the implied warranty of
  *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *     GNU Lesser General Public License for more details.
- *
+ *     
  *     You should have received a copy of the GNU Lesser General Public License
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
- *
+ *     
  *     For information on the complete list of contributors to the
  *     PCMSolver API, see: <http://pcmsolver.github.io/pcmsolver-doc>
  */
@@ -34,6 +34,7 @@ class Cavity;
 class IGreensFunction;
 class Input;
 class PCMSolver;
+class TDPCMSolver;
 
 struct cavityInput;
 struct greenInput;
@@ -69,6 +70,8 @@ namespace pcm {
             void computeASC(const char * mep_name, const char * asc_name, int irrep) const;
             void computeResponseASC(const char * mep_name, const char * asc_name, int irrep) const;
             double computePolarizationEnergy(const char * mep_name, const char * asc_name) const;
+            void initializePropagation() const;
+            double propagateASC(double dt, int irrep) const;
             void getSurfaceFunction(size_t size, double values[], const char * name) const;
             void setSurfaceFunction(size_t size, double values[], const char * name) const;
             void saveSurfaceFunctions() const;
@@ -95,10 +98,14 @@ namespace pcm {
             PCMSolver * K_0_;
             /*! Solver with dynamic permittivity */
             PCMSolver * K_d_;
+            /*! Time-dependent solver */
+            TDPCMSolver * TD_K_;
             /*! PCMSolver set up information */
             mutable std::ostringstream infoStream_;
             /*! Whether K_d_ was initialized */
             bool hasDynamic_;
+            /*! Whether TD_K_ was initialized */
+            bool hasTD_;
             /*! SurfaceFunction map */
             mutable SurfaceFunctionMap functions_;
             /*! Initialize input_ */
@@ -111,6 +118,10 @@ namespace pcm {
             void initDynamicSolver();
             /*! Collect info on medium */
             void mediumInfo(IGreensFunction * gf_i, IGreensFunction * gf_o) const;
+            /*! Initialize TD solver */
+            void initTDSolver();
+            /*! Delayed propagation of ASC */
+            double delayedASC(double dt, int irrep) const;
             void printer(const std::string & message) const;
             void printer(const std::ostringstream & stream) const;
     };

@@ -4,6 +4,7 @@ include_directories(${CMAKE_CURRENT_LIST_DIR}/cavity
                     ${CMAKE_CURRENT_LIST_DIR}/interface
                     ${CMAKE_CURRENT_LIST_DIR}/bi_operators
                     ${CMAKE_CURRENT_LIST_DIR}/solver
+                    ${CMAKE_CURRENT_LIST_DIR}/td_solver
                     ${CMAKE_CURRENT_LIST_DIR}/utils
                    )
 
@@ -14,6 +15,7 @@ add_subdirectory(metal)
 add_subdirectory(bi_operators)
 add_subdirectory(pedra)
 add_subdirectory(solver)
+add_subdirectory(td_solver)
 add_subdirectory(utils)
 
 get_property(_pcmsolver_cxx_sources GLOBAL PROPERTY PCMSolver_CXX_SOURCES)
