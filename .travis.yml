@@ -13,7 +13,7 @@ env:
   global:
     # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
     #   via the "travis encrypt" command using the project repo's public key
-    - secure: "cxaDDZPFc1DJMa78/Sla/5TA5KUQ8e/Ig1zeXO9RbnEQUL3z7pmwgSEvg4l90x7AocdMQI2kzBYb7vbUM2fdH2+GtdCtttWIlPMPAxPJuwKvnhYXFJyXLpLWfxf2BmUovi54GN7lJ8pX/RTGkqqeAmaxIWzsPq5iiLSSOaan6sY="
+    - secure: "eZ9fwnEh/a8EzVU6qJt24wDk8UyZxQFP6lEZoOAfH7wuG6rBTH3Q8hwT9rPt20k2yE+RX0zsxENMuQWLoicX3WbDKp+c9VMh9bmFcQxCFpXGx8YFeZEa7dY/JV8NuMJJZ27G0QvYCWRz/HZ2xkwcu4ffwJukj82WXlLGqAnBNKM="
 
 addons: &gcc5
   apt:
