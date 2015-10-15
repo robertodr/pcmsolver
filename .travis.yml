@@ -23,8 +23,11 @@ addons: &gcc5
     project:
       name: "PCMSolver/pcmsolver"
       version: 1.0.4
-      description: "An API for the Polarizable Continuum Model "
+      description: "An API for the Polarizable Continuum Model"
     notification_email: roberto.d.remigio@uit.no
-    build_command_prepend: "python setup.py --cxx=g++-5 --cc=gcc-5 --fc=gfortran-5 --type=debug; cd build"
+    build_command_prepend: "python setup.py --cxx=g++-5 --cc=gcc-5 --fc=gfortran-5 --type=debug --cmake-options=\"-DENABLE_TESTS=OFF\"; cd build"
     build_command: "make -j 2"
     branch_pattern: coverity_scan
+
+script:
+  - make -j 2
