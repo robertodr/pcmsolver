@@ -1,13 +1,8 @@
 # List of headers
-list(APPEND headers_list InputManager.hpp Meddle.hpp)
+list(APPEND headers_list Meddle.hpp)
 
 # List of sources
 list(APPEND sources_list Meddle.cpp)
-
-# Update bar chart
-if(BUILD_CHARTS)
-    update_bar_chart(${CMAKE_CURRENT_LIST_DIR} CXX)
-endif()
 
 set_property(GLOBAL APPEND PROPERTY PCMSolver_HEADER_DIRS ${CMAKE_CURRENT_LIST_DIR})
 foreach(_source ${sources_list})
