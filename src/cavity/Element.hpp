@@ -19,7 +19,7 @@
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
  *
  *     For information on the complete list of contributors to the
- *     PCMSolver API, see: <http://pcmsolver.github.io/pcmsolver-doc>
+ *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
  */
 /* pcmsolver_copyright_end */
 
@@ -43,14 +43,14 @@
  *  making up the cavity
  */
 
-class Element
+class Element __final
 {
 public:
     Element(int nv, int isphe, double w, const Eigen::Vector3d & c, const Eigen::Vector3d & n,
             bool i, const Sphere & s, const Eigen::Matrix3Xd & v, const Eigen::Matrix3Xd & a) :
 	    nVertices_(nv), iSphere_(isphe), area_(w), center_(c), normal_(n), irreducible_(i),
 	    sphere_(s), vertices_(v), arcs_(a) {}
-    virtual ~Element() {}
+    ~Element() {}
 
     int nVertices() const { return nVertices_; }
     int iSphere() const { return iSphere_; }

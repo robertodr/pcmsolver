@@ -2,24 +2,24 @@
 /*
  *     PCMSolver, an API for the Polarizable Continuum Model
  *     Copyright (C) 2013-2015 Roberto Di Remigio, Luca Frediani and contributors
- *
+ *     
  *     This file is part of PCMSolver.
- *
+ *     
  *     PCMSolver is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Lesser General Public License as published by
  *     the Free Software Foundation, either version 3 of the License, or
  *     (at your option) any later version.
- *
+ *     
  *     PCMSolver is distributed in the hope that it will be useful,
  *     but WITHOUT ANY WARRANTY; without even the implied warranty of
  *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *     GNU Lesser General Public License for more details.
- *
+ *     
  *     You should have received a copy of the GNU Lesser General Public License
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
- *
+ *     
  *     For information on the complete list of contributors to the
- *     PCMSolver API, see: <http://pcmsolver.github.io/pcmsolver-doc>
+ *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
  */
 /* pcmsolver_copyright_end */
 
@@ -44,6 +44,7 @@
 #include "Atom.hpp"
 #include "Citation.hpp"
 #include "cnpy.hpp"
+#include "PCMInput.h"
 #include "PhysicalConstants.hpp"
 #include "Solvent.hpp"
 #include "Sphere.hpp"
@@ -57,9 +58,12 @@
 #endif
 
 PCMSOLVER_API
-pcmsolver_context_t * pcmsolver_new(pcmsolver_reader_t input_reading, int nr_nuclei, double charges[], double coordinates[], int symmetry_info[], PCMInput host_input)
+pcmsolver_context_t * pcmsolver_new(pcmsolver_reader_t input_reading, int
+    nr_nuclei, double charges[], double coordinates[], int symmetry_info[],
+    PCMInput * host_input)
 {
-    return AS_TYPE(pcmsolver_context_t, new pcm::Meddle(input_reading, nr_nuclei, charges, coordinates, symmetry_info, host_input));
+    return AS_TYPE(pcmsolver_context_t, new pcm::Meddle(input_reading,
+          nr_nuclei, charges, coordinates, symmetry_info, *host_input));
 }
 
 PCMSOLVER_API
@@ -171,7 +175,8 @@ void pcmsolver_write_timings(pcmsolver_context_t * context)
 }
 
 namespace pcm {
-    Meddle::Meddle(pcmsolver_reader_t input_reading, int nr_nuclei, double charges[], double coordinates[], int symmetry_info[], const PCMInput & host_input)
+    Meddle::Meddle(pcmsolver_reader_t input_reading, int nr_nuclei, double
+        charges[], double coordinates[], int symmetry_info[], const PCMInput & host_input)
         : hasDynamic_(false)
     {
         initInput(input_reading, nr_nuclei, charges, coordinates, symmetry_info, host_input);
@@ -224,6 +229,7 @@ namespace pcm {
         SurfaceFunctionMap::const_iterator iter_pot = functions_.find(MEP);
         SurfaceFunction asc(cavity_->size());
         asc.vector() = K_0_->computeCharge(iter_pot->second.vector(), irrep);
+        // Renormalize
         asc /= double(cavity_->pointGroup().nrIrrep());
         // Insert it into the map
         if (functions_.count(ASC) == 1) { // Key in map already
@@ -246,6 +252,7 @@ namespace pcm {
         } else {
             asc.vector() = K_0_->computeCharge(iter_pot->second.vector(), irrep);
         }
+        // Renormalize
         asc /= double(cavity_->pointGroup().nrIrrep());
         if (functions_.count(ASC) == 1) { // Key in map already
             functions_[ASC] = asc;

@@ -1,8 +1,6 @@
 # Executables for testing separate from Boost unit test framework or for profiling purposes
 # The executables will be created in ${PROJECT_BINARY_DIR}/src/bin
 
-list(APPEND external_libraries ${Boost_SYSTEM_LIBRARY} ${Boost_TIMER_LIBRARY} ${Boost_CHRONO_LIBRARY})
-
 #add_executable(debug_wavcav.x debug_wavcav.cpp)
 #target_link_libraries(debug_wavcav.x solver cavity wavcav pwl wem utils)
 

@@ -19,7 +19,7 @@
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
  *     
  *     For information on the complete list of contributors to the
- *     PCMSolver API, see: <http://pcmsolver.github.io/pcmsolver-doc>
+ *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
  */
 /* pcmsolver_copyright_end */
 
@@ -57,7 +57,7 @@ Molecule::Molecule(int nat, const Eigen::VectorXd & chg, const Eigen::VectorXd &
     : nAtoms_(nat), charges_(chg), masses_(m), geometry_(geo), atoms_(at), spheres_(sph)
 {
     rotor_ = findRotorType();
-    pointGroup_ = buildGroup(nr_gen, gen[0], gen[1], gen[3]);
+    pointGroup_ = buildGroup(nr_gen, gen[0], gen[1], gen[2]);
 }
 
 Molecule::Molecule(int nat, const Eigen::VectorXd & chg, const Eigen::VectorXd & m,

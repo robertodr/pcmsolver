@@ -19,7 +19,7 @@
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
  *
  *     For information on the complete list of contributors to the
- *     PCMSolver API, see: <http://pcmsolver.github.io/pcmsolver-doc>
+ *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
  */
 /* pcmsolver_copyright_end */
 
@@ -55,7 +55,7 @@ namespace pcm {
             int nuclei, const Eigen::VectorXd & charges, const Eigen::Matrix3Xd & centers,
             Molecule & molecule);
     void initSpheresAtoms(const Input &, const Eigen::Matrix3Xd &, std::vector<Sphere> &);
-    unsigned int pcmsolver_get_version(void);
+    unsigned int pcmsolver_get_version(void) CONST;
     void print(const PCMInput &);
 
     /*! \class Meddle
@@ -81,11 +81,11 @@ namespace pcm {
             /*! \brief Getter for the number of finite elements composing the molecular cavity
              *  \return the size of the cavity
              */
-            size_t getCavitySize() const;
+            size_t getCavitySize() const PURE;
             /*! \brief Getter for the number of irreducible finite elements composing the molecular cavity
              *  \return the number of irreducible finite elements
              */
-            size_t getIrreducibleCavitySize() const;
+            size_t getIrreducibleCavitySize() const PURE;
             /*! \brief Getter for the centers of the finite elements composing the molecular cavity
              *  \param[out] centers array holding the coordinates of the finite elements centers
              */
