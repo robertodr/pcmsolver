@@ -23,9 +23,8 @@
  */
 /* pcmsolver_copyright_end */
 
-
-#ifndef VPCMSOLVER_HPP
-#define VPCMSOLVER_HPP
+#ifndef VIEFSOLVER_HPP
+#define VIEFSOLVER_HPP
 
 #include <iosfwd>
 
@@ -34,8 +33,10 @@
 class Cavity;
 class IGreensFunction;
 
-/*! \file VPCMSolver.hpp
- *  \class VPCMSolver
+#include "VPCMSolver.hpp"
+
+/*! \file VIEFSolver.hpp
+ *  \class VIEFSolver
  *  \brief Abstract Base Class for variational solvers inheritance hierarchy.
  *  \author Roberto Di Remigio
  *  \date 2015
@@ -47,11 +48,11 @@ class IGreensFunction;
  *  R_\infinity^\dagger, R_\infinity, respectively
  */
 
-class VPCMSolver
+class VIEFSolver __final : VPCMSolver
 {
 public:
-    VPCMSolver() : built_(false), isotropic_(true) {}
-    virtual ~VPCMSolver() {}
+    VIEFSolver() : VPCMSolver() {}
+    virtual ~VIEFSolver() {}
 
     /*! \brief Calculation of the PCM matrix
      *  \param[in] cavity the cavity to be used
@@ -78,7 +79,7 @@ public:
         return computeCharge_impl(potential, irrep);
     }
 
-    friend std::ostream & operator<<(std::ostream & os, VPCMSolver & solver) {
+    friend std::ostream & operator<<(std::ostream & os, VIEFSolver & solver) {
         return solver.printSolver(os);
     }
 protected:
@@ -96,18 +97,18 @@ protected:
      *  \param[in] gf_i Green's function inside the cavity
      *  \param[in] gf_o Green's function outside the cavity
      */
-    virtual void buildSystemMatrix_impl(const Cavity & cavity, const IGreensFunction & gf_i, const IGreensFunction & gf_o) = 0;
+    virtual void buildSystemMatrix_impl(const Cavity & cavity, const IGreensFunction & gf_i, const IGreensFunction & gf_o);
     /*! \brief Updates the R^\dagger transformed ASC given the MEP and the desired irreducible representation
      *  \param[in] potential the vector containing the MEP at cavity points
      *  \param[in] irrep the irreducible representation of the MEP and ASC
      */
-    virtual Eigen::VectorXd updateCharge_impl(const Eigen::VectorXd & potential, int irrep = 0) const = 0;
+    virtual Eigen::VectorXd updateCharge_impl(const Eigen::VectorXd & potential, int irrep = 0) const;
     /*! \brief Returns the ASC given the MEP and the desired irreducible representation
      *  \param[in] potential the vector containing the MEP at cavity points
      *  \param[in] irrep the irreducible representation of the MEP and ASC
      */
-    virtual Eigen::VectorXd computeCharge_impl(const Eigen::VectorXd & potential, int irrep = 0) const = 0;
-    virtual std::ostream & printSolver(std::ostream & os) = 0;
+    virtual Eigen::VectorXd computeCharge_impl(const Eigen::VectorXd & potential, int irrep = 0) const;
+    virtual std::ostream & printSolver(std::ostream & os);
 };
 
-#endif // VPCMSOLVER_HPP
+#endif // VIEFSOLVER_HPP
