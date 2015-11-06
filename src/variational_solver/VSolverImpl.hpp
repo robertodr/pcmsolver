@@ -123,10 +123,9 @@ inline Eigen::MatrixXd isotropicTEpsilon(const Cavity & cav, const IGreensFuncti
   }
 
   Eigen::MatrixXd a = cav.elementArea().asDiagonal();
-  Eigen::MatrixXd aInv = a.inverse();
 
   double fact = (epsilon + 1.0)/(epsilon - 1.0);
-  return (2 * M_PI * fact * aInv - DI) * a * SI;
+  return (2 * M_PI * fact * SI - DI * a * SI);
 }
 
 /*! \brief Builds the **anisotropic** \f$ \mathbf{R}_\infty \f$ matrix
@@ -209,7 +208,6 @@ inline Eigen::MatrixXd isotropicRinfinity(const Cavity & cav, const IGreensFunct
   }
 
   Eigen::MatrixXd a = cav.elementArea().asDiagonal();
-  Eigen::MatrixXd aInv = a.inverse();
 
-  return ((2 * M_PI * aInv - DI) * a);
+  return (2 * M_PI * Eigen::MatrixXd::Identity(cavitySize, cavitySize) - DI * a);
 }

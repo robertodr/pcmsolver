@@ -52,7 +52,7 @@ void VIEFSolver::buildSystemMatrix_impl(const Cavity & cavity, const IGreensFunc
 void VIEFSolver::buildAnisotropicMatrix(const Cavity & cav, const IGreensFunction & gf_i, const IGreensFunction & gf_o)
 {
   R_infinity_ = anisotropicRinfinity(cav, gf_i, gf_o);
-  tilde_Y_ = anisotropicTEpsilon(cav, gf_i, gf_o) * R_infinity_;
+  tilde_Y_ = anisotropicTEpsilon(cav, gf_i, gf_o) * R_infinity_.adjoint().eval();
   // Symmetrize K := (K + K+)/2
   hermitivitize(tilde_Y_);
   // Pack into a block diagonal matrix
@@ -69,7 +69,7 @@ void VIEFSolver::buildAnisotropicMatrix(const Cavity & cav, const IGreensFunctio
 void VIEFSolver::buildIsotropicMatrix(const Cavity & cav, const IGreensFunction & gf_i, const IGreensFunction & gf_o)
 {
   R_infinity_ = isotropicRinfinity(cav, gf_i);
-  tilde_Y_ = isotropicTEpsilon(cav, gf_i, profiles::epsilon(gf_o.permittivity())) * R_infinity_;
+  tilde_Y_ = isotropicTEpsilon(cav, gf_i, profiles::epsilon(gf_o.permittivity())) * R_infinity_.adjoint().eval();
   // Symmetrize K := (K + K+)/2
   hermitivitize(tilde_Y_);
   // Pack into a block diagonal matrix
@@ -98,11 +98,11 @@ Eigen::VectorXd VIEFSolver::computeCharge_impl(const Eigen::VectorXd & potential
   Eigen::ConjugateGradient<Eigen::MatrixXd> CGSolver;
   CGSolver.compute(blocktilde_Y_[irrep]);
   // Preprocess incoming potential, get only the relevant irrep
-  Eigen::VectorXd tildeMEP = blockR_infinity_[irrep] * potential.segment(irrep*irrDim, irrDim);
+  Eigen::VectorXd tildeMEP = -blockR_infinity_[irrep] * potential.segment(irrep*irrDim, irrDim);
   // Obtain tildeASC, only the relevant irrep
   tildeASC.segment(irrep*irrDim, irrDim) = CGSolver.solve(tildeMEP);
   // Postprocess charge
-  return (blockR_infinity_[irrep] * tildeASC);
+  return (blockR_infinity_[irrep].adjoint().eval() * tildeASC);
 }
 
 Eigen::VectorXd VIEFSolver::updateCharge_impl(const Eigen::VectorXd & potential, int irrep) const
