@@ -27,8 +27,11 @@
 #define VIEFSOLVER_HPP
 
 #include <iosfwd>
+#include <vector>
 
 #include "Config.hpp"
+
+#include <Eigen/Core>
 
 class Cavity;
 class IGreensFunction;
@@ -62,6 +65,18 @@ public:
     void buildSystemMatrix(const Cavity & cavity, const IGreensFunction & gf_i, const IGreensFunction & gf_o) {
         buildSystemMatrix_impl(cavity, gf_i, gf_o);
     }
+    /*! \brief Builds PCM matrix for an anisotropic environment
+     *  \param[in] cavity the cavity to be used.
+     *  \param[in] gf_i Green's function inside the cavity
+     *  \param[in] gf_o Green's function outside the cavity
+     */
+    void buildAnisotropicMatrix(const Cavity & cavity, const IGreensFunction & gf_i, const IGreensFunction & gf_o);
+    /*! \brief Builds PCM matrix for an isotropic environment
+     *  \param[in] cavity the cavity to be used.
+     *  \param[in] gf_i Green's function inside the cavity
+     *  \param[in] gf_o Green's function outside the cavity
+     */
+    void buildIsotropicMatrix(const Cavity & cavity, const IGreensFunction & gf_i, const IGreensFunction & gf_o);
     /*! \brief Updates the R^\dagger transformed ASC given the MEP and the desired irreducible representation
      *  \param[in] potential the vector containing the MEP at cavity points
      *  \param[in] irrep the irreducible representation of the MEP and ASC
@@ -87,10 +102,14 @@ protected:
     bool built_;
     /*! Whether the solver is isotropic */
     bool isotropic_;
-    /*! The \tilde{Y} matrix */
+    /*! The \f$ \tilde{\mathbf{Y}} \f$ matrix */
     Eigen::MatrixXd tilde_Y_;
-    /*! The R_\infty matrix */
+    /*! The \f$ \tilde{\mathbf{Y}} \f$ matrix in symmetry blocked form*/
+    std::vector<Eigen::MatrixXd> blocktilde_Y_;
+    /*! The \f$ \tilde{\mathbf{R}}_\infty \f$ matrix */
     Eigen::MatrixXd R_infinity_;
+    /*! The \f$ \tilde{\mathbf{R}}_\infty \f$ matrix in symmetry blocked form */
+    std::vector<Eigen::MatrixXd> blockR_infinity_;
 
     /*! \brief Calculation of the PCM matrix
      *  \param[in] cavity the cavity to be used
@@ -102,12 +121,12 @@ protected:
      *  \param[in] potential the vector containing the MEP at cavity points
      *  \param[in] irrep the irreducible representation of the MEP and ASC
      */
-    virtual Eigen::VectorXd updateCharge_impl(const Eigen::VectorXd & potential, int irrep = 0) const;
+    virtual Eigen::VectorXd updateCharge_impl(const Eigen::VectorXd & potential, int irrep = 0) const CONST;
     /*! \brief Returns the ASC given the MEP and the desired irreducible representation
      *  \param[in] potential the vector containing the MEP at cavity points
      *  \param[in] irrep the irreducible representation of the MEP and ASC
      */
-    virtual Eigen::VectorXd computeCharge_impl(const Eigen::VectorXd & potential, int irrep = 0) const;
+    virtual Eigen::VectorXd computeCharge_impl(const Eigen::VectorXd & potential, int irrep = 0) const CONST;
     virtual std::ostream & printSolver(std::ostream & os);
 };
 

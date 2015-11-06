@@ -86,10 +86,6 @@ protected:
     bool built_;
     /*! Whether the solver is isotropic */
     bool isotropic_;
-    /*! The \tilde{Y} matrix */
-    Eigen::MatrixXd tilde_Y_;
-    /*! The R_\infty matrix */
-    Eigen::MatrixXd R_infinity_;
 
     /*! \brief Calculation of the PCM matrix
      *  \param[in] cavity the cavity to be used
