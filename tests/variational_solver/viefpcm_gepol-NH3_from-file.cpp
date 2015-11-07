@@ -72,7 +72,7 @@ TEST_CASE("Test variational solver for the IEFPCM for NH3 and a restarted GePol 
         fake_mep(i) = Ncharge / Ndistance + Hcharge / H1distance + Hcharge / H2distance +
                       Hcharge / H3distance;
     }
-    // The total ASC for a dielectric is -Q*[(epsilon-1)/epsilon]
+    // The total ASC for a dielectric is -Q*(epsilon-1)/epsilon
     Eigen::VectorXd fake_asc = Eigen::VectorXd::Zero(size);
     fake_asc = solver.computeCharge(fake_mep);
     double totalASC = - (Ncharge + 3.0 * Hcharge) * (permittivity - 1) / permittivity;

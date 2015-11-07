@@ -70,7 +70,7 @@ SCENARIO("Test variational solver for the IEFPCM for a point charge and a GePol 
 
             size_t size = cavity.size();
             Eigen::VectorXd fake_mep = computeMEP(cavity.elements(), charge);
-            // The total ASC for a dielectric is -Q*[(epsilon-1)/epsilon]
+            // The total ASC for a dielectric is -Q*(epsilon-1)/epsilon
             Eigen::VectorXd fake_asc = Eigen::VectorXd::Zero(size);
             fake_asc = solver.computeCharge(fake_mep);
 
@@ -110,7 +110,7 @@ SCENARIO("Test variational solver for the IEFPCM for a point charge and a GePol 
             double charge = 8.0;
             size_t size = cavity.size();
             Eigen::VectorXd fake_mep = computeMEP(cavity.elements(), charge, origin);
-            // The total ASC for a dielectric is -Q*[(epsilon-1)/epsilon]
+            // The total ASC for a dielectric is -Q*(epsilon-1)/epsilon
             Eigen::VectorXd fake_asc = Eigen::VectorXd::Zero(size);
             fake_asc = solver.computeCharge(fake_mep);
 

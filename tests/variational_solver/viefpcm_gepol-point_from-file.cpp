@@ -64,7 +64,7 @@ TEST_CASE("Test variational solver for the IEFPCM for a point charge and a resta
         double distance = center.norm();
         fake_mep(i) = charge / distance;
     }
-    // The total ASC for a dielectric is -Q*[(epsilon-1)/epsilon]
+    // The total ASC for a dielectric is -Q*(epsilon-1)/epsilon
     Eigen::VectorXd fake_asc = Eigen::VectorXd::Zero(size);
     fake_asc = solver.computeCharge(fake_mep);
 

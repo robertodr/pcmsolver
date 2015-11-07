@@ -138,7 +138,7 @@ SCENARIO("Test variational solver for the anisotropic IEFPCM for a point charge 
                     INFO("iso_fake_asc(" << i << ") = " << iso_fake_asc(i));
                 }
 
-                // The total ASC for a dielectric is -Q*[(epsilon-1)/epsilon]
+                // The total ASC for a dielectric is -Q*(epsilon-1)/epsilon
                 double totalAnisoASC = aniso_fake_asc.sum();
                 double totalIsoASC = iso_fake_asc.sum();
                 CAPTURE(totalASC);

@@ -64,7 +64,7 @@ TEST_CASE("Test variational solver for the IEFPCM and the C2H4 molecule in D2h s
   double Hcharge = 1.0;
   size_t size = cavity.size();
   Eigen::VectorXd fake_mep = computeMEP(molec, cavity.elements());
-  // The total ASC for a dielectric is -Q*[(epsilon-1)/epsilon]
+  // The total ASC for a dielectric is -Q*(epsilon-1)/epsilon
   size_t irr_size = cavity.irreducible_size();
   Eigen::VectorXd fake_asc = Eigen::VectorXd::Zero(size);
   fake_asc = solver.computeCharge(fake_mep);
