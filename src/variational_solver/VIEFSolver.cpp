@@ -90,7 +90,7 @@ Eigen::VectorXd VIEFSolver::computeCharge_impl(const Eigen::VectorXd & potential
   // full dimension of the cavity. We have to select just the part
   // relative to the irrep needed.
   int fullDim = tilde_Y_.rows();
-  Eigen::VectorXd tildeASC = Eigen::VectorXd::Zero(fullDim);
+  Eigen::VectorXd ASC = Eigen::VectorXd::Zero(fullDim);
   int nrBlocks = blocktilde_Y_.size();
   int irrDim = fullDim/nrBlocks;
   // Initialize Conjugate Gradient solver
@@ -98,11 +98,12 @@ Eigen::VectorXd VIEFSolver::computeCharge_impl(const Eigen::VectorXd & potential
   Eigen::ConjugateGradient<Eigen::MatrixXd> CGSolver;
   CGSolver.compute(blocktilde_Y_[irrep]);
   // Preprocess incoming potential, get only the relevant irrep
-  Eigen::VectorXd tildeMEP = -blockR_infinity_[irrep] * potential.segment(irrep*irrDim, irrDim);
-  // Obtain tildeASC, only the relevant irrep
-  tildeASC.segment(irrep*irrDim, irrDim) = CGSolver.solve(tildeMEP);
+  Eigen::VectorXd tildeMEP = blockR_infinity_[irrep] * potential.segment(irrep*irrDim, irrDim);
+  // Obtain \tilde{q} by solving \tilde{Y}\tilde{q} + \tilde{v} = 0 only for the relevant irrep
+  ASC.segment(irrep*irrDim, irrDim) = CGSolver.solve(-tildeMEP.segment(irrep*irrDim, irrDim));
   // Postprocess charge
-  return (blockR_infinity_[irrep].adjoint().eval() * tildeASC);
+  ASC.segment(irrep*irrDim, irrDim) = (blockR_infinity_[irrep].adjoint() * ASC.segment(irrep*irrDim, irrDim)).eval();
+  return ASC;
 }
 
 Eigen::VectorXd VIEFSolver::updateCharge_impl(const Eigen::VectorXd & potential, int irrep) const
