@@ -44,7 +44,7 @@
 /*! \class VIEFSolver
  *  \test \b C2H4GePolD2h tests VIEFSolver using C2H4 with a GePol cavity in D2h symmetry
  */
-TEST_CASE("Test variational solver for the IEFPCM and the C2H4 molecule in D2h symmetry", "[viefpcm][viefpcm_symmetry][viefpcm_gepol-C2H4_D2h]")
+TEST_CASE("Test variational solver for the IEFPCM and the C2H4 molecule in D2h symmetry", "[variational_solver][viefpcm][viefpcm_symmetry][viefpcm_gepol-C2H4_D2h]")
 {
   Molecule molec = C2H4();
   double area = 0.2 / convertBohr2ToAngstrom2;

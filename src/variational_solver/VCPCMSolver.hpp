@@ -23,8 +23,8 @@
  */
 /* pcmsolver_copyright_end */
 
-#ifndef VIEFSOLVER_HPP
-#define VIEFSOLVER_HPP
+#ifndef VCPCMSOLVER_HPP
+#define VCPCMSOLVER_HPP
 
 #include <iosfwd>
 #include <vector>
@@ -38,50 +38,31 @@ class IGreensFunction;
 
 #include "VPCMSolver.hpp"
 
-/*! \file VIEFSolver.hpp
- *  \class VIEFSolver
- *  \brief Abstract Base Class for variational solvers inheritance hierarchy.
+/*! \file VCPCMSolver.hpp
+ *  \class VCPCMSolver
+ *  \brief A CPCM solver exploiting the variational formalism
  *  \author Roberto Di Remigio
  *  \date 2015
  *
  *  We use the Non-Virtual Interface idiom.
- *  "Bare" ASC and MEP are those **not** premultiplied by
- *  R_\infinity^\dagger, R_\infinity, respectively
- *  "Dressed" ASC and MEP are those premultiplied by
- *  R_\infinity^\dagger, R_\infinity, respectively
  */
 
-class VIEFSolver __final : public VPCMSolver
+class VCPCMSolver __final : public VPCMSolver
 {
 public:
-    VIEFSolver() : VPCMSolver() {}
-    virtual ~VIEFSolver() {}
+    VCPCMSolver(double corr) : VPCMSolver(), correction_(corr) {}
+    virtual ~VCPCMSolver() {}
 
-    /*! \brief Builds PCM matrix for an anisotropic environment
-     *  \param[in] cavity the cavity to be used.
-     *  \param[in] gf_i Green's function inside the cavity
-     *  \param[in] gf_o Green's function outside the cavity
-     */
-    void buildAnisotropicMatrix(const Cavity & cavity, const IGreensFunction & gf_i, const IGreensFunction & gf_o);
-    /*! \brief Builds PCM matrix for an isotropic environment
-     *  \param[in] cavity the cavity to be used.
-     *  \param[in] gf_i Green's function inside the cavity
-     *  \param[in] gf_o Green's function outside the cavity
-     */
-    void buildIsotropicMatrix(const Cavity & cavity, const IGreensFunction & gf_i, const IGreensFunction & gf_o);
-
-    friend std::ostream & operator<<(std::ostream & os, VIEFSolver & solver) {
+    friend std::ostream & operator<<(std::ostream & os, VCPCMSolver & solver) {
         return solver.printSolver(os);
     }
 private:
-    /*! The \f$ \tilde{\mathbf{Y}} \f$ matrix */
-    Eigen::MatrixXd tilde_Y_;
-    /*! The \f$ \tilde{\mathbf{Y}} \f$ matrix in symmetry blocked form*/
-    std::vector<Eigen::MatrixXd> blocktilde_Y_;
-    /*! The \f$ \tilde{\mathbf{R}}_\infty \f$ matrix */
-    Eigen::MatrixXd R_infinity_;
-    /*! The \f$ \tilde{\mathbf{R}}_\infty \f$ matrix in symmetry blocked form */
-    std::vector<Eigen::MatrixXd> blockR_infinity_;
+    /*! Correction for the conductor results */
+    double correction_;
+    /*! CPCM S matrix, not symmetry blocked */
+    Eigen::MatrixXd S_;
+    /*! PCM matrix, symmetry blocked form */
+    std::vector<Eigen::MatrixXd> blockS_;
 
     /*! \brief Calculation of the PCM matrix
      *  \param[in] cavity the cavity to be used
@@ -102,4 +83,4 @@ private:
     virtual std::ostream & printSolver(std::ostream & os) __override;
 };
 
-#endif // VIEFSOLVER_HPP
+#endif // VCPCMSOLVER_HPP

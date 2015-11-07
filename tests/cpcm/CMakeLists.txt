@@ -22,5 +22,5 @@ add_Catch_test(cpcm_gepol-point "solver;cpcm;cpcm_gepol-point")
 
 # cpcm_gepol-C2H4_D2h.cpp test
 set_property(GLOBAL APPEND PROPERTY UnitTestsSources ${CMAKE_CURRENT_LIST_DIR}/cpcm_gepol-C2H4_D2h.cpp)
-add_Catch_test(cpcm_gepol-C2H4_D2h "cpcm;cpcm_symmetry;cpcm_gepol-C2H4_D2h")
+add_Catch_test(cpcm_gepol-C2H4_D2h "solver;cpcm;cpcm_symmetry;cpcm_gepol-C2H4_D2h")
 

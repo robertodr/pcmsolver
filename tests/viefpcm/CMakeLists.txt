@@ -29,7 +29,7 @@ add_Catch_test(viefpcm_anisotropic-symmetry "variational_solver;viefpcm;viefpcm_
 
 # viefpcm_gepol-C2H4_D2h.cpp test
 set_property(GLOBAL APPEND PROPERTY UnitTestsSources ${CMAKE_CURRENT_LIST_DIR}/viefpcm_gepol-C2H4_D2h.cpp)
-add_Catch_test(viefpcm_gepol-C2H4_D2h "viefpcm;viefpcm_symmetry;viefpcm_gepol-C2H4_D2h")
+add_Catch_test(viefpcm_gepol-C2H4_D2h "variational_solver;viefpcm;viefpcm_symmetry;viefpcm_gepol-C2H4_D2h")
 
 # viefpcm_gepol-point_from-file.cpp test
 set_property(GLOBAL APPEND PROPERTY UnitTestsSources ${CMAKE_CURRENT_LIST_DIR}/viefpcm_gepol-point_from-file.cpp)

@@ -7,8 +7,9 @@ add_subdirectory(dielectric_profile)
 add_subdirectory(green)
 add_subdirectory(bi_operators)
 add_subdirectory(cpcm)
+add_subdirectory(vcpcm)
 add_subdirectory(iefpcm)
-add_subdirectory(variational_solver)
+add_subdirectory(viefpcm)
 
 get_property(test_sources GLOBAL PROPERTY UnitTestsSources)
 

@@ -20,7 +20,7 @@ add_Catch_test(iefpcm_symmetry "solver;iefpcm;iefpcm_symmetry")
 
 # iefpcm_gepol-C2H4_D2h.cpp test
 set_property(GLOBAL APPEND PROPERTY UnitTestsSources ${CMAKE_CURRENT_LIST_DIR}/iefpcm_gepol-C2H4_D2h.cpp)
-add_Catch_test(iefpcm_gepol-C2H4_D2h "iefpcm;iefpcm_symmetry;iefpcm_gepol-C2H4_D2h")
+add_Catch_test(iefpcm_gepol-C2H4_D2h "solver;iefpcm;iefpcm_symmetry;iefpcm_gepol-C2H4_D2h")
 
 # iefpcm_gepol-NH3_from-file.cpp test
 set_property(GLOBAL APPEND PROPERTY UnitTestsSources ${CMAKE_CURRENT_LIST_DIR}/iefpcm_gepol-NH3_from-file.cpp)

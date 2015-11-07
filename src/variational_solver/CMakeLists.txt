@@ -1,8 +1,8 @@
 # List of headers
-list(APPEND headers_list VIEFSolver.hpp VPCMSolver.hpp VSolverImpl.hpp)
+list(APPEND headers_list VCPCMSolver.hpp VIEFSolver.hpp VPCMSolver.hpp VSolverImpl.hpp)
 
 # List of sources
-list(APPEND sources_list VIEFSolver.cpp)
+list(APPEND sources_list VCPCMSolver.cpp VIEFSolver.cpp)
 
 set_property(GLOBAL APPEND PROPERTY PCMSolver_HEADER_DIRS ${CMAKE_CURRENT_LIST_DIR})
 foreach(_source ${sources_list})
