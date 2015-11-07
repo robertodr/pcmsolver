@@ -38,26 +38,28 @@
 #include "Molecule.hpp"
 #include "Vacuum.hpp"
 #include "UniformDielectric.hpp"
-#include "IEFSolver.hpp"
+#include "CPCMSolver.hpp"
 #include "TestingMolecules.hpp"
 
-/*! \class IEFSolver
- *  \test \b C2H4GePolD2h tests IEFSolver using C2H4 with a GePol cavity in D2h symmetry
+/*! \class CPCMSolver
+ *  \test \b C2H4GePolD2h tests CPCMSolver using C2H4 with a GePol cavity in D2h symmetry
  */
-TEST_CASE("Test solver for the IEFPCM and the C2H4 molecule in D2h symmetry", "[iefpcm][iefpcm_symmetry][iefpcm_gepol-C2H4_D2h]")
+TEST_CASE("Test solver for the CPCM and the C2H4 molecule in D2h symmetry", "[cpcm][cpcm_symmetry][cpcm_gepol-C2H4_D2h]")
 {
   Molecule molec = C2H4();
   double area = 0.2 / convertBohr2ToAngstrom2;
   double probeRadius = 1.385 / convertBohrToAngstrom;
   double minRadius = 100.0 / convertBohrToAngstrom;
-  GePolCavity cavity = GePolCavity(molec, area, probeRadius, minRadius, "ief_d2h_noadd");
+  GePolCavity cavity = GePolCavity(molec, area, probeRadius, minRadius, "cpcm_d2h_noadd");
 
   double permittivity = 78.39;
   Vacuum<AD_directional, CollocationIntegrator> gfInside = Vacuum<AD_directional, CollocationIntegrator>();
   UniformDielectric<AD_directional, CollocationIntegrator> gfOutside =
     UniformDielectric<AD_directional, CollocationIntegrator>(permittivity);
   bool symm = true;
-  IEFSolver solver(symm);
+  double correction = 0.0;
+
+  CPCMSolver solver(symm, correction);
   solver.buildSystemMatrix(cavity, gfInside, gfOutside);
 
   double Ccharge = 6.0;
@@ -76,6 +78,8 @@ TEST_CASE("Test solver for the IEFPCM and the C2H4 molecule in D2h symmetry", "[
     INFO("fake_asc(" << i << ") = " << fake_asc(i));
   }
 
+  // The total ASC for a conductor is -Q
+  // for CPCM it will be -Q*(epsilon-1)/epsilon
   double totalASC = - (2.0 * Ccharge + 4.0 * Hcharge) * (permittivity - 1) / permittivity;
   // Renormalize
   int nr_irrep = cavity.pointGroup().nrIrrep();
