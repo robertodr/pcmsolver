@@ -38,13 +38,13 @@
 #include "Molecule.hpp"
 #include "Vacuum.hpp"
 #include "UniformDielectric.hpp"
-#include "CPCMSolver.hpp"
+#include "VCPCMSolver.hpp"
 #include "TestingMolecules.hpp"
 
-/*! \class CPCMSolver
- *  \test \b C2H4GePolD2h tests CPCMSolver using C2H4 with a GePol cavity in D2h symmetry
+/*! \class VCPCMSolver
+ *  \test \b C2H4GePolD2h tests VCPCMSolver using C2H4 with a GePol cavity in D2h symmetry
  */
-TEST_CASE("Test solver for the CPCM and the C2H4 molecule in D2h symmetry", "[solver][cpcm][cpcm_symmetry][cpcm_gepol-C2H4_D2h]")
+TEST_CASE("Test variational solver for the CPCM and the C2H4 molecule in D2h symmetry", "[variational_solver][vcpcm][vcpcm_symmetry][vcpcm_gepol-C2H4_D2h]")
 {
   Molecule molec = C2H4();
   double area = 0.2 / convertBohr2ToAngstrom2;
@@ -59,7 +59,7 @@ TEST_CASE("Test solver for the CPCM and the C2H4 molecule in D2h symmetry", "[so
   bool symm = true;
   double correction = 0.0;
 
-  CPCMSolver solver(symm, correction);
+  VCPCMSolver solver(correction);
   solver.buildSystemMatrix(cavity, gfInside, gfOutside);
 
   double Ccharge = 6.0;

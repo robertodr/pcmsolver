@@ -32,14 +32,14 @@
 #include <Eigen/Core>
 
 #include "CollocationIntegrator.hpp"
-#include "CPCMSolver.hpp"
+#include "VCPCMSolver.hpp"
 #include "DerivativeTypes.hpp"
 #include "GePolCavity.hpp"
 #include "UniformDielectric.hpp"
 #include "Vacuum.hpp"
 #include "TestingMolecules.hpp"
 
-SCENARIO("Test solver for the C-PCM for a point charge and a GePol cavity", "[solver][cpcm][cpcm_gepol-point]")
+SCENARIO("Test variational solver for the C-PCM for a point charge and a GePol cavity", "[variational_solver][vcpcm][vcpcm_gepol-point]")
 {
     GIVEN("An isotropic environment modelled as a perfect conductor and a point charge")
     {
@@ -53,8 +53,8 @@ SCENARIO("Test solver for the C-PCM for a point charge and a GePol cavity", "[so
         double charge = 8.0;
         double totalASC = - charge * (permittivity - 1) / (permittivity + correction);
 
-        /*! \class CPCMSolver
-         *  \test \b pointChargeGePol tests CPCMSolver using a point charge with a GePol cavity
+        /*! \class VCPCMSolver
+         *  \test \b pointChargeGePol tests VCPCMSolver using a point charge with a GePol cavity
          *  The point charge is at the origin.
          */
         WHEN("the point charge is located at the origin")
@@ -66,7 +66,7 @@ SCENARIO("Test solver for the C-PCM for a point charge and a GePol cavity", "[so
             GePolCavity cavity = GePolCavity(point, area, probeRadius, minRadius);
             cavity.saveCavity("point.npz");
 
-            CPCMSolver solver(symm, correction);
+            VCPCMSolver solver(correction);
             solver.buildSystemMatrix(cavity, gfInside, gfOutside);
 
             size_t size = cavity.size();
@@ -92,8 +92,8 @@ SCENARIO("Test solver for the C-PCM for a point charge and a GePol cavity", "[so
             }
         }
 
-        /*! \class CPCMSolver
-         *  \test \b pointChargeShiftedGePol tests CPCMSolver using a point charge with a GePol cavity
+        /*! \class VCPCMSolver
+         *  \test \b pointChargeShiftedGePol tests VCPCMSolver using a point charge with a GePol cavity
          *  The point charge is away from the origin.
          */
         AND_WHEN("the point charge is located away from the origin")
@@ -105,7 +105,7 @@ SCENARIO("Test solver for the C-PCM for a point charge and a GePol cavity", "[so
             double minRadius = 100.0;
             GePolCavity cavity = GePolCavity(point, area, probeRadius, minRadius);
 
-            CPCMSolver solver(symm, correction);
+            VCPCMSolver solver(correction);
             solver.buildSystemMatrix(cavity, gfInside, gfOutside);
 
             double charge = 8.0;

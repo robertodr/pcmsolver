@@ -25,7 +25,6 @@
 
 #include "catch.hpp"
 
-#include <cstdio>
 #include <iostream>
 
 #include "Config.hpp"
@@ -63,8 +62,7 @@ SCENARIO("Test variational solver for the IEFPCM for a point charge in different
             double area = 0.4;
             double probeRadius = 0.0;
             double minRadius = 100.0;
-            GePolCavity cavity(point, area, probeRadius, minRadius);
-            std::rename("PEDRA.OUT", "PEDRA.OUT.c1");
+            GePolCavity cavity(point, area, probeRadius, minRadius, "C1");
 
             size_t size = cavity.size();
             Eigen::VectorXd fake_mep = computeMEP(cavity.elements(), charge);
@@ -74,7 +72,7 @@ SCENARIO("Test variational solver for the IEFPCM for a point charge in different
             THEN("the total apparent surface charge is")
             {
                 size_t irr_size = cavity.irreducible_size();
-                Eigen::VectorXd fake_asc = Eigen::VectorXd::Zero(irr_size);
+                Eigen::VectorXd fake_asc = Eigen::VectorXd::Zero(size);
                 fake_asc = solver.computeCharge(fake_mep);
                 int nr_irrep = cavity.pointGroup().nrIrrep();
                 double totalFakeASC = fake_asc.sum() * nr_irrep;
@@ -92,8 +90,7 @@ SCENARIO("Test variational solver for the IEFPCM for a point charge in different
             double area = 0.4;
             double probeRadius = 0.0;
             double minRadius = 100.0;
-            GePolCavity cavity(point, area, probeRadius, minRadius);
-            std::rename("PEDRA.OUT", "PEDRA.OUT.c2");
+            GePolCavity cavity(point, area, probeRadius, minRadius, "C2");
 
             size_t size = cavity.size();
             Eigen::VectorXd fake_mep = computeMEP(cavity.elements(), charge);
@@ -103,7 +100,7 @@ SCENARIO("Test variational solver for the IEFPCM for a point charge in different
             THEN("the total apparent surface charge is")
             {
                 size_t irr_size = cavity.irreducible_size();
-                Eigen::VectorXd fake_asc = Eigen::VectorXd::Zero(irr_size);
+                Eigen::VectorXd fake_asc = Eigen::VectorXd::Zero(size);
                 fake_asc = solver.computeCharge(fake_mep);
                 int nr_irrep = cavity.pointGroup().nrIrrep();
                 double totalFakeASC = fake_asc.sum() * nr_irrep;
@@ -121,8 +118,7 @@ SCENARIO("Test variational solver for the IEFPCM for a point charge in different
             double area = 0.4;
             double probeRadius = 0.0;
             double minRadius = 100.0;
-            GePolCavity cavity(point, area, probeRadius, minRadius);
-            std::rename("PEDRA.OUT", "PEDRA.OUT.cs");
+            GePolCavity cavity(point, area, probeRadius, minRadius, "Cs");
 
             size_t size = cavity.size();
             Eigen::VectorXd fake_mep = computeMEP(cavity.elements(), charge);
@@ -137,7 +133,7 @@ SCENARIO("Test variational solver for the IEFPCM for a point charge in different
             THEN("the total apparent surface charge is")
             {
                 size_t irr_size = cavity.irreducible_size();
-                Eigen::VectorXd fake_asc = Eigen::VectorXd::Zero(irr_size);
+                Eigen::VectorXd fake_asc = Eigen::VectorXd::Zero(size);
                 fake_asc = solver.computeCharge(fake_mep);
                 int nr_irrep = cavity.pointGroup().nrIrrep();
                 double totalFakeASC = fake_asc.sum() * nr_irrep;
@@ -155,8 +151,7 @@ SCENARIO("Test variational solver for the IEFPCM for a point charge in different
             double area = 0.4;
             double probeRadius = 0.0;
             double minRadius = 100.0;
-            GePolCavity cavity(point, area, probeRadius, minRadius);
-            std::rename("PEDRA.OUT", "PEDRA.OUT.ci");
+            GePolCavity cavity(point, area, probeRadius, minRadius, "Ci");
 
             size_t size = cavity.size();
             Eigen::VectorXd fake_mep = computeMEP(cavity.elements(), charge);
@@ -171,7 +166,7 @@ SCENARIO("Test variational solver for the IEFPCM for a point charge in different
             THEN("the total apparent surface charge is")
             {
                 size_t irr_size = cavity.irreducible_size();
-                Eigen::VectorXd fake_asc = Eigen::VectorXd::Zero(irr_size);
+                Eigen::VectorXd fake_asc = Eigen::VectorXd::Zero(size);
                 fake_asc = solver.computeCharge(fake_mep);
                 int nr_irrep = cavity.pointGroup().nrIrrep();
                 double totalFakeASC = fake_asc.sum() * nr_irrep;
@@ -189,8 +184,7 @@ SCENARIO("Test variational solver for the IEFPCM for a point charge in different
             double area = 0.4;
             double probeRadius = 0.0;
             double minRadius = 100.0;
-            GePolCavity cavity(point, area, probeRadius, minRadius);
-            std::rename("PEDRA.OUT", "PEDRA.OUT.d2");
+            GePolCavity cavity(point, area, probeRadius, minRadius, "D2");
 
             size_t size = cavity.size();
             Eigen::VectorXd fake_mep = computeMEP(cavity.elements(), charge);
@@ -205,7 +199,7 @@ SCENARIO("Test variational solver for the IEFPCM for a point charge in different
             THEN("the total apparent surface charge is")
             {
                 size_t irr_size = cavity.irreducible_size();
-                Eigen::VectorXd fake_asc = Eigen::VectorXd::Zero(irr_size);
+                Eigen::VectorXd fake_asc = Eigen::VectorXd::Zero(size);
                 fake_asc = solver.computeCharge(fake_mep);
                 int nr_irrep = cavity.pointGroup().nrIrrep();
                 double totalFakeASC = fake_asc.sum() * nr_irrep;
@@ -223,8 +217,7 @@ SCENARIO("Test variational solver for the IEFPCM for a point charge in different
             double area = 0.4;
             double probeRadius = 0.0;
             double minRadius = 100.0;
-            GePolCavity cavity(point, area, probeRadius, minRadius);
-            std::rename("PEDRA.OUT", "PEDRA.OUT.c2v");
+            GePolCavity cavity(point, area, probeRadius, minRadius, "C2v");
 
             size_t size = cavity.size();
             Eigen::VectorXd fake_mep = computeMEP(cavity.elements(), charge);
@@ -239,7 +232,7 @@ SCENARIO("Test variational solver for the IEFPCM for a point charge in different
             THEN("the total apparent surface charge is")
             {
                 size_t irr_size = cavity.irreducible_size();
-                Eigen::VectorXd fake_asc = Eigen::VectorXd::Zero(irr_size);
+                Eigen::VectorXd fake_asc = Eigen::VectorXd::Zero(size);
                 fake_asc = solver.computeCharge(fake_mep);
                 int nr_irrep = cavity.pointGroup().nrIrrep();
                 double totalFakeASC = fake_asc.sum() * nr_irrep;
@@ -257,8 +250,7 @@ SCENARIO("Test variational solver for the IEFPCM for a point charge in different
             double area = 0.4;
             double probeRadius = 0.0;
             double minRadius = 100.0;
-            GePolCavity cavity(point, area, probeRadius, minRadius);
-            std::rename("PEDRA.OUT", "PEDRA.OUT.c2h");
+            GePolCavity cavity(point, area, probeRadius, minRadius, "C2h");
 
             size_t size = cavity.size();
             Eigen::VectorXd fake_mep = computeMEP(cavity.elements(), charge);
@@ -273,7 +265,7 @@ SCENARIO("Test variational solver for the IEFPCM for a point charge in different
             THEN("the total apparent surface charge is")
             {
                 size_t irr_size = cavity.irreducible_size();
-                Eigen::VectorXd fake_asc = Eigen::VectorXd::Zero(irr_size);
+                Eigen::VectorXd fake_asc = Eigen::VectorXd::Zero(size);
                 fake_asc = solver.computeCharge(fake_mep);
                 int nr_irrep = cavity.pointGroup().nrIrrep();
                 double totalFakeASC = fake_asc.sum() * nr_irrep;
@@ -291,8 +283,7 @@ SCENARIO("Test variational solver for the IEFPCM for a point charge in different
             double area = 0.4;
             double probeRadius = 0.0;
             double minRadius = 100.0;
-            GePolCavity cavity(point, area, probeRadius, minRadius);
-            std::rename("PEDRA.OUT", "PEDRA.OUT.d2h");
+            GePolCavity cavity(point, area, probeRadius, minRadius, "D2h");
 
             size_t size = cavity.size();
             Eigen::VectorXd fake_mep = computeMEP(cavity.elements(), charge);
@@ -307,7 +298,7 @@ SCENARIO("Test variational solver for the IEFPCM for a point charge in different
             THEN("the total apparent surface charge is")
             {
                 size_t irr_size = cavity.irreducible_size();
-                Eigen::VectorXd fake_asc = Eigen::VectorXd::Zero(irr_size);
+                Eigen::VectorXd fake_asc = Eigen::VectorXd::Zero(size);
                 fake_asc = solver.computeCharge(fake_mep);
                 int nr_irrep = cavity.pointGroup().nrIrrep();
                 double totalFakeASC = fake_asc.sum() * nr_irrep;

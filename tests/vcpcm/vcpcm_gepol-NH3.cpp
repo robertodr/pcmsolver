@@ -31,7 +31,7 @@
 
 #include <Eigen/Core>
 
-#include "CPCMSolver.hpp"
+#include "VCPCMSolver.hpp"
 #include "CollocationIntegrator.hpp"
 #include "DerivativeTypes.hpp"
 #include "GePolCavity.hpp"
@@ -41,10 +41,10 @@
 #include "UniformDielectric.hpp"
 #include "Vacuum.hpp"
 
-/*! \class CPCMSolver
- *  \test \b NH3GePol tests CPCMSolver using ammonia and a GePol cavity
+/*! \class VCPCMSolver
+ *  \test \b NH3GePol tests VCPCMSolver using ammonia and a GePol cavity
  */
-TEST_CASE("Test solver for the C-PCM with NH3 molecule and a GePol cavity", "[solver][cpcm][cpcm_gepol-NH3]")
+TEST_CASE("Test variational solver for the C-PCM with NH3 molecule and a GePol cavity", "[variational_solver][vcpcm][vcpcm_gepol-NH3]")
 {
     Molecule molecule = NH3();
 
@@ -60,7 +60,7 @@ TEST_CASE("Test solver for the C-PCM with NH3 molecule and a GePol cavity", "[so
     UniformDielectric<AD_directional, CollocationIntegrator>(permittivity);
     bool symm = true;
     double correction = 0.8;
-    CPCMSolver solver(symm, correction);
+    VCPCMSolver solver(correction);
     solver.buildSystemMatrix(cavity, gfInside, gfOutside);
 
     double Ncharge = 7.0;

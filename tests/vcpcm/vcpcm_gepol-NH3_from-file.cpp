@@ -31,17 +31,17 @@
 
 #include <Eigen/Core>
 
-#include "CPCMSolver.hpp"
+#include "VCPCMSolver.hpp"
 #include "CollocationIntegrator.hpp"
 #include "DerivativeTypes.hpp"
 #include "GePolCavity.hpp"
 #include "Vacuum.hpp"
 #include "UniformDielectric.hpp"
 
-/*! \class CPCMSolver
- *  \test \b NH3GePolRestart tests CPCMSolver using ammonia with a GePol cavity read from .npz file
+/*! \class VCPCMSolver
+ *  \test \b NH3GePolRestart tests VCPCMSolver using ammonia with a GePol cavity read from .npz file
  */
-TEST_CASE("Test solver for the C-PCM for NH3 and a restarted GePol cavity", "[solver][cpcm][cpcm_gepol-NH3_from-file]")
+TEST_CASE("Test variational solver for the C-PCM for NH3 and a restarted GePol cavity", "[variational_solver][vcpcm][vcpcm_gepol-NH3_from-file]")
 {
     // Set up cavity
     Eigen::Vector3d N( -0.000000000,   -0.104038047,    0.000000000);
@@ -57,7 +57,7 @@ TEST_CASE("Test solver for the C-PCM for NH3 and a restarted GePol cavity", "[so
     UniformDielectric<AD_directional, CollocationIntegrator>(permittivity);
     bool symm = true;
     double correction = 0.0;
-    CPCMSolver solver(symm, correction);
+    VCPCMSolver solver(correction);
     solver.buildSystemMatrix(cavity, gfInside, gfOutside);
 
     double Ncharge = 7.0;

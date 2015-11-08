@@ -36,12 +36,12 @@
 #include "GePolCavity.hpp"
 #include "Vacuum.hpp"
 #include "UniformDielectric.hpp"
-#include "CPCMSolver.hpp"
+#include "VCPCMSolver.hpp"
 
-/*! \class CPCMSolver
- *  \test \b pointChargeGePolRestart tests CPCMSolver using a point charge with a GePol cavity read from .npz file
+/*! \class VCPCMSolver
+ *  \test \b pointChargeGePolRestart tests VCPCMSolver using a point charge with a GePol cavity read from .npz file
  */
-TEST_CASE("Test solver for the C-PCM for a point charge and a restarted GePol cavity", "[solver][cpcm][cpcm_gepol-point_from-file]")
+TEST_CASE("Test variational solver for the C-PCM for a point charge and a restarted GePol cavity", "[variational_solver][vcpcm][vcpcm_gepol-point_from-file]")
 {
     // Set up cavity
     GePolCavity cavity;
@@ -55,7 +55,7 @@ TEST_CASE("Test solver for the C-PCM for a point charge and a restarted GePol ca
     UniformDielectric<AD_directional, CollocationIntegrator>(permittivity);
     bool symm = true;
     double correction = 0.0;
-    CPCMSolver solver(symm, correction);
+    VCPCMSolver solver(correction);
     solver.buildSystemMatrix(cavity, gfInside, gfOutside);
 
     double charge = 8.0;

@@ -45,6 +45,12 @@
 
 void VCPCMSolver::buildSystemMatrix_impl(const Cavity & cavity, const IGreensFunction & gf_i, const IGreensFunction & gf_o)
 {
+  // The total size of the cavity
+  size_t cavitySize = cavity.size();
+  // The number of irreps in the group
+  int nrBlocks = cavity.pointGroup().nrIrrep();
+  // The size of the irreducible portion of the cavityity
+  int dimBlock = cavity.irreducible_size();
   double epsilon = profiles::epsilon(gf_o.permittivity());
   // This is the inverse of the factor used in the
   // traditional CPCM solver!
@@ -52,11 +58,14 @@ void VCPCMSolver::buildSystemMatrix_impl(const Cavity & cavity, const IGreensFun
   S_ = fact * gf_i.singleLayer(cavity.elements());
   hermitivitize(S_);
 
+  // Perform symmetry blocking
+  // If the group is C1 avoid symmetry blocking, we will just pack the fullPCMMatrix
+  // into "block diagonal" when all other manipulations are done.
+  if (cavity.pointGroup().nrGenerators() != 0) {
+    symmetryBlocking(S_, cavitySize, dimBlock, nrBlocks);
+  }
+
   // Symmetry-pack
-  // The number of irreps in the group
-  int nrBlocks = cavity.pointGroup().nrIrrep();
-  // The size of the irreducible portion of the cavity
-  int dimBlock = cavity.irreducible_size();
   symmetryPacking(blockS_, S_, dimBlock, nrBlocks);
 
   built_ = true;

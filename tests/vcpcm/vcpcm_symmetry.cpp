@@ -31,7 +31,7 @@
 
 #include <Eigen/Core>
 
-#include "CPCMSolver.hpp"
+#include "VCPCMSolver.hpp"
 #include "CollocationIntegrator.hpp"
 #include "DerivativeTypes.hpp"
 #include "GePolCavity.hpp"
@@ -39,7 +39,7 @@
 #include "Vacuum.hpp"
 #include "TestingMolecules.hpp"
 
-SCENARIO("Test solver for the C-PCM for a point charge in different Abelian point groups", "[solver][cpcm][cpcm_symmetry]")
+SCENARIO("Test variational solver for the C-PCM for a point charge in different Abelian point groups", "[variational_solver][vcpcm][vcpcm_symmetry]")
 {
     GIVEN("An isotropic environment modelled as a perfect conductor and a point charge")
     {
@@ -55,8 +55,8 @@ SCENARIO("Test solver for the C-PCM for a point charge in different Abelian poin
         // for CPCM it will be -Q*(epsilon-1)/epsilon
         double totalASC = - charge * (permittivity - 1) / permittivity;
 
-        /*! \class CPCMSolver
-         *  \test \b pointChargeGePolC1 tests CPCMSolver using a point charge with a GePol cavity in C1 symmetry
+        /*! \class VCPCMSolver
+         *  \test \b pointChargeGePolC1 tests VCPCMSolver using a point charge with a GePol cavity in C1 symmetry
          */
         WHEN("the point group is C1")
         {
@@ -69,7 +69,7 @@ SCENARIO("Test solver for the C-PCM for a point charge in different Abelian poin
             size_t size = cavity.size();
             Eigen::VectorXd fake_mep = computeMEP(cavity.elements(), charge);
 
-            CPCMSolver solver(symm, correction);
+            VCPCMSolver solver(correction);
             solver.buildSystemMatrix(cavity, gfInside, gfOutside);
             THEN("the total apparent surface charge is")
             {
@@ -83,8 +83,8 @@ SCENARIO("Test solver for the C-PCM for a point charge in different Abelian poin
             }
         }
 
-        /*! \class CPCMSolver
-         *  \test \b pointChargeGePolC2 tests CPCMSolver using a point charge with a GePol cavity in C2 symmetry
+        /*! \class VCPCMSolver
+         *  \test \b pointChargeGePolC2 tests VCPCMSolver using a point charge with a GePol cavity in C2 symmetry
          */
         WHEN("the point group is C2")
         {
@@ -97,7 +97,7 @@ SCENARIO("Test solver for the C-PCM for a point charge in different Abelian poin
             size_t size = cavity.size();
             Eigen::VectorXd fake_mep = computeMEP(cavity.elements(), charge);
 
-            CPCMSolver solver(symm, correction);
+            VCPCMSolver solver(correction);
             solver.buildSystemMatrix(cavity, gfInside, gfOutside);
             THEN("the total apparent surface charge is")
             {
@@ -111,8 +111,8 @@ SCENARIO("Test solver for the C-PCM for a point charge in different Abelian poin
             }
         }
 
-        /*! \class CPCMSolver
-         *  \test \b pointChargeGePolCs tests CPCMSolver using a point charge with a GePol cavity in Cs symmetry
+        /*! \class VCPCMSolver
+         *  \test \b pointChargeGePolCs tests VCPCMSolver using a point charge with a GePol cavity in Cs symmetry
          */
         WHEN("the point group is Cs")
         {
@@ -130,7 +130,7 @@ SCENARIO("Test solver for the C-PCM for a point charge in different Abelian poin
                 fake_mep(i) = charge / distance;
             }
 
-            CPCMSolver solver(symm, correction);
+            VCPCMSolver solver(correction);
             solver.buildSystemMatrix(cavity, gfInside, gfOutside);
             THEN("the total apparent surface charge is")
             {
@@ -144,8 +144,8 @@ SCENARIO("Test solver for the C-PCM for a point charge in different Abelian poin
             }
         }
 
-        /*! \class CPCMSolver
-         *  \test \b pointChargeGePolCi tests CPCMSolver using a point charge with a GePol cavity in Ci symmetry
+        /*! \class VCPCMSolver
+         *  \test \b pointChargeGePolCi tests VCPCMSolver using a point charge with a GePol cavity in Ci symmetry
          */
         WHEN("the point group is Ci")
         {
@@ -163,7 +163,7 @@ SCENARIO("Test solver for the C-PCM for a point charge in different Abelian poin
                 fake_mep(i) = charge / distance;
             }
 
-            CPCMSolver solver(symm, correction);
+            VCPCMSolver solver(correction);
             solver.buildSystemMatrix(cavity, gfInside, gfOutside);
             THEN("the total apparent surface charge is")
             {
@@ -177,8 +177,8 @@ SCENARIO("Test solver for the C-PCM for a point charge in different Abelian poin
             }
         }
 
-        /*! \class CPCMSolver
-         *  \test \b pointChargeGePolD2 tests CPCMSolver using a point charge with a GePol cavity in D2 symmetry
+        /*! \class VCPCMSolver
+         *  \test \b pointChargeGePolD2 tests VCPCMSolver using a point charge with a GePol cavity in D2 symmetry
          */
         WHEN("the point group is D2")
         {
@@ -196,7 +196,7 @@ SCENARIO("Test solver for the C-PCM for a point charge in different Abelian poin
                 fake_mep(i) = charge / distance;
             }
 
-            CPCMSolver solver(symm, correction);
+            VCPCMSolver solver(correction);
             solver.buildSystemMatrix(cavity, gfInside, gfOutside);
             THEN("the total apparent surface charge is")
             {
@@ -210,8 +210,8 @@ SCENARIO("Test solver for the C-PCM for a point charge in different Abelian poin
             }
         }
 
-        /*! \class CPCMSolver
-         *  \test \b pointChargeGePolC2v tests CPCMSolver using a point charge with a GePol cavity in C2v symmetry
+        /*! \class VCPCMSolver
+         *  \test \b pointChargeGePolC2v tests VCPCMSolver using a point charge with a GePol cavity in C2v symmetry
          */
         WHEN("the point group is C2v")
         {
@@ -229,7 +229,7 @@ SCENARIO("Test solver for the C-PCM for a point charge in different Abelian poin
                 fake_mep(i) = charge / distance;
             }
 
-            CPCMSolver solver(symm, correction);
+            VCPCMSolver solver(correction);
             solver.buildSystemMatrix(cavity, gfInside, gfOutside);
             THEN("the total apparent surface charge is")
             {
@@ -243,8 +243,8 @@ SCENARIO("Test solver for the C-PCM for a point charge in different Abelian poin
             }
         }
 
-        /*! \class CPCMSolver
-         *  \test \b pointChargeGePolC2h tests CPCMSolver using a point charge with a GePol cavity in C2h symmetry
+        /*! \class VCPCMSolver
+         *  \test \b pointChargeGePolC2h tests VCPCMSolver using a point charge with a GePol cavity in C2h symmetry
          */
         WHEN("the point group is C2h")
         {
@@ -262,7 +262,7 @@ SCENARIO("Test solver for the C-PCM for a point charge in different Abelian poin
                 fake_mep(i) = charge / distance;
             }
 
-            CPCMSolver solver(symm, correction);
+            VCPCMSolver solver(correction);
             solver.buildSystemMatrix(cavity, gfInside, gfOutside);
             THEN("the total apparent surface charge is")
             {
@@ -276,8 +276,8 @@ SCENARIO("Test solver for the C-PCM for a point charge in different Abelian poin
             }
         }
 
-        /*! \class CPCMSolver
-         *  \test \b pointChargeGePolD2h tests CPCMSolver using a point charge with a GePol cavity in D2h symmetry
+        /*! \class VCPCMSolver
+         *  \test \b pointChargeGePolD2h tests VCPCMSolver using a point charge with a GePol cavity in D2h symmetry
          */
         WHEN("the point group is D2h")
         {
@@ -295,7 +295,7 @@ SCENARIO("Test solver for the C-PCM for a point charge in different Abelian poin
                 fake_mep(i) = charge / distance;
             }
 
-            CPCMSolver solver(symm, correction);
+            VCPCMSolver solver(correction);
             solver.buildSystemMatrix(cavity, gfInside, gfOutside);
             THEN("the total apparent surface charge is")
             {
