@@ -93,12 +93,12 @@ private:
      *  \param[in] potential the vector containing the MEP at cavity points
      *  \param[in] irrep the irreducible representation of the MEP and ASC
      */
-    virtual Eigen::VectorXd updateCharge_impl(const Eigen::VectorXd & potential, int irrep = 0) const __override CONST;
+    virtual Eigen::VectorXd updateCharge_impl(const Eigen::VectorXd & potential, int irrep = 0) const __override attribute(const);
     /*! \brief Returns the ASC given the MEP and the desired irreducible representation
      *  \param[in] potential the vector containing the MEP at cavity points
      *  \param[in] irrep the irreducible representation of the MEP and ASC
      */
-    virtual Eigen::VectorXd computeCharge_impl(const Eigen::VectorXd & potential, int irrep = 0) const __override CONST;
+    virtual Eigen::VectorXd computeCharge_impl(const Eigen::VectorXd & potential, int irrep = 0) const __override attribute(const);
     virtual std::ostream & printSolver(std::ostream & os) __override;
 };
 
