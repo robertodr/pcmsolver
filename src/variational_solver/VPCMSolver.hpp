@@ -61,6 +61,11 @@ public:
     void buildSystemMatrix(const Cavity & cavity, const IGreensFunction & gf_i, const IGreensFunction & gf_o) {
         buildSystemMatrix_impl(cavity, gf_i, gf_o);
     }
+    /*! \brief Returns initial guess for the ASC */
+    Eigen::VectorXd initialGuess() const {
+      if (!built_) PCMSOLVER_ERROR("PCM matrix not calculated yet");
+      return initialGuess_impl();
+    }
     /*! \brief Updates the R^\dagger transformed ASC given the MEP and the desired irreducible representation
      *  \param[in] potential the vector containing the MEP at cavity points
      *  \param[in] irrep the irreducible representation of the MEP and ASC
@@ -93,6 +98,8 @@ protected:
      *  \param[in] gf_o Green's function outside the cavity
      */
     virtual void buildSystemMatrix_impl(const Cavity & cavity, const IGreensFunction & gf_i, const IGreensFunction & gf_o) = 0;
+    /*! \brief Returns initial guess for the ASC
+     */
     /*! \brief Updates the R^\dagger transformed ASC given the MEP and the desired irreducible representation
      *  \param[in] potential the vector containing the MEP at cavity points
      *  \param[in] irrep the irreducible representation of the MEP and ASC
