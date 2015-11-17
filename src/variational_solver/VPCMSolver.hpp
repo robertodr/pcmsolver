@@ -50,7 +50,15 @@ class IGreensFunction;
 class VPCMSolver
 {
 public:
-    VPCMSolver() : built_(false), isotropic_(true) {}
+    /*! \brief Initial ASC guess types */
+    enum GuessType {
+      Trivial, /**< Zero ASC */
+      Uniform,  /**< Uniform ASC summing up to the solute nuclear charge */
+      Diagonal, /**< ASC calculated from a diagonal approximation of the PCM matrix */
+      LowAccuracy /**< ASC calculated from a low accuracy solution */
+    };
+    VPCMSolver() : built_(false), isotropic_(true), guess_(Trivial) {}
+    VPCMSolver(GuessType guess) : built_(false), isotropic_(true), guess_(guess) {}
     virtual ~VPCMSolver() {}
 
     /*! \brief Calculation of the PCM matrix
@@ -60,11 +68,6 @@ public:
      */
     void buildSystemMatrix(const Cavity & cavity, const IGreensFunction & gf_i, const IGreensFunction & gf_o) {
         buildSystemMatrix_impl(cavity, gf_i, gf_o);
-    }
-    /*! \brief Returns initial guess for the ASC */
-    Eigen::VectorXd initialGuess() const {
-      if (!built_) PCMSOLVER_ERROR("PCM matrix not calculated yet");
-      return initialGuess_impl();
     }
     /*! \brief Updates the R^\dagger transformed ASC given the MEP and the desired irreducible representation
      *  \param[in] potential the vector containing the MEP at cavity points
@@ -82,6 +85,21 @@ public:
         if (!built_) PCMSOLVER_ERROR("PCM matrix not calculated yet");
         return computeCharge_impl(potential, irrep);
     }
+    /*! \brief Returns the initial guess for the ASC given the MEP and the desired irreducible representation
+     *  \param[in] potential the vector containing the MEP at cavity points
+     *  \param[in] irrep the irreducible representation of the MEP and ASC
+     */
+    Eigen::VectorXd initialGuess(const Eigen::VectorXd & potential, double nuc_chg = 0.0, int irrep = 0) const {
+        if (!built_) PCMSOLVER_ERROR("PCM matrix not calculated yet");
+        Eigen::VectorXd guessASC;
+        switch(guess_) {
+          case Trivial:     guessASC = Eigen::VectorXd::Zero(potential.size());
+          case Uniform:     guessASC = initialGuessUniform(nuc_chg, irrep);
+          case Diagonal:    guessASC = initialGuessDiagonal(potential, irrep);
+          case LowAccuracy: guessASC = initialGuessLowAccuracy(potential, irrep);
+        }
+        return guessASC;
+    }
 
     friend std::ostream & operator<<(std::ostream & os, VPCMSolver & solver) {
         return solver.printSolver(os);
@@ -91,6 +109,8 @@ protected:
     bool built_;
     /*! Whether the solver is isotropic */
     bool isotropic_;
+    /*! Type of initial ASC guess */
+    GuessType guess_;
 
     /*! \brief Calculation of the PCM matrix
      *  \param[in] cavity the cavity to be used
@@ -107,10 +127,40 @@ protected:
     virtual Eigen::VectorXd updateCharge_impl(const Eigen::VectorXd & potential, int irrep = 0) const = 0;
     /*! \brief Returns the ASC given the MEP and the desired irreducible representation
      *  \param[in] potential the vector containing the MEP at cavity points
+     *  \param[in] CGtol conjugate gradient solver tolerance
      *  \param[in] irrep the irreducible representation of the MEP and ASC
      */
-    virtual Eigen::VectorXd computeCharge_impl(const Eigen::VectorXd & potential, int irrep = 0) const = 0;
+    virtual Eigen::VectorXd computeCharge_impl(const Eigen::VectorXd & potential,
+        double CGtol = Eigen::NumTraits<double>::epsilon(), int irrep = 0) const = 0;
     virtual std::ostream & printSolver(std::ostream & os) = 0;
+
+    /*! \brief A uniform ASC initial guess
+     *  \param[in] nuc_chg total nuclear charge
+     *  \param[in] irrep the irreducible representation of the MEP and ASC
+     *  \return the initial guess vector
+     *
+     *  We suppose an initial uniform surface charge
+     *  summing up to the total nuclear charge
+     */
+    virtual Eigen::VectorXd initialGuessUniform(double nuc_chg, int irrep = 0) const attribute(const) = 0;
+    /*! \brief A diagonally scaled initial guess
+     *  \param[in] potential the electrostatic potential
+     *  \param[in] irrep the irreducible representation of the MEP and ASC
+     *  \return the initial guess vector
+     *
+     *  The initial guess for the ASC is calculated assuming a diagonal
+     *  approximation for the PCM stiffness matrix
+     */
+    virtual Eigen::VectorXd initialGuessDiagonal(const Eigen::VectorXd & potential, int irrep = 0) const attribute(const) = 0;
+    /*! \brief A low-accuracy initial guess
+     *  \param[in] potential the electrostatic potential
+     *  \param[in] irrep the irreducible representation
+     *  \return the initial guess vector
+     *
+     *  The initial guess for the ASC is calculated with a low accuracy
+     *  (10^-4) CG solver
+     */
+    virtual Eigen::VectorXd initialGuessLowAccuracy(const Eigen::VectorXd & potential, int irrep = 0) const attribute(const) = 0;
 };
 
 #endif // VPCMSOLVER_HPP

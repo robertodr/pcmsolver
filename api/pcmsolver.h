@@ -187,6 +187,39 @@ PCMSOLVER_API void pcmsolver_compute_response_asc(pcmsolver_context_t * context,
                                                  const char * asc_name,
                                                  int irrep);
 
+/*! \brief Computes initial guess for the ASC given a MEP and the desired irreducible representation
+ *  \param[in, out] context the PCM context object
+ *  \param[in] mep_name label of the MEP surface function
+ *  \param[in] asc_name label of the ASC surface function
+ *  \param[in] irrep index of the desired irreducible representation
+ */
+PCMSOLVER_API void pcmsolver_compute_initial_guess_asc(pcmsolver_context_t * context,
+                                        const char * mep_name,
+                                        const char * asc_name,
+                                        int irrep);
+
+/*! \brief Computes update for the ASC given a MEP and the desired irreducible representation
+ *  \param[in, out] context the PCM context object
+ *  \param[in] mep_name label of the MEP surface function
+ *  \param[in] asc_name label of the ASC surface function
+ *  \param[in] irrep index of the desired irreducible representation
+ */
+PCMSOLVER_API void pcmsolver_compute_update_asc(pcmsolver_context_t * context,
+                                        const char * mep_name,
+                                        const char * asc_name,
+                                        int irrep);
+
+/*! \brief Computes residual for the ASC given a MEP and the desired irreducible representation
+ *  \param[in, out] context the PCM context object
+ *  \param[in] mep_name label of the MEP surface function
+ *  \param[in] asc_name label of the ASC surface function
+ *  \param[in] irrep index of the desired irreducible representation
+ */
+PCMSOLVER_API void pcmsolver_compute_residual_asc(pcmsolver_context_t * context,
+                                        const char * mep_name,
+                                        const char * asc_name,
+                                        int irrep);
+
 /*! \brief Computes the polarization energy
  *  \param[in, out] context the PCM context object
  *  \param[in] mep_name label of the MEP surface function

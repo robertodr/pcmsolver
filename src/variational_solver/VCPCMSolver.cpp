@@ -71,7 +71,7 @@ void VCPCMSolver::buildSystemMatrix_impl(const Cavity & cavity, const IGreensFun
   built_ = true;
 }
 
-Eigen::VectorXd VCPCMSolver::computeCharge_impl(const Eigen::VectorXd & potential, int irrep) const
+Eigen::VectorXd VCPCMSolver::computeCharge_impl(const Eigen::VectorXd & potential, double CGtol, int irrep) const
 {
   // The potential and charge vector are of dimension equal to the
   // full dimension of the cavity. We have to select just the part
@@ -84,6 +84,7 @@ Eigen::VectorXd VCPCMSolver::computeCharge_impl(const Eigen::VectorXd & potentia
   // use default maximum number of iterations and tolerance
   Eigen::ConjugateGradient<Eigen::MatrixXd> CGSolver;
   CGSolver.compute(blockS_[irrep]);
+  CGSolver.setTolerance(CGtol);
   // Obtain q by solving \frac{1}{f(\varepsilon)}Sq + v = 0 only for the relevant irrep
   ASC.segment(irrep*irrDim, irrDim) = CGSolver.solve(-potential.segment(irrep*irrDim, irrDim));
   return ASC;
@@ -91,6 +92,34 @@ Eigen::VectorXd VCPCMSolver::computeCharge_impl(const Eigen::VectorXd & potentia
 
 Eigen::VectorXd VCPCMSolver::updateCharge_impl(const Eigen::VectorXd & potential, int irrep) const
 {}
+
+Eigen::VectorXd VCPCMSolver::initialGuessUniform(double nuc_chg, int irrep) const
+{
+  int fullDim = S_.rows();
+  int nrBlocks = blockS_.size();
+  int irrDim = fullDim/nrBlocks;
+  Eigen::VectorXd guess = Eigen::VectorXd::Zero(fullDim);
+  guess.segment(irrep*irrDim, irrDim) = Eigen::VectorXd::Constant(irrDim, -nuc_chg/fullDim);
+  return guess;
+}
+
+Eigen::VectorXd VCPCMSolver::initialGuessDiagonal(const Eigen::VectorXd & potential, int irrep) const
+{
+  int fullDim = S_.rows();
+  int nrBlocks = blockS_.size();
+  int irrDim = fullDim/nrBlocks;
+  Eigen::VectorXd guess = Eigen::VectorXd::Zero(fullDim);
+  // Preprocess incoming potential, get only the relevant irrep
+  guess.segment(irrep*irrDim, irrDim) =
+    -potential.segment(irrep*irrDim, irrDim).cwiseQuotient(blockS_[irrep].diagonal());
+  return guess;
+}
+
+Eigen::VectorXd VCPCMSolver::initialGuessLowAccuracy(const Eigen::VectorXd & potential, int irrep) const
+{
+  // The tolerance for the CG solver is hardcoded to 10^-4
+  return computeCharge_impl(potential, 1.0e-04, irrep);
+}
 
 std::ostream & VCPCMSolver::printSolver(std::ostream & os)
 {

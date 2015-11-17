@@ -51,6 +51,7 @@ class VCPCMSolver __final : public VPCMSolver
 {
 public:
     VCPCMSolver(double corr) : VPCMSolver(), correction_(corr) {}
+    VCPCMSolver(GuessType guess, double corr) : VPCMSolver(guess), correction_(corr) {}
     virtual ~VCPCMSolver() {}
 
     friend std::ostream & operator<<(std::ostream & os, VCPCMSolver & solver) {
@@ -77,10 +78,42 @@ private:
     virtual Eigen::VectorXd updateCharge_impl(const Eigen::VectorXd & potential, int irrep = 0) const __override attribute(const);
     /*! \brief Returns the ASC given the MEP and the desired irreducible representation
      *  \param[in] potential the vector containing the MEP at cavity points
+     *  \param[in] CGtol conjugate gradient solver tolerance
      *  \param[in] irrep the irreducible representation of the MEP and ASC
      */
-    virtual Eigen::VectorXd computeCharge_impl(const Eigen::VectorXd & potential, int irrep = 0) const __override attribute(const);
+    virtual Eigen::VectorXd computeCharge_impl(const Eigen::VectorXd & potential,
+        double CGtol = Eigen::NumTraits<double>::epsilon(), int irrep = 0) const __override attribute(const);
     virtual std::ostream & printSolver(std::ostream & os) __override;
+
+    /*! \brief A uniform ASC initial guess
+     *  \param[in] nuc_chg total nuclear charge
+     *  \param[in] irrep the irreducible representation of the MEP and ASC
+     *  \return the initial guess vector
+     *
+     *  We suppose an initial uniform surface charge
+     *  summing up to the total nuclear charge
+     */
+    virtual Eigen::VectorXd initialGuessUniform(double nuc_chg, int irrep = 0) const __override attribute(const);
+    /*! \brief A diagonally scaled initial guess
+     *  \param[in] potential the electrostatic potential
+     *  \param[in] irrep the irreducible representation of the MEP and ASC
+     *  \return the initial guess vector
+     *
+     *  The initial guess for the ASC is calculated assuming a diagonal
+     *  approximation for the PCM stiffness matrix
+     */
+    virtual Eigen::VectorXd initialGuessDiagonal(const Eigen::VectorXd & potential, int irrep = 0)
+      const __override attribute(const);
+    /*! \brief A low-accuracy initial guess
+     *  \param[in] potential the electrostatic potential
+     *  \param[in] irrep the irreducible representation
+     *  \return the initial guess vector
+     *
+     *  The initial guess for the ASC is calculated with a low accuracy
+     *  (10^-4) CG solver
+     */
+    virtual Eigen::VectorXd initialGuessLowAccuracy(const Eigen::VectorXd & potential, int irrep = 0)
+      const __override attribute(const);
 };
 
 #endif // VCPCMSOLVER_HPP

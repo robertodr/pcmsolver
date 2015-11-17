@@ -84,7 +84,7 @@ void VIEFSolver::buildIsotropicMatrix(const Cavity & cav, const IGreensFunction 
   built_ = true;
 }
 
-Eigen::VectorXd VIEFSolver::computeCharge_impl(const Eigen::VectorXd & potential, int irrep) const
+Eigen::VectorXd VIEFSolver::computeCharge_impl(const Eigen::VectorXd & potential, double CGtol, int irrep) const
 {
   // The potential and charge vector are of dimension equal to the
   // full dimension of the cavity. We have to select just the part
@@ -97,6 +97,7 @@ Eigen::VectorXd VIEFSolver::computeCharge_impl(const Eigen::VectorXd & potential
   // use default maximum number of iterations and tolerance
   Eigen::ConjugateGradient<Eigen::MatrixXd> CGSolver;
   CGSolver.compute(blocktilde_Y_[irrep]);
+  CGSolver.setTolerance(CGtol);
   // Preprocess incoming potential, get only the relevant irrep
   Eigen::VectorXd tildeMEP = blockR_infinity_[irrep] * potential.segment(irrep*irrDim, irrDim);
   // Obtain \tilde{q} by solving \tilde{Y}\tilde{q} + \tilde{v} = 0 only for the relevant irrep
@@ -108,6 +109,35 @@ Eigen::VectorXd VIEFSolver::computeCharge_impl(const Eigen::VectorXd & potential
 
 Eigen::VectorXd VIEFSolver::updateCharge_impl(const Eigen::VectorXd & potential, int irrep) const
 {}
+
+Eigen::VectorXd VIEFSolver::initialGuessUniform(double nuc_chg, int irrep) const
+{
+  int fullDim = tilde_Y_.rows();
+  int nrBlocks = blocktilde_Y_.size();
+  int irrDim = fullDim/nrBlocks;
+  Eigen::VectorXd guess = Eigen::VectorXd::Zero(fullDim);
+  guess.segment(irrep*irrDim, irrDim) = Eigen::VectorXd::Constant(irrDim, -nuc_chg/fullDim);
+  return guess;
+}
+
+Eigen::VectorXd VIEFSolver::initialGuessDiagonal(const Eigen::VectorXd & potential, int irrep) const
+{
+  int fullDim = tilde_Y_.rows();
+  int nrBlocks = blocktilde_Y_.size();
+  int irrDim = fullDim/nrBlocks;
+  Eigen::VectorXd guess = Eigen::VectorXd::Zero(fullDim);
+  // Preprocess incoming potential, get only the relevant irrep
+  Eigen::VectorXd tildeMEP = dressedMEP(potential, irrep);
+  guess.segment(irrep*irrDim, irrDim) =
+    -tildeMEP.segment(irrep*irrDim, irrDim).cwiseQuotient(blocktilde_Y_[irrep].diagonal());
+  return bareASC(guess, irrep);
+}
+
+Eigen::VectorXd VIEFSolver::initialGuessLowAccuracy(const Eigen::VectorXd & potential, int irrep) const
+{
+  // The tolerance for the CG solver is hardcoded to 10^-4
+  return computeCharge_impl(potential, 1.0e-04, irrep);
+}
 
 std::ostream & VIEFSolver::printSolver(std::ostream & os)
 {

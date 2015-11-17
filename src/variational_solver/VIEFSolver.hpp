@@ -55,6 +55,7 @@ class VIEFSolver __final : public VPCMSolver
 {
 public:
     VIEFSolver() : VPCMSolver() {}
+    VIEFSolver(GuessType guess) : VPCMSolver(guess) {}
     virtual ~VIEFSolver() {}
 
     /*! \brief Builds PCM matrix for an anisotropic environment
@@ -96,10 +97,57 @@ private:
     virtual Eigen::VectorXd updateCharge_impl(const Eigen::VectorXd & potential, int irrep = 0) const __override attribute(const);
     /*! \brief Returns the ASC given the MEP and the desired irreducible representation
      *  \param[in] potential the vector containing the MEP at cavity points
+     *  \param[in] CGtol conjugate gradient solver tolerance
      *  \param[in] irrep the irreducible representation of the MEP and ASC
      */
-    virtual Eigen::VectorXd computeCharge_impl(const Eigen::VectorXd & potential, int irrep = 0) const __override attribute(const);
+    virtual Eigen::VectorXd computeCharge_impl(const Eigen::VectorXd & potential,
+        double CGtol = Eigen::NumTraits<double>::epsilon(), int irrep = 0) const __override attribute(const);
     virtual std::ostream & printSolver(std::ostream & os) __override;
+
+    /*! \brief A uniform ASC initial guess
+     *  \param[in] nuc_chg total nuclear charge
+     *  \param[in] irrep the irreducible representation of the ASC
+     *  \return the initial guess vector
+     *
+     *  We suppose an initial uniform surface charge
+     *  summing up to the total nuclear charge
+     */
+    virtual Eigen::VectorXd initialGuessUniform(double nuc_chg, int irrep = 0) const __override attribute(const);
+    /*! \brief A diagonally scaled initial guess
+     *  \param[in] potential the electrostatic potential
+     *  \param[in] irrep the irreducible representation of the MEP and ASC
+     *  \return the initial guess vector
+     *
+     *  The initial guess for the ASC is calculated assuming a diagonal
+     *  approximation for the PCM stiffness matrix
+     */
+    virtual Eigen::VectorXd initialGuessDiagonal(const Eigen::VectorXd & potential, int irrep = 0)
+      const __override attribute(const);
+    /*! \brief A low-accuracy initial guess
+     *  \param[in] potential the electrostatic potential
+     *  \param[in] irrep the irreducible representation
+     *  \return the initial guess vector
+     *
+     *  The initial guess for the ASC is calculated with a low accuracy
+     *  (10^-4) CG solver
+     */
+    virtual Eigen::VectorXd initialGuessLowAccuracy(const Eigen::VectorXd & potential, int irrep = 0)
+      const __override attribute(const);
+
+    /*! Transform ASC from the dressed to the bare representation */
+    Eigen::VectorXd bareASC(const Eigen::VectorXd & dressedASC, int irrep = 0) const attribute(const) {
+      int irrDim = blockR_infinity_[irrep].size();
+      Eigen::VectorXd bareASC = Eigen::VectorXd::Zero(dressedASC.size());
+      bareASC.segment(irrep*irrDim, irrDim) = blockR_infinity_[irrep].adjoint() * dressedASC.segment(irrep*irrDim, irrDim);
+      return bareASC;
+    }
+    /*! Transform MEP from the bare to the dressed representation */
+    Eigen::VectorXd dressedMEP(const Eigen::VectorXd & bareMEP, int irrep = 0) const attribute(const) {
+      int irrDim = blockR_infinity_[irrep].size();
+      Eigen::VectorXd dressedMEP = Eigen::VectorXd::Zero(bareMEP.size());
+      dressedMEP.segment(irrep*irrDim, irrDim) = blockR_infinity_[irrep] * bareMEP.segment(irrep*irrDim, irrDim);
+      return dressedMEP;
+    }
 };
 
 #endif // VIEFSOLVER_HPP

@@ -1,22 +1,22 @@
 !pcmsolver_copyright_start
 !       PCMSolver, an API for the Polarizable Continuum Model
 !       Copyright (C) 2013-2015 Roberto Di Remigio, Luca Frediani and contributors
-! 
+!
 !       This file is part of PCMSolver.
-! 
+!
 !       PCMSolver is free software: you can redistribute it and/or modify
 !       it under the terms of the GNU Lesser General Public License as published by
 !       the Free Software Foundation, either version 3 of the License, or
 !       (at your option) any later version.
-! 
+!
 !       PCMSolver is distributed in the hope that it will be useful,
 !       but WITHOUT ANY WARRANTY; without even the implied warranty of
 !       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 !       GNU Lesser General Public License for more details.
-! 
+!
 !       You should have received a copy of the GNU Lesser General Public License
 !       along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
-! 
+!
 !       For information on the complete list of contributors to the
 !       PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
 !pcmsolver_copyright_end
@@ -39,6 +39,9 @@ module pcmsolver
     public pcmsolver_get_center
     public pcmsolver_compute_asc
     public pcmsolver_compute_response_asc
+    public pcmsolver_compute_initial_guess_asc
+    public pcmsolver_compute_update_asc
+    public pcmsolver_compute_residual_asc
     public pcmsolver_compute_polarization_energy
     public pcmsolver_get_surface_function
     public pcmsolver_set_surface_function
@@ -159,6 +162,33 @@ module pcmsolver
             integer(c_int), value, intent(in) :: irrep
         end subroutine pcmsolver_compute_response_asc
     end interface pcmsolver_compute_response_asc
+
+    interface pcmsolver_compute_initial_guess_asc
+        subroutine pcmsolver_compute_initial_guess_asc(context, mep_name, asc_name, irrep) bind(C)
+            import
+            type(c_ptr), value :: context
+            character(c_char), intent(in) :: mep_name, asc_name
+            integer(c_int), value, intent(in) :: irrep
+        end subroutine pcmsolver_compute_initial_guess_asc
+    end interface pcmsolver_compute_initial_guess_asc
+
+    interface pcmsolver_compute_update_asc
+        subroutine pcmsolver_compute_update_asc(context, mep_name, asc_name, irrep) bind(C)
+            import
+            type(c_ptr), value :: context
+            character(c_char), intent(in) :: mep_name, asc_name
+            integer(c_int), value, intent(in) :: irrep
+        end subroutine pcmsolver_compute_update_asc
+    end interface pcmsolver_compute_update_asc
+
+    interface pcmsolver_compute_residual_asc
+        subroutine pcmsolver_compute_residual_asc(context, mep_name, asc_name, irrep) bind(C)
+            import
+            type(c_ptr), value :: context
+            character(c_char), intent(in) :: mep_name, asc_name
+            integer(c_int), value, intent(in) :: irrep
+        end subroutine pcmsolver_compute_residual_asc
+    end interface pcmsolver_compute_residual_asc
 
     interface pcmsolver_compute_polarization_energy
         function pcmsolver_compute_polarization_energy(context, mep_name, asc_name) result(energy) bind(C)

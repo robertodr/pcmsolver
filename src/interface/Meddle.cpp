@@ -118,6 +118,30 @@ void pcmsolver_compute_response_asc(pcmsolver_context_t * context,
     AS_TYPE(pcm::Meddle, context)->computeResponseASC(mep_name, asc_name, irrep);
 }
 
+void pcmsolver_compute_initial_guess_asc(pcmsolver_context_t * context,
+                           const char * mep_name,
+                           const char * asc_name,
+                           int irrep)
+{
+    //AS_TYPE(pcm::Meddle, context)->computeInitialGuessASC(mep_name, asc_name, irrep);
+}
+
+void pcmsolver_compute_update_asc(pcmsolver_context_t * context,
+                           const char * mep_name,
+                           const char * asc_name,
+                           int irrep)
+{
+    //AS_TYPE(pcm::Meddle, context)->computeUpdateASC(mep_name, asc_name, irrep);
+}
+
+void pcmsolver_compute_residual_asc(pcmsolver_context_t * context,
+                           const char * mep_name,
+                           const char * asc_name,
+                           int irrep)
+{
+    //AS_TYPE(pcm::Meddle, context)->computeResidualASC(mep_name, asc_name, irrep);
+}
+
 double pcmsolver_compute_polarization_energy(pcmsolver_context_t * context,
                                              const char * mep_name,
                                              const char * asc_name)
