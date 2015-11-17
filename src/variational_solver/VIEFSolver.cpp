@@ -129,7 +129,7 @@ Eigen::VectorXd VIEFSolver::initialGuessDiagonal(const Eigen::VectorXd & potenti
   // Preprocess incoming potential, get only the relevant irrep
   Eigen::VectorXd tildeMEP = dressedMEP(potential, irrep);
   guess.segment(irrep*irrDim, irrDim) =
-    -tildeMEP.segment(irrep*irrDim, irrDim).cwiseQuotient(blocktilde_Y_[irrep].diagonal());
+    -(tildeMEP.segment(irrep*irrDim, irrDim)).cwiseQuotient(blocktilde_Y_[irrep].diagonal());
   return bareASC(guess, irrep);
 }
 

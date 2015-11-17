@@ -91,14 +91,12 @@ public:
      */
     Eigen::VectorXd initialGuess(const Eigen::VectorXd & potential, double nuc_chg = 0.0, int irrep = 0) const {
         if (!built_) PCMSOLVER_ERROR("PCM matrix not calculated yet");
-        Eigen::VectorXd guessASC;
         switch(guess_) {
-          case Trivial:     guessASC = Eigen::VectorXd::Zero(potential.size());
-          case Uniform:     guessASC = initialGuessUniform(nuc_chg, irrep);
-          case Diagonal:    guessASC = initialGuessDiagonal(potential, irrep);
-          case LowAccuracy: guessASC = initialGuessLowAccuracy(potential, irrep);
+          case Trivial:     return Eigen::VectorXd::Zero(potential.size());
+          case Uniform:     return initialGuessUniform(nuc_chg, irrep);
+          case Diagonal:    return initialGuessDiagonal(potential, irrep);
+          case LowAccuracy: return initialGuessLowAccuracy(potential, irrep);
         }
-        return guessASC;
     }
 
     friend std::ostream & operator<<(std::ostream & os, VPCMSolver & solver) {

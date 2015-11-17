@@ -136,14 +136,14 @@ private:
 
     /*! Transform ASC from the dressed to the bare representation */
     Eigen::VectorXd bareASC(const Eigen::VectorXd & dressedASC, int irrep = 0) const attribute(const) {
-      int irrDim = blockR_infinity_[irrep].size();
+      int irrDim = blockR_infinity_[irrep].rows();
       Eigen::VectorXd bareASC = Eigen::VectorXd::Zero(dressedASC.size());
       bareASC.segment(irrep*irrDim, irrDim) = blockR_infinity_[irrep].adjoint() * dressedASC.segment(irrep*irrDim, irrDim);
       return bareASC;
     }
     /*! Transform MEP from the bare to the dressed representation */
     Eigen::VectorXd dressedMEP(const Eigen::VectorXd & bareMEP, int irrep = 0) const attribute(const) {
-      int irrDim = blockR_infinity_[irrep].size();
+      int irrDim = blockR_infinity_[irrep].rows();
       Eigen::VectorXd dressedMEP = Eigen::VectorXd::Zero(bareMEP.size());
       dressedMEP.segment(irrep*irrDim, irrDim) = blockR_infinity_[irrep] * bareMEP.segment(irrep*irrDim, irrDim);
       return dressedMEP;
