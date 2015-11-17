@@ -67,7 +67,7 @@ TEST_CASE("Test variational solver initial ASC guesses for the IEFPCM with C2H4 
 
   SECTION("Trivial initial guess")
   {
-    VIEFSolver solver(VPCMSolver::Trivial);
+    VIEFSolver solver(VPCMSolver::Trivial, VPCMSolver::SSD);
     solver.buildSystemMatrix(cavity, gfInside, gfOutside);
     Eigen::VectorXd guess = solver.initialGuess(fake_mep);
     for (size_t i = 0; i < size; ++i) {
@@ -77,7 +77,7 @@ TEST_CASE("Test variational solver initial ASC guesses for the IEFPCM with C2H4 
   }
   SECTION("Uniform initial guess")
   {
-    VIEFSolver solver(VPCMSolver::Uniform);
+    VIEFSolver solver(VPCMSolver::Uniform, VPCMSolver::SSD);
     solver.buildSystemMatrix(cavity, gfInside, gfOutside);
     Eigen::VectorXd guess = solver.initialGuess(fake_mep, total_charge);
     for (size_t i = 0; i < size; ++i) {
@@ -87,7 +87,7 @@ TEST_CASE("Test variational solver initial ASC guesses for the IEFPCM with C2H4 
   }
   SECTION("Diagonal initial guess")
   {
-    VIEFSolver solver(VPCMSolver::Diagonal);
+    VIEFSolver solver(VPCMSolver::Diagonal, VPCMSolver::SSD);
     solver.buildSystemMatrix(cavity, gfInside, gfOutside);
     Eigen::VectorXd guess = solver.initialGuess(fake_mep);
     for (size_t i = 0; i < size; ++i) {
@@ -98,7 +98,7 @@ TEST_CASE("Test variational solver initial ASC guesses for the IEFPCM with C2H4 
   }
   SECTION("Low accuracy initial guess")
   {
-    VIEFSolver solver(VPCMSolver::LowAccuracy);
+    VIEFSolver solver(VPCMSolver::LowAccuracy, VPCMSolver::SSD);
     solver.buildSystemMatrix(cavity, gfInside, gfOutside);
     Eigen::VectorXd guess = solver.initialGuess(fake_mep);
     for (size_t i = 0; i < size; ++i) {

@@ -57,8 +57,13 @@ public:
       Diagonal, /**< ASC calculated from a diagonal approximation of the PCM matrix */
       LowAccuracy /**< ASC calculated from a low accuracy solution */
     };
-    VPCMSolver() : built_(false), isotropic_(true), guess_(Trivial) {}
-    VPCMSolver(GuessType guess) : built_(false), isotropic_(true), guess_(guess) {}
+    /*! \brief ASC update types */
+    enum UpdateType {
+      SSD,       /**< Scaled steepest descent update */
+      LineSearch /**< Line search update */
+    };
+    VPCMSolver() : built_(false), isotropic_(true), guess_(Trivial), update_(SSD) {}
+    VPCMSolver(GuessType guess, UpdateType update) : built_(false), isotropic_(true), guess_(guess), update_(update) {}
     virtual ~VPCMSolver() {}
 
     /*! \brief Calculation of the PCM matrix
@@ -109,6 +114,8 @@ protected:
     bool isotropic_;
     /*! Type of initial ASC guess */
     GuessType guess_;
+    /*! Type of ASC update */
+    UpdateType update_;
 
     /*! \brief Calculation of the PCM matrix
      *  \param[in] cavity the cavity to be used
