@@ -38,14 +38,14 @@
 #include "Vacuum.hpp"
 #include "TestingMolecules.hpp"
 #include "UniformDielectric.hpp"
-#include "VIEFSolver.hpp"
+#include "VCPCMSolver.hpp"
 #include "Symmetry.hpp"
 
-/*! \class VIEFSolver
- *  \test \b C2H4D2hGePol tests initial ASC guesses for VIEFSolver using C2H4 in D2h and a GePol cavity
+/*! \class VCPCMSolver
+ *  \test \b C2H4D2hGePol tests initial ASC guesses for VCPCMSolver using C2H4 in D2h and a GePol cavity
  */
-TEST_CASE("Test variational solver initial ASC guesses for the IEFPCM with C2H4 molecule and a GePol cavity",
-          "[variational_solver][initial_guess][viefpcm][viefpcm-guess_gepol-C2H4_D2h]")
+TEST_CASE("Test variational solver initial ASC guesses for the CPCM with C2H4 molecule and a GePol cavity",
+          "[variational_solver][initial_guess][vcpcm][vcpcm-guess_gepol-C2H4_D2h]")
 {
   Molecule molec = C2H4();
   double area = 10.0;
@@ -64,10 +64,11 @@ TEST_CASE("Test variational solver initial ASC guesses for the IEFPCM with C2H4 
   size_t size = cavity.size();
   int nr_irrep = cavity.pointGroup().nrIrrep();
   Eigen::VectorXd fake_mep = computeMEP(molec, cavity.elements());
+  double correction = 0.0;
 
   SECTION("Trivial initial guess")
   {
-    VIEFSolver solver(VPCMSolver::Trivial);
+    VCPCMSolver solver(VPCMSolver::Trivial, correction);
     solver.buildSystemMatrix(cavity, gfInside, gfOutside);
     Eigen::VectorXd guess = solver.initialGuess(fake_mep);
     for (size_t i = 0; i < size; ++i) {
@@ -77,7 +78,7 @@ TEST_CASE("Test variational solver initial ASC guesses for the IEFPCM with C2H4 
   }
   SECTION("Uniform initial guess")
   {
-    VIEFSolver solver(VPCMSolver::Uniform);
+    VCPCMSolver solver(VPCMSolver::Uniform, correction);
     solver.buildSystemMatrix(cavity, gfInside, gfOutside);
     Eigen::VectorXd guess = solver.initialGuess(fake_mep, total_charge);
     for (size_t i = 0; i < size; ++i) {
@@ -87,18 +88,18 @@ TEST_CASE("Test variational solver initial ASC guesses for the IEFPCM with C2H4 
   }
   SECTION("Diagonal initial guess")
   {
-    VIEFSolver solver(VPCMSolver::Diagonal);
+    VCPCMSolver solver(VPCMSolver::Diagonal, correction);
     solver.buildSystemMatrix(cavity, gfInside, gfOutside);
     Eigen::VectorXd guess = solver.initialGuess(fake_mep);
     for (size_t i = 0; i < size; ++i) {
       INFO("guess(" << i << ") = " << guess(i));
     }
-    double reference = -170.9258887116;
+    double reference = -100.7686057891;
     REQUIRE(guess.sum()*nr_irrep == Approx(reference));
   }
   SECTION("Low accuracy initial guess")
   {
-    VIEFSolver solver(VPCMSolver::LowAccuracy);
+    VCPCMSolver solver(VPCMSolver::LowAccuracy, correction);
     solver.buildSystemMatrix(cavity, gfInside, gfOutside);
     Eigen::VectorXd guess = solver.initialGuess(fake_mep);
     for (size_t i = 0; i < size; ++i) {

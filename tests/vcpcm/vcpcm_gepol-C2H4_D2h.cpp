@@ -56,7 +56,6 @@ TEST_CASE("Test variational solver for the CPCM and the C2H4 molecule in D2h sym
   Vacuum<AD_directional, CollocationIntegrator> gfInside = Vacuum<AD_directional, CollocationIntegrator>();
   UniformDielectric<AD_directional, CollocationIntegrator> gfOutside =
     UniformDielectric<AD_directional, CollocationIntegrator>(permittivity);
-  bool symm = true;
   double correction = 0.0;
 
   VCPCMSolver solver(correction);
