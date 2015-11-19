@@ -23,13 +23,14 @@
  */
 /* pcmsolver_copyright_end */
 
-
 #ifndef VPCMSOLVER_HPP
 #define VPCMSOLVER_HPP
 
 #include <iosfwd>
 
 #include "Config.hpp"
+
+#include <Eigen/Core>
 
 class Cavity;
 class IGreensFunction;
@@ -74,17 +75,49 @@ public:
     void buildSystemMatrix(const Cavity & cavity, const IGreensFunction & gf_i, const IGreensFunction & gf_o) {
         buildSystemMatrix_impl(cavity, gf_i, gf_o);
     }
-    /*! \brief Updates the R^\dagger transformed ASC given the MEP and the desired irreducible representation
-     *  \param[in] potential the vector containing the MEP at cavity points
+    /*! \brief Updates the bare ASC given the dressed ASC, bare MEP and the desired irreducible representation
+     *  \param[in] dressedASC vector containing the dressed ASC at cavity points
+     *  \param[in] bareMEP the vector containing the MEP at cavity points
      *  \param[in] irrep the irreducible representation of the MEP and ASC
+     *  \return the updated bare ASC
+     *
+     *  This function calculates the update
+     *  \f[
+     *    \tilde{\mathbf{q}}^{(i+1)} = \tilde{\mathbf{q}}^{(i)} + \alpha^{(i)}\mathbf{r}^{(i)}
+     *  \f]
+     *  and then transforms the updated ASC to the bare representation.
+     *  \warning This function should only be called internally, the host should only interact
+     *  with the bare representation for the ASC
      */
-    Eigen::VectorXd updateCharge(const Eigen::VectorXd & potential, int irrep = 0) const {
+    Eigen::VectorXd updateCharge(const Eigen::VectorXd & dressedASC, const Eigen::VectorXd & bareMEP, int irrep = 0) const {
         if (!built_) PCMSOLVER_ERROR("PCM matrix not calculated yet");
-        return updateCharge_impl(potential, irrep);
+        switch(update_) {
+          case SSD:        return updateChargeSSD(dressedASC, bareMEP, irrep);
+          case LineSearch: return updateChargeLineSearch(dressedASC, bareMEP, irrep);
+        }
+    }
+    /*! \brief Calculates the error
+     *  \param[in] dressedASC vector containing the dressed ASC at cavity points
+     *  \param[in] bareMEP the vector containing the MEP at cavity points
+     *  \param[in] irrep the irreducible representation of the MEP and ASC
+     *  \return error at the current iteration
+     *
+     *  This function calculates:
+     *  \f[
+     *    \mathbf{e}_Q^{(i)} = \tilde{\mathbf{Y}}\tilde{\mathbf{q}}^{(i)} + \tilde{\mathbf{v}}^{(i)} = -mathbf{r}^{(i)}
+     *  \f]
+     *  \note The error vector is the quantity to be used in the DIIS procedure.
+     *  It is the residual vector but with opposite sign.
+     */
+    Eigen::VectorXd error(const Eigen::VectorXd & dressedASC, const Eigen::VectorXd & bareMEP, int irrep = 0) const {
+       if (!built_) PCMSOLVER_ERROR("PCM matrix not calculated yet");
+       return error_impl(dressedASC, bareMEP, irrep);
     }
     /*! \brief Returns the ASC given the MEP and the desired irreducible representation
      *  \param[in] potential the vector containing the MEP at cavity points
      *  \param[in] irrep the irreducible representation of the MEP and ASC
+     *  \note This is used internally in the initialGuessLowAccuracy function and
+     *  in the tests.
      */
     Eigen::VectorXd computeCharge(const Eigen::VectorXd & potential, int irrep = 0) const {
         if (!built_) PCMSOLVER_ERROR("PCM matrix not calculated yet");
@@ -116,6 +149,16 @@ protected:
     GuessType guess_;
     /*! Type of ASC update */
     UpdateType update_;
+    /*! The VPCM matrix
+     *  \note It can either be \f$ \tilde{\mathbf{Y}} \f$ (IEF) or
+     *  \f$\mathbf{S}\f$ (CPCM)
+     */
+    Eigen::MatrixXd PCMMatrix_;
+    /*! The VPCM matrix in symmetry blocked form
+     *  \note It can either be \f$ \tilde{\mathbf{Y}} \f$ (IEF) or
+     *  \f$\mathbf{S}\f$ (CPCM)
+     */
+    std::vector<Eigen::MatrixXd> blockPCMMatrix_;
 
     /*! \brief Calculation of the PCM matrix
      *  \param[in] cavity the cavity to be used
@@ -123,20 +166,28 @@ protected:
      *  \param[in] gf_o Green's function outside the cavity
      */
     virtual void buildSystemMatrix_impl(const Cavity & cavity, const IGreensFunction & gf_i, const IGreensFunction & gf_o) = 0;
-    /*! \brief Returns initial guess for the ASC
-     */
-    /*! \brief Updates the R^\dagger transformed ASC given the MEP and the desired irreducible representation
-     *  \param[in] potential the vector containing the MEP at cavity points
+    /*! \brief Calculates the error
+     *  \param[in] dressedASC vector containing the dressed ASC at cavity points
+     *  \param[in] bareMEP the vector containing the MEP at cavity points
      *  \param[in] irrep the irreducible representation of the MEP and ASC
+     *  \return error at the current iteration
+     *
+     *  This function calculates:
+     *  \f[
+     *    \mathbf{e}_Q^{(i)} = \tilde{\mathbf{Y}}\tilde{\mathbf{q}}^{(i)} + \tilde{\mathbf{v}}^{(i)} = -mathbf{r}^{(i)}
+     *  \f]
+     *  \note The error vector is the quantity to be used in the DIIS procedure.
+     *  It is the residual vector but with opposite sign.
      */
-    virtual Eigen::VectorXd updateCharge_impl(const Eigen::VectorXd & potential, int irrep = 0) const = 0;
+    virtual Eigen::VectorXd error_impl(const Eigen::VectorXd & dressedASC,
+        const Eigen::VectorXd & bareMEP, int irrep = 0) const = 0;
     /*! \brief Returns the ASC given the MEP and the desired irreducible representation
      *  \param[in] potential the vector containing the MEP at cavity points
-     *  \param[in] CGtol conjugate gradient solver tolerance
      *  \param[in] irrep the irreducible representation of the MEP and ASC
+     *  \param[in] CGtol conjugate gradient solver tolerance
      */
-    virtual Eigen::VectorXd computeCharge_impl(const Eigen::VectorXd & potential,
-        double CGtol = Eigen::NumTraits<double>::epsilon(), int irrep = 0) const = 0;
+    virtual Eigen::VectorXd computeCharge_impl(const Eigen::VectorXd & potential, int irrep = 0,
+        double CGtol = Eigen::NumTraits<double>::epsilon()) const = 0;
     virtual std::ostream & printSolver(std::ostream & os) = 0;
 
     /*! \brief A uniform ASC initial guess
@@ -166,6 +217,41 @@ protected:
      *  (10^-4) CG solver
      */
     virtual Eigen::VectorXd initialGuessLowAccuracy(const Eigen::VectorXd & potential, int irrep = 0) const attribute(const) = 0;
+
+    /*! \brief Scaled steepest descent ASC update
+     *  \param[in] dressedASC vector containing the dressed ASC at cavity points
+     *  \param[in] bareMEP the vector containing the MEP at cavity points
+     *  \param[in] irrep the irreducible representation of the MEP and ASC
+     *
+     *  The update is calculated as:
+     *  \f[
+     *     \tilde{q}^{(i+1)}_k = \tilde{q}^{(i)}_k + \frac{{r}^{(i)}_k}{\tilde{Y}_k}
+     *  \f]
+     *
+     *  \warning This function **does NOT** perform the transformation of the updated
+     *  ASC to the bare representation
+     */
+    Eigen::VectorXd updateChargeSSD(const Eigen::VectorXd & dressedASC,
+        const Eigen::VectorXd & bareMEP, int irrep = 0) const attribute(const);
+    /*! \brief Line search ASC update
+     *  \param[in] dressedASC vector containing the dressed ASC at cavity points
+     *  \param[in] bareMEP the vector containing the MEP at cavity points
+     *  \param[in] irrep the irreducible representation of the MEP and ASC
+     *
+     *  The update is calculated as:
+     *  \f[
+     *     \tilde{\mathbf{q}}^{(i+1)} = \tilde{\mathbf{q}}^{(i)} + \alpha^{(i)}\mathbf{r}^{(i)}
+     *  \f]
+     *  where the coefficient is given by the steepest descent line search formula:
+     *  \f[
+     *     \alpha^{(i)} = \frac{\mathbf{r}^{(i), t}\cdot\mathbf{r}^{(i)}}{\mathbf{r}^{(i), t}\tilde{\mathbf{S}}\mathbf{r}^{(i)}}
+     *  \f]
+     *
+     *  \warning This function **does NOT** perform the transformation of the updated
+     *  ASC to the bare representation
+     */
+    Eigen::VectorXd updateChargeLineSearch(const Eigen::VectorXd & dressedASC,
+        const Eigen::VectorXd & bareMEP, int irrep = 0) const attribute(const);
 };
 
 #endif // VPCMSOLVER_HPP

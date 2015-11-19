@@ -52,16 +52,16 @@ void VIEFSolver::buildSystemMatrix_impl(const Cavity & cavity, const IGreensFunc
 void VIEFSolver::buildAnisotropicMatrix(const Cavity & cav, const IGreensFunction & gf_i, const IGreensFunction & gf_o)
 {
   R_infinity_ = anisotropicRinfinity(cav, gf_i, gf_o);
-  tilde_Y_ = anisotropicTEpsilon(cav, gf_i, gf_o) * R_infinity_.adjoint().eval();
+  PCMMatrix_ = anisotropicTEpsilon(cav, gf_i, gf_o) * R_infinity_.adjoint().eval();
   // Symmetrize K := (K + K+)/2
-  hermitivitize(tilde_Y_);
+  hermitivitize(PCMMatrix_);
   // Pack into a block diagonal matrix
   // The number of irreps in the group
   int nrBlocks = cav.pointGroup().nrIrrep();
   // The size of the irreducible portion of the cavity
   int dimBlock = cav.irreducible_size();
   // For the moment just packs into a std::vector<Eigen::MatrixXd>
-  symmetryPacking(blocktilde_Y_, tilde_Y_, dimBlock, nrBlocks);
+  symmetryPacking(blockPCMMatrix_, PCMMatrix_, dimBlock, nrBlocks);
   symmetryPacking(blockR_infinity_, R_infinity_, dimBlock, nrBlocks);
   built_ = true;
 }
@@ -69,34 +69,34 @@ void VIEFSolver::buildAnisotropicMatrix(const Cavity & cav, const IGreensFunctio
 void VIEFSolver::buildIsotropicMatrix(const Cavity & cav, const IGreensFunction & gf_i, const IGreensFunction & gf_o)
 {
   R_infinity_ = isotropicRinfinity(cav, gf_i);
-  tilde_Y_ = isotropicTEpsilon(cav, gf_i, profiles::epsilon(gf_o.permittivity())) * R_infinity_.adjoint().eval();
+  PCMMatrix_ = isotropicTEpsilon(cav, gf_i, profiles::epsilon(gf_o.permittivity())) * R_infinity_.adjoint().eval();
   // Symmetrize K := (K + K+)/2
-  hermitivitize(tilde_Y_);
+  hermitivitize(PCMMatrix_);
   // Pack into a block diagonal matrix
   // The number of irreps in the group
   int nrBlocks = cav.pointGroup().nrIrrep();
   // The size of the irreducible portion of the cavity
   int dimBlock = cav.irreducible_size();
   // For the moment just packs into a std::vector<Eigen::MatrixXd>
-  symmetryPacking(blocktilde_Y_, tilde_Y_, dimBlock, nrBlocks);
+  symmetryPacking(blockPCMMatrix_, PCMMatrix_, dimBlock, nrBlocks);
   symmetryPacking(blockR_infinity_, R_infinity_, dimBlock, nrBlocks);
 
   built_ = true;
 }
 
-Eigen::VectorXd VIEFSolver::computeCharge_impl(const Eigen::VectorXd & potential, double CGtol, int irrep) const
+Eigen::VectorXd VIEFSolver::computeCharge_impl(const Eigen::VectorXd & potential, int irrep, double CGtol) const
 {
   // The potential and charge vector are of dimension equal to the
   // full dimension of the cavity. We have to select just the part
   // relative to the irrep needed.
-  int fullDim = tilde_Y_.rows();
+  int fullDim = PCMMatrix_.rows();
   Eigen::VectorXd ASC = Eigen::VectorXd::Zero(fullDim);
-  int nrBlocks = blocktilde_Y_.size();
+  int nrBlocks = blockPCMMatrix_.size();
   int irrDim = fullDim/nrBlocks;
   // Initialize Conjugate Gradient solver
   // use default maximum number of iterations and tolerance
   Eigen::ConjugateGradient<Eigen::MatrixXd> CGSolver;
-  CGSolver.compute(blocktilde_Y_[irrep]);
+  CGSolver.compute(blockPCMMatrix_[irrep]);
   CGSolver.setTolerance(CGtol);
   // Preprocess incoming potential, get only the relevant irrep
   Eigen::VectorXd tildeMEP = blockR_infinity_[irrep] * potential.segment(irrep*irrDim, irrDim);
@@ -107,13 +107,22 @@ Eigen::VectorXd VIEFSolver::computeCharge_impl(const Eigen::VectorXd & potential
   return ASC;
 }
 
-Eigen::VectorXd VIEFSolver::updateCharge_impl(const Eigen::VectorXd & potential, int irrep) const
-{}
+Eigen::VectorXd VIEFSolver::error_impl(const Eigen::VectorXd & dressedASC,
+    const Eigen::VectorXd & bareMEP, int irrep) const
+{
+  int fullDim = PCMMatrix_.rows();
+  int nrBlocks = blockPCMMatrix_.size();
+  int irrDim = fullDim/nrBlocks;
+  Eigen::VectorXd error = Eigen::VectorXd::Zero(fullDim);
+  error.segment(irrep*irrDim, irrDim) = blockPCMMatrix_[irrep] * dressedASC.segment(irrep*irrDim, irrDim)
+    + getDressedMEP(bareMEP, irrep).segment(irrep*irrDim, irrDim);
+  return error;
+}
 
 Eigen::VectorXd VIEFSolver::initialGuessUniform(double nuc_chg, int irrep) const
 {
-  int fullDim = tilde_Y_.rows();
-  int nrBlocks = blocktilde_Y_.size();
+  int fullDim = PCMMatrix_.rows();
+  int nrBlocks = blockPCMMatrix_.size();
   int irrDim = fullDim/nrBlocks;
   Eigen::VectorXd guess = Eigen::VectorXd::Zero(fullDim);
   guess.segment(irrep*irrDim, irrDim) = Eigen::VectorXd::Constant(irrDim, -nuc_chg/fullDim);
@@ -122,21 +131,21 @@ Eigen::VectorXd VIEFSolver::initialGuessUniform(double nuc_chg, int irrep) const
 
 Eigen::VectorXd VIEFSolver::initialGuessDiagonal(const Eigen::VectorXd & potential, int irrep) const
 {
-  int fullDim = tilde_Y_.rows();
-  int nrBlocks = blocktilde_Y_.size();
+  int fullDim = PCMMatrix_.rows();
+  int nrBlocks = blockPCMMatrix_.size();
   int irrDim = fullDim/nrBlocks;
   Eigen::VectorXd guess = Eigen::VectorXd::Zero(fullDim);
   // Preprocess incoming potential, get only the relevant irrep
-  Eigen::VectorXd tildeMEP = dressedMEP(potential, irrep);
+  Eigen::VectorXd tildeMEP = getDressedMEP(potential, irrep);
   guess.segment(irrep*irrDim, irrDim) =
-    -(tildeMEP.segment(irrep*irrDim, irrDim)).cwiseQuotient(blocktilde_Y_[irrep].diagonal());
-  return bareASC(guess, irrep);
+    -(tildeMEP.segment(irrep*irrDim, irrDim)).cwiseQuotient(blockPCMMatrix_[irrep].diagonal());
+  return getBareASC(guess, irrep);
 }
 
 Eigen::VectorXd VIEFSolver::initialGuessLowAccuracy(const Eigen::VectorXd & potential, int irrep) const
 {
   // The tolerance for the CG solver is hardcoded to 10^-4
-  return computeCharge_impl(potential, 1.0e-04, irrep);
+  return computeCharge_impl(potential, irrep, 1.0e-04);
 }
 
 std::ostream & VIEFSolver::printSolver(std::ostream & os)

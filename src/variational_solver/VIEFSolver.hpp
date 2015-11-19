@@ -75,10 +75,6 @@ public:
         return solver.printSolver(os);
     }
 private:
-    /*! The \f$ \tilde{\mathbf{Y}} \f$ matrix */
-    Eigen::MatrixXd tilde_Y_;
-    /*! The \f$ \tilde{\mathbf{Y}} \f$ matrix in symmetry blocked form*/
-    std::vector<Eigen::MatrixXd> blocktilde_Y_;
     /*! The \f$ \tilde{\mathbf{R}}_\infty \f$ matrix */
     Eigen::MatrixXd R_infinity_;
     /*! The \f$ \tilde{\mathbf{R}}_\infty \f$ matrix in symmetry blocked form */
@@ -90,18 +86,28 @@ private:
      *  \param[in] gf_o Green's function outside the cavity
      */
     virtual void buildSystemMatrix_impl(const Cavity & cavity, const IGreensFunction & gf_i, const IGreensFunction & gf_o) __override;
-    /*! \brief Updates the R^\dagger transformed ASC given the MEP and the desired irreducible representation
-     *  \param[in] potential the vector containing the MEP at cavity points
+    /*! \brief Calculates the error
+     *  \param[in] dressedASC vector containing the dressed ASC at cavity points
+     *  \param[in] bareMEP the vector containing the MEP at cavity points
      *  \param[in] irrep the irreducible representation of the MEP and ASC
+     *  \return error at the current iteration
+     *
+     *  This function calculates:
+     *  \f[
+     *    \mathbf{e}_Q^{(i)} = \tilde{\mathbf{Y}}\tilde{\mathbf{q}}^{(i)} + \tilde{\mathbf{v}}^{(i)} = -mathbf{r}^{(i)}
+     *  \f]
+     *  \note The error vector is the quantity to be used in the DIIS procedure.
+     *  It is the residual vector but with opposite sign.
      */
-    virtual Eigen::VectorXd updateCharge_impl(const Eigen::VectorXd & potential, int irrep = 0) const __override attribute(const);
+    virtual Eigen::VectorXd error_impl(const Eigen::VectorXd & dressedASC,
+        const Eigen::VectorXd & bareMEP, int irrep = 0) const __override;
     /*! \brief Returns the ASC given the MEP and the desired irreducible representation
      *  \param[in] potential the vector containing the MEP at cavity points
-     *  \param[in] CGtol conjugate gradient solver tolerance
      *  \param[in] irrep the irreducible representation of the MEP and ASC
+     *  \param[in] CGtol conjugate gradient solver tolerance
      */
-    virtual Eigen::VectorXd computeCharge_impl(const Eigen::VectorXd & potential,
-        double CGtol = Eigen::NumTraits<double>::epsilon(), int irrep = 0) const __override attribute(const);
+    virtual Eigen::VectorXd computeCharge_impl(const Eigen::VectorXd & potential, int irrep = 0,
+        double CGtol = Eigen::NumTraits<double>::epsilon()) const __override attribute(const);
     virtual std::ostream & printSolver(std::ostream & os) __override;
 
     /*! \brief A uniform ASC initial guess
@@ -135,14 +141,14 @@ private:
       const __override attribute(const);
 
     /*! Transform ASC from the dressed to the bare representation */
-    Eigen::VectorXd bareASC(const Eigen::VectorXd & dressedASC, int irrep = 0) const attribute(const) {
+    Eigen::VectorXd getBareASC(const Eigen::VectorXd & dressedASC, int irrep = 0) const attribute(const) {
       int irrDim = blockR_infinity_[irrep].rows();
       Eigen::VectorXd bareASC = Eigen::VectorXd::Zero(dressedASC.size());
       bareASC.segment(irrep*irrDim, irrDim) = blockR_infinity_[irrep].adjoint() * dressedASC.segment(irrep*irrDim, irrDim);
       return bareASC;
     }
     /*! Transform MEP from the bare to the dressed representation */
-    Eigen::VectorXd dressedMEP(const Eigen::VectorXd & bareMEP, int irrep = 0) const attribute(const) {
+    Eigen::VectorXd getDressedMEP(const Eigen::VectorXd & bareMEP, int irrep = 0) const attribute(const) {
       int irrDim = blockR_infinity_[irrep].rows();
       Eigen::VectorXd dressedMEP = Eigen::VectorXd::Zero(bareMEP.size());
       dressedMEP.segment(irrep*irrDim, irrDim) = blockR_infinity_[irrep] * bareMEP.segment(irrep*irrDim, irrDim);

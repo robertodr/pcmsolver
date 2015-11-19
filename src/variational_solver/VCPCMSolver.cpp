@@ -55,48 +55,57 @@ void VCPCMSolver::buildSystemMatrix_impl(const Cavity & cavity, const IGreensFun
   // This is the inverse of the factor used in the
   // traditional CPCM solver!
   double fact = (epsilon + correction_)/(epsilon - 1);
-  S_ = fact * gf_i.singleLayer(cavity.elements());
-  hermitivitize(S_);
+  PCMMatrix_ = fact * gf_i.singleLayer(cavity.elements());
+  hermitivitize(PCMMatrix_);
 
   // Perform symmetry blocking
   // If the group is C1 avoid symmetry blocking, we will just pack the fullPCMMatrix
   // into "block diagonal" when all other manipulations are done.
   if (cavity.pointGroup().nrGenerators() != 0) {
-    symmetryBlocking(S_, cavitySize, dimBlock, nrBlocks);
+    symmetryBlocking(PCMMatrix_, cavitySize, dimBlock, nrBlocks);
   }
 
   // Symmetry-pack
-  symmetryPacking(blockS_, S_, dimBlock, nrBlocks);
+  symmetryPacking(blockPCMMatrix_, PCMMatrix_, dimBlock, nrBlocks);
 
   built_ = true;
 }
 
-Eigen::VectorXd VCPCMSolver::computeCharge_impl(const Eigen::VectorXd & potential, double CGtol, int irrep) const
+Eigen::VectorXd VCPCMSolver::computeCharge_impl(const Eigen::VectorXd & potential, int irrep, double CGtol) const
 {
   // The potential and charge vector are of dimension equal to the
   // full dimension of the cavity. We have to select just the part
   // relative to the irrep needed.
-  int fullDim = S_.rows();
+  int fullDim = PCMMatrix_.rows();
   Eigen::VectorXd ASC = Eigen::VectorXd::Zero(fullDim);
-  int nrBlocks = blockS_.size();
+  int nrBlocks = blockPCMMatrix_.size();
   int irrDim = fullDim/nrBlocks;
   // Initialize Conjugate Gradient solver
   // use default maximum number of iterations and tolerance
   Eigen::ConjugateGradient<Eigen::MatrixXd> CGSolver;
-  CGSolver.compute(blockS_[irrep]);
+  CGSolver.compute(blockPCMMatrix_[irrep]);
   CGSolver.setTolerance(CGtol);
   // Obtain q by solving \frac{1}{f(\varepsilon)}Sq + v = 0 only for the relevant irrep
   ASC.segment(irrep*irrDim, irrDim) = CGSolver.solve(-potential.segment(irrep*irrDim, irrDim));
   return ASC;
 }
 
-Eigen::VectorXd VCPCMSolver::updateCharge_impl(const Eigen::VectorXd & potential, int irrep) const
-{}
+Eigen::VectorXd VCPCMSolver::error_impl(const Eigen::VectorXd & bareASC,
+    const Eigen::VectorXd & bareMEP, int irrep) const
+{
+  int fullDim = PCMMatrix_.rows();
+  int nrBlocks = blockPCMMatrix_.size();
+  int irrDim = fullDim/nrBlocks;
+  Eigen::VectorXd error = Eigen::VectorXd::Zero(fullDim);
+  error.segment(irrep*irrDim, irrDim) = blockPCMMatrix_[irrep] * bareASC.segment(irrep*irrDim, irrDim)
+    + bareMEP.segment(irrep*irrDim, irrDim);
+  return error;
+}
 
 Eigen::VectorXd VCPCMSolver::initialGuessUniform(double nuc_chg, int irrep) const
 {
-  int fullDim = S_.rows();
-  int nrBlocks = blockS_.size();
+  int fullDim = PCMMatrix_.rows();
+  int nrBlocks = blockPCMMatrix_.size();
   int irrDim = fullDim/nrBlocks;
   Eigen::VectorXd guess = Eigen::VectorXd::Zero(fullDim);
   guess.segment(irrep*irrDim, irrDim) = Eigen::VectorXd::Constant(irrDim, -nuc_chg/fullDim);
@@ -105,20 +114,20 @@ Eigen::VectorXd VCPCMSolver::initialGuessUniform(double nuc_chg, int irrep) cons
 
 Eigen::VectorXd VCPCMSolver::initialGuessDiagonal(const Eigen::VectorXd & potential, int irrep) const
 {
-  int fullDim = S_.rows();
-  int nrBlocks = blockS_.size();
+  int fullDim = PCMMatrix_.rows();
+  int nrBlocks = blockPCMMatrix_.size();
   int irrDim = fullDim/nrBlocks;
   Eigen::VectorXd guess = Eigen::VectorXd::Zero(fullDim);
   // Preprocess incoming potential, get only the relevant irrep
   guess.segment(irrep*irrDim, irrDim) =
-    -potential.segment(irrep*irrDim, irrDim).cwiseQuotient(blockS_[irrep].diagonal());
+    -potential.segment(irrep*irrDim, irrDim).cwiseQuotient(blockPCMMatrix_[irrep].diagonal());
   return guess;
 }
 
 Eigen::VectorXd VCPCMSolver::initialGuessLowAccuracy(const Eigen::VectorXd & potential, int irrep) const
 {
   // The tolerance for the CG solver is hardcoded to 10^-4
-  return computeCharge_impl(potential, 1.0e-04, irrep);
+  return computeCharge_impl(potential, irrep, 1.0e-04);
 }
 
 std::ostream & VCPCMSolver::printSolver(std::ostream & os)
