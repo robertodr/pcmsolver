@@ -148,6 +148,15 @@ Eigen::VectorXd VIEFSolver::initialGuessLowAccuracy(const Eigen::VectorXd & pote
   return computeCharge_impl(potential, irrep, 1.0e-04);
 }
 
+// TODO Transformation from dressed to bare representation!!!
+Eigen::VectorXd VIEFSolver::updateCharge_impl(const Eigen::VectorXd & dressedASC, const Eigen::VectorXd & bareMEP, int irrep) const
+{
+  switch(update_) {
+    case SSD:        return updateChargeSSD(dressedASC, bareMEP, irrep);
+    case LineSearch: return updateChargeLineSearch(dressedASC, bareMEP, irrep);
+  }
+}
+
 std::ostream & VIEFSolver::printSolver(std::ostream & os)
 {
   std::string type;

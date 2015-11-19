@@ -140,6 +140,23 @@ private:
     virtual Eigen::VectorXd initialGuessLowAccuracy(const Eigen::VectorXd & potential, int irrep = 0)
       const __override attribute(const);
 
+    /*! \brief Updates the bare ASC given the dressed ASC, bare MEP and the desired irreducible representation
+     *  \param[in] dressedASC vector containing the dressed ASC at cavity points
+     *  \param[in] bareMEP the vector containing the MEP at cavity points
+     *  \param[in] irrep the irreducible representation of the MEP and ASC
+     *  \return the updated **bare** ASC
+     *
+     *  This function calculates the update
+     *  \f[
+     *    \tilde{\mathbf{q}}^{(i+1)} = \tilde{\mathbf{q}}^{(i)} + \alpha^{(i)}\mathbf{r}^{(i)}
+     *  \f]
+     *  and then transforms the updated ASC to the bare representation.
+     *  \note This function takes care of the transformation to the bare representation
+     *  of the ASC
+     */
+    virtual Eigen::VectorXd updateCharge_impl(const Eigen::VectorXd & dressedASC,
+        const Eigen::VectorXd & bareMEP, int irrep = 0) const __override;
+
     /*! Transform ASC from the dressed to the bare representation */
     Eigen::VectorXd getBareASC(const Eigen::VectorXd & dressedASC, int irrep = 0) const attribute(const) {
       int irrDim = blockR_infinity_[irrep].rows();

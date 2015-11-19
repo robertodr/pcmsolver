@@ -33,3 +33,27 @@ CPCMSolver
    :members:
    :protected-members:
    :private-members:
+
+VPCMSolver
+----------
+.. doxygenclass:: VPCMSolver
+   :project: PCMSolver
+   :members:
+   :protected-members:
+   :private-members:
+
+VIEFSolver
+----------
+.. doxygenclass:: VIEFSolver
+   :project: PCMSolver
+   :members:
+   :protected-members:
+   :private-members:
+
+VCPCMSolver
+-----------
+.. doxygenclass:: VCPCMSolver
+   :project: PCMSolver
+   :members:
+   :protected-members:
+   :private-members:

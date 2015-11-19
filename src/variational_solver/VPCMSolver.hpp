@@ -79,18 +79,20 @@ public:
      *  \param[in] dressedASC vector containing the dressed ASC at cavity points
      *  \param[in] bareMEP the vector containing the MEP at cavity points
      *  \param[in] irrep the irreducible representation of the MEP and ASC
-     *  \return the updated bare ASC
+     *  \return the updated **bare** ASC
      *
      *  This function calculates the update
      *  \f[
      *    \tilde{\mathbf{q}}^{(i+1)} = \tilde{\mathbf{q}}^{(i)} + \alpha^{(i)}\mathbf{r}^{(i)}
      *  \f]
      *  and then transforms the updated ASC to the bare representation.
-     *  \warning This function should only be called internally, the host should only interact
-     *  with the bare representation for the ASC
+     *  \note This function takes care of the transformation to the bare representation
+     *  of the ASC
+     *  \warning This function should only be called internally!
      */
     Eigen::VectorXd updateCharge(const Eigen::VectorXd & dressedASC, const Eigen::VectorXd & bareMEP, int irrep = 0) const {
         if (!built_) PCMSOLVER_ERROR("PCM matrix not calculated yet");
+        return updateCharge_impl(dressedASC, bareMEP, irrep);
         switch(update_) {
           case SSD:        return updateChargeSSD(dressedASC, bareMEP, irrep);
           case LineSearch: return updateChargeLineSearch(dressedASC, bareMEP, irrep);
@@ -218,6 +220,21 @@ protected:
      */
     virtual Eigen::VectorXd initialGuessLowAccuracy(const Eigen::VectorXd & potential, int irrep = 0) const attribute(const) = 0;
 
+    /*! \brief Updates the bare ASC given the dressed ASC, bare MEP and the desired irreducible representation
+     *  \param[in] dressedASC vector containing the dressed ASC at cavity points
+     *  \param[in] bareMEP the vector containing the MEP at cavity points
+     *  \param[in] irrep the irreducible representation of the MEP and ASC
+     *  \return the updated **bare** ASC
+     *
+     *  This function calculates the update
+     *  \f[
+     *    \tilde{\mathbf{q}}^{(i+1)} = \tilde{\mathbf{q}}^{(i)} + \alpha^{(i)}\mathbf{r}^{(i)}
+     *  \f]
+     *  and then transforms the updated ASC to the bare representation.
+     *  \note This function takes care of the transformation to the bare representation
+     *  of the ASC
+     */
+    virtual Eigen::VectorXd updateCharge_impl(const Eigen::VectorXd & dressedASC, const Eigen::VectorXd & bareMEP, int irrep = 0) const = 0;
     /*! \brief Scaled steepest descent ASC update
      *  \param[in] dressedASC vector containing the dressed ASC at cavity points
      *  \param[in] bareMEP the vector containing the MEP at cavity points

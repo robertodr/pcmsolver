@@ -130,6 +130,14 @@ Eigen::VectorXd VCPCMSolver::initialGuessLowAccuracy(const Eigen::VectorXd & pot
   return computeCharge_impl(potential, irrep, 1.0e-04);
 }
 
+Eigen::VectorXd VCPCMSolver::updateCharge_impl(const Eigen::VectorXd & dressedASC, const Eigen::VectorXd & bareMEP, int irrep) const
+{
+  switch(update_) {
+    case SSD:        return updateChargeSSD(dressedASC, bareMEP, irrep);
+    case LineSearch: return updateChargeLineSearch(dressedASC, bareMEP, irrep);
+  }
+}
+
 std::ostream & VCPCMSolver::printSolver(std::ostream & os)
 {
   os << "Solver Type: Variational C-PCM" << std::endl;
