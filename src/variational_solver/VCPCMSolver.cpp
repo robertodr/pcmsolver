@@ -90,6 +90,16 @@ Eigen::VectorXd VCPCMSolver::computeCharge_impl(const Eigen::VectorXd & potentia
   return ASC;
 }
 
+Eigen::VectorXd VCPCMSolver::initialGuess_impl(const Eigen::VectorXd & MEP, double nuc_chg, int irrep) const
+{
+  switch(guess_) {
+    case Trivial:     return Eigen::VectorXd::Zero(MEP.size());
+    case Uniform:     return initialGuessUniform(nuc_chg, irrep);
+    case Diagonal:    return initialGuessDiagonal(MEP, irrep);
+    case LowAccuracy: return initialGuessLowAccuracy(MEP, irrep);
+  }
+}
+
 Eigen::VectorXd VCPCMSolver::error_impl(const Eigen::VectorXd & bareASC,
     const Eigen::VectorXd & bareMEP, int irrep) const
 {
@@ -100,34 +110,6 @@ Eigen::VectorXd VCPCMSolver::error_impl(const Eigen::VectorXd & bareASC,
   error.segment(irrep*irrDim, irrDim) = blockPCMMatrix_[irrep] * bareASC.segment(irrep*irrDim, irrDim)
     + bareMEP.segment(irrep*irrDim, irrDim);
   return error;
-}
-
-Eigen::VectorXd VCPCMSolver::initialGuessUniform(double nuc_chg, int irrep) const
-{
-  int fullDim = PCMMatrix_.rows();
-  int nrBlocks = blockPCMMatrix_.size();
-  int irrDim = fullDim/nrBlocks;
-  Eigen::VectorXd guess = Eigen::VectorXd::Zero(fullDim);
-  guess.segment(irrep*irrDim, irrDim) = Eigen::VectorXd::Constant(irrDim, -nuc_chg/fullDim);
-  return guess;
-}
-
-Eigen::VectorXd VCPCMSolver::initialGuessDiagonal(const Eigen::VectorXd & potential, int irrep) const
-{
-  int fullDim = PCMMatrix_.rows();
-  int nrBlocks = blockPCMMatrix_.size();
-  int irrDim = fullDim/nrBlocks;
-  Eigen::VectorXd guess = Eigen::VectorXd::Zero(fullDim);
-  // Preprocess incoming potential, get only the relevant irrep
-  guess.segment(irrep*irrDim, irrDim) =
-    -potential.segment(irrep*irrDim, irrDim).cwiseQuotient(blockPCMMatrix_[irrep].diagonal());
-  return guess;
-}
-
-Eigen::VectorXd VCPCMSolver::initialGuessLowAccuracy(const Eigen::VectorXd & potential, int irrep) const
-{
-  // The tolerance for the CG solver is hardcoded to 10^-4
-  return computeCharge_impl(potential, irrep, 1.0e-04);
 }
 
 Eigen::VectorXd VCPCMSolver::updateCharge_impl(const Eigen::VectorXd & dressedASC,

@@ -112,27 +112,22 @@ public:
        return error_impl(dressedASC, bareMEP, irrep);
     }
     /*! \brief Returns the ASC given the MEP and the desired irreducible representation
-     *  \param[in] potential the vector containing the MEP at cavity points
+     *  \param[in] MEP the vector containing the MEP at cavity points
      *  \param[in] irrep the irreducible representation of the MEP and ASC
      *  \note This is used internally in the initialGuessLowAccuracy function and
      *  in the tests.
      */
-    Eigen::VectorXd computeCharge(const Eigen::VectorXd & potential, int irrep = 0) const {
+    Eigen::VectorXd computeCharge(const Eigen::VectorXd & MEP, int irrep = 0) const {
         if (!built_) PCMSOLVER_ERROR("PCM matrix not calculated yet");
-        return computeCharge_impl(potential, irrep);
+        return computeCharge_impl(MEP, irrep);
     }
     /*! \brief Returns the initial guess for the ASC given the MEP and the desired irreducible representation
-     *  \param[in] potential the vector containing the MEP at cavity points
+     *  \param[in] MEP the vector containing the MEP at cavity points
      *  \param[in] irrep the irreducible representation of the MEP and ASC
      */
-    Eigen::VectorXd initialGuess(const Eigen::VectorXd & potential, double nuc_chg = 0.0, int irrep = 0) const {
+    Eigen::VectorXd initialGuess(const Eigen::VectorXd & MEP, double nuc_chg = 0.0, int irrep = 0) const {
         if (!built_) PCMSOLVER_ERROR("PCM matrix not calculated yet");
-        switch(guess_) {
-          case Trivial:     return Eigen::VectorXd::Zero(potential.size());
-          case Uniform:     return initialGuessUniform(nuc_chg, irrep);
-          case Diagonal:    return initialGuessDiagonal(potential, irrep);
-          case LowAccuracy: return initialGuessLowAccuracy(potential, irrep);
-        }
+        return initialGuess_impl(MEP, nuc_chg, irrep);
     }
 
     friend std::ostream & operator<<(std::ostream & os, VPCMSolver & solver) {
@@ -180,14 +175,25 @@ protected:
     virtual Eigen::VectorXd error_impl(const Eigen::VectorXd & dressedASC,
         const Eigen::VectorXd & bareMEP, int irrep = 0) const = 0;
     /*! \brief Returns the ASC given the MEP and the desired irreducible representation
-     *  \param[in] potential the vector containing the MEP at cavity points
+     *  \param[in] MEP the vector containing the MEP at cavity points
      *  \param[in] irrep the irreducible representation of the MEP and ASC
      *  \param[in] CGtol conjugate gradient solver tolerance
      */
-    virtual Eigen::VectorXd computeCharge_impl(const Eigen::VectorXd & potential, int irrep = 0,
+    virtual Eigen::VectorXd computeCharge_impl(const Eigen::VectorXd & MEP, int irrep = 0,
         double CGtol = Eigen::NumTraits<double>::epsilon()) const = 0;
     virtual std::ostream & printSolver(std::ostream & os) = 0;
 
+    /*! \name ASC initial guess methods */
+    ///@{
+    /*! \brief Returns the initial guess for the ASC given the MEP and the desired irreducible representation
+     *  \param[in] MEP the vector containing the MEP at cavity points
+     *  \param[in] irrep the irreducible representation of the MEP and ASC
+     *
+     *  \note The outcoming ASC is always in the bare representation, when this is
+     *  relevant.
+     */
+    virtual Eigen::VectorXd initialGuess_impl(const Eigen::VectorXd & MEP,
+                                              double nuc_chg = 0.0, int irrep = 0) const = 0;
     /*! \brief A uniform ASC initial guess
      *  \param[in] nuc_chg total nuclear charge
      *  \param[in] irrep the irreducible representation of the MEP and ASC
@@ -196,26 +202,33 @@ protected:
      *  We suppose an initial uniform surface charge
      *  summing up to the total nuclear charge
      */
-    virtual Eigen::VectorXd initialGuessUniform(double nuc_chg, int irrep = 0) const attribute(const) = 0;
+    Eigen::VectorXd initialGuessUniform(double nuc_chg, int irrep = 0) const attribute(const);
     /*! \brief A diagonally scaled initial guess
-     *  \param[in] potential the electrostatic potential
+     *  \param[in] MEP the electrostatic potential
      *  \param[in] irrep the irreducible representation of the MEP and ASC
      *  \return the initial guess vector
      *
      *  The initial guess for the ASC is calculated assuming a diagonal
      *  approximation for the PCM stiffness matrix
+     *  \note The incoming MEP can be in the dressed or in the bare representation.
+     *  This is an implementation detail delegated to the deriving classes.
      */
-    virtual Eigen::VectorXd initialGuessDiagonal(const Eigen::VectorXd & potential, int irrep = 0) const attribute(const) = 0;
+    Eigen::VectorXd initialGuessDiagonal(const Eigen::VectorXd & MEP, int irrep = 0) const attribute(const);
     /*! \brief A low-accuracy initial guess
-     *  \param[in] potential the electrostatic potential
+     *  \param[in] MEP the electrostatic potential
      *  \param[in] irrep the irreducible representation
      *  \return the initial guess vector
      *
      *  The initial guess for the ASC is calculated with a low accuracy
      *  (10^-4) CG solver
+     *  \note The incoming MEP can be in the dressed or in the bare representation.
+     *  This is an implementation detail delegated to the deriving classes.
      */
-    virtual Eigen::VectorXd initialGuessLowAccuracy(const Eigen::VectorXd & potential, int irrep = 0) const attribute(const) = 0;
+    Eigen::VectorXd initialGuessLowAccuracy(const Eigen::VectorXd & MEP, int irrep = 0) const attribute(const);
+    ///@}
 
+    /*! \name ASC update methods */
+    ///@{
     /*! \brief Updates the bare ASC given the dressed ASC, bare MEP and the desired irreducible representation
      *  \param[in] dressedASC vector containing the dressed ASC at cavity points
      *  \param[in] bareMEP the vector containing the MEP at cavity points
@@ -265,6 +278,7 @@ protected:
      */
     Eigen::VectorXd updateChargeLineSearch(const Eigen::VectorXd & dressedASC,
         const Eigen::VectorXd & bareMEP, int irrep = 0) const attribute(const);
+    ///@}
 };
 
 #endif // VPCMSOLVER_HPP

@@ -82,10 +82,10 @@ inline Eigen::MatrixXd anisotropicTEpsilon(const Cavity & cav, const IGreensFunc
   }
 
   Eigen::MatrixXd a = cav.elementArea().asDiagonal();
-  Eigen::MatrixXd aInv = a.inverse();
+  Eigen::MatrixXd Id = Eigen::MatrixXd::Identity(cavitySize, cavitySize);
 
   // Form T
-  return ((2 * M_PI * aInv - DE) * a * SI + SE * a * (2 * M_PI * aInv + DI.adjoint().eval()));
+  return ((2 * M_PI * Id - DE * a) * SI + SE * (2 * M_PI * Id + a * DI.adjoint().eval()));
 }
 
 /*! \brief Builds the **isotropic** \f$ \mathbf{T}_\varepsilon \f$ matrix
@@ -168,12 +168,12 @@ inline Eigen::MatrixXd anisotropicRinfinity(const Cavity & cav, const IGreensFun
   }
 
   Eigen::MatrixXd a = cav.elementArea().asDiagonal();
-  Eigen::MatrixXd aInv = a.inverse();
+  Eigen::MatrixXd Id = Eigen::MatrixXd::Identity(cavitySize, cavitySize);
 
   // Form T
   Eigen::FullPivLU<Eigen::MatrixXd> SI_LU(SI);
   if (!(SI_LU.isInvertible())) PCMSOLVER_ERROR("SI matrix is not invertible!");
-  return (((2 * M_PI * aInv - DE) - SE * SI_LU.inverse() * (2 * M_PI * aInv - DI)) * a);
+  return ((2 * M_PI * Id - DE * a) - SE * SI_LU.inverse() * (2 * M_PI * Id  - DI * a));
 }
 
 /*! \brief Builds the **isotropic** \f$ \mathbf{R}_\infty \f$ matrix
@@ -208,6 +208,7 @@ inline Eigen::MatrixXd isotropicRinfinity(const Cavity & cav, const IGreensFunct
   }
 
   Eigen::MatrixXd a = cav.elementArea().asDiagonal();
+  Eigen::MatrixXd Id = Eigen::MatrixXd::Identity(cavitySize, cavitySize);
 
-  return (2 * M_PI * Eigen::MatrixXd::Identity(cavitySize, cavitySize) - DI * a);
+  return (2 * M_PI * Id - DI * a);
 }

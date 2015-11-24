@@ -69,3 +69,32 @@ Eigen::VectorXd VPCMSolver::updateChargeLineSearch(const Eigen::VectorXd & dress
     dressedASC.segment(irrep*irrDim, irrDim) + alpha * residual.segment(irrep*irrDim, irrDim);
   return updated;
 }
+
+Eigen::VectorXd VPCMSolver::initialGuessUniform(double nuc_chg, int irrep) const
+{
+  int fullDim = PCMMatrix_.rows();
+  int nrBlocks = blockPCMMatrix_.size();
+  int irrDim = fullDim/nrBlocks;
+  Eigen::VectorXd guess = Eigen::VectorXd::Zero(fullDim);
+  guess.segment(irrep*irrDim, irrDim) = Eigen::VectorXd::Constant(irrDim, -nuc_chg/fullDim);
+  return guess;
+}
+
+Eigen::VectorXd VPCMSolver::initialGuessDiagonal(const Eigen::VectorXd & MEP, int irrep) const
+{
+  int fullDim = PCMMatrix_.rows();
+  int nrBlocks = blockPCMMatrix_.size();
+  int irrDim = fullDim/nrBlocks;
+  Eigen::VectorXd guess = Eigen::VectorXd::Zero(fullDim);
+  guess.segment(irrep*irrDim, irrDim) =
+    -(MEP.segment(irrep*irrDim, irrDim)).cwiseQuotient(blockPCMMatrix_[irrep].diagonal());
+  return guess;
+}
+
+Eigen::VectorXd VPCMSolver::initialGuessLowAccuracy(const Eigen::VectorXd & MEP, int irrep) const
+{
+  // The tolerance for the CG solver is hardcoded to 10^-4
+  double CGtol = 1.0e-04;
+  return computeCharge_impl(MEP, irrep, CGtol);
+}
+

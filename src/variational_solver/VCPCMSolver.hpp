@@ -91,35 +91,15 @@ private:
         double CGtol = Eigen::NumTraits<double>::epsilon()) const __override attribute(const);
     virtual std::ostream & printSolver(std::ostream & os) __override;
 
-    /*! \brief A uniform ASC initial guess
-     *  \param[in] nuc_chg total nuclear charge
+    /*! \brief Returns the initial guess for the ASC given the MEP and the desired irreducible representation
+     *  \param[in] MEP the vector containing the MEP at cavity points
      *  \param[in] irrep the irreducible representation of the MEP and ASC
-     *  \return the initial guess vector
      *
-     *  We suppose an initial uniform surface charge
-     *  summing up to the total nuclear charge
+     *  \note The outcoming ASC is always in the bare representation,
+     *  when this is relevant.
      */
-    virtual Eigen::VectorXd initialGuessUniform(double nuc_chg, int irrep = 0) const __override attribute(const);
-    /*! \brief A diagonally scaled initial guess
-     *  \param[in] potential the electrostatic potential
-     *  \param[in] irrep the irreducible representation of the MEP and ASC
-     *  \return the initial guess vector
-     *
-     *  The initial guess for the ASC is calculated assuming a diagonal
-     *  approximation for the PCM stiffness matrix
-     */
-    virtual Eigen::VectorXd initialGuessDiagonal(const Eigen::VectorXd & potential, int irrep = 0)
-      const __override attribute(const);
-    /*! \brief A low-accuracy initial guess
-     *  \param[in] potential the electrostatic potential
-     *  \param[in] irrep the irreducible representation
-     *  \return the initial guess vector
-     *
-     *  The initial guess for the ASC is calculated with a low accuracy
-     *  (10^-4) CG solver
-     */
-    virtual Eigen::VectorXd initialGuessLowAccuracy(const Eigen::VectorXd & potential, int irrep = 0)
-      const __override attribute(const);
+    virtual Eigen::VectorXd initialGuess_impl(const Eigen::VectorXd & MEP,
+                                              double nuc_chg = 0.0, int irrep = 0) const __override;
 
     /*! \brief Updates the bare ASC given the dressed ASC, bare MEP and the desired irreducible representation
      *  \param[in] dressedASC vector containing the dressed ASC at cavity points

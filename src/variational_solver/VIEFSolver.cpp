@@ -115,12 +115,26 @@ Eigen::VectorXd VIEFSolver::computeCharge_impl(const Eigen::VectorXd & potential
   CGSolver.compute(blockPCMMatrix_[irrep]);
   CGSolver.setTolerance(CGtol);
   // Preprocess incoming potential, get only the relevant irrep
-  Eigen::VectorXd tildeMEP = blockR_infinity_[irrep] * potential.segment(irrep*irrDim, irrDim);
+  Eigen::VectorXd tildeMEP = getDressedMEP(potential, irrep);
   // Obtain \tilde{q} by solving \tilde{Y}\tilde{q} + \tilde{v} = 0 only for the relevant irrep
   ASC.segment(irrep*irrDim, irrDim) = CGSolver.solve(-tildeMEP.segment(irrep*irrDim, irrDim));
-  // Postprocess charge
-  ASC.segment(irrep*irrDim, irrDim) = (blockR_infinity_[irrep].adjoint() * ASC.segment(irrep*irrDim, irrDim)).eval();
-  return ASC;
+  return getBareASC(ASC, irrep);
+}
+
+Eigen::VectorXd VIEFSolver::initialGuess_impl(const Eigen::VectorXd & MEP, double nuc_chg, int irrep) const
+{
+  Eigen::VectorXd tmp = Eigen::VectorXd::Zero(MEP.size());
+  switch(guess_) {
+    case Trivial:     /* Do nothing */
+                      break;
+    case Uniform:     tmp = initialGuessUniform(nuc_chg, irrep);
+                      break;
+    case Diagonal:    tmp = getBareASC(initialGuessDiagonal(getDressedMEP(MEP, irrep), irrep), irrep);
+                      break;
+    case LowAccuracy: tmp = initialGuessLowAccuracy(MEP, irrep);
+                      break;
+  }
+  return tmp;
 }
 
 Eigen::VectorXd VIEFSolver::error_impl(const Eigen::VectorXd & dressedASC,
@@ -133,35 +147,6 @@ Eigen::VectorXd VIEFSolver::error_impl(const Eigen::VectorXd & dressedASC,
   error.segment(irrep*irrDim, irrDim) = blockPCMMatrix_[irrep] * dressedASC.segment(irrep*irrDim, irrDim)
     + getDressedMEP(bareMEP, irrep).segment(irrep*irrDim, irrDim);
   return error;
-}
-
-Eigen::VectorXd VIEFSolver::initialGuessUniform(double nuc_chg, int irrep) const
-{
-  int fullDim = PCMMatrix_.rows();
-  int nrBlocks = blockPCMMatrix_.size();
-  int irrDim = fullDim/nrBlocks;
-  Eigen::VectorXd guess = Eigen::VectorXd::Zero(fullDim);
-  guess.segment(irrep*irrDim, irrDim) = Eigen::VectorXd::Constant(irrDim, -nuc_chg/fullDim);
-  return guess;
-}
-
-Eigen::VectorXd VIEFSolver::initialGuessDiagonal(const Eigen::VectorXd & potential, int irrep) const
-{
-  int fullDim = PCMMatrix_.rows();
-  int nrBlocks = blockPCMMatrix_.size();
-  int irrDim = fullDim/nrBlocks;
-  Eigen::VectorXd guess = Eigen::VectorXd::Zero(fullDim);
-  // Preprocess incoming potential, get only the relevant irrep
-  Eigen::VectorXd tildeMEP = getDressedMEP(potential, irrep);
-  guess.segment(irrep*irrDim, irrDim) =
-    -(tildeMEP.segment(irrep*irrDim, irrDim)).cwiseQuotient(blockPCMMatrix_[irrep].diagonal());
-  return getBareASC(guess, irrep);
-}
-
-Eigen::VectorXd VIEFSolver::initialGuessLowAccuracy(const Eigen::VectorXd & potential, int irrep) const
-{
-  // The tolerance for the CG solver is hardcoded to 10^-4
-  return computeCharge_impl(potential, irrep, 1.0e-04);
 }
 
 Eigen::VectorXd VIEFSolver::updateCharge_impl(const Eigen::VectorXd & dressedASC,
