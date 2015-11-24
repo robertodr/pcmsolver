@@ -84,6 +84,22 @@ void VIEFSolver::buildIsotropicMatrix(const Cavity & cav, const IGreensFunction 
   built_ = true;
 }
 
+inline Eigen::VectorXd VIEFSolver::getBareASC(const Eigen::VectorXd & dressedASC, int irrep) const
+{
+  int irrDim = blockR_infinity_[irrep].rows();
+  Eigen::VectorXd bareASC = Eigen::VectorXd::Zero(dressedASC.size());
+  bareASC.segment(irrep*irrDim, irrDim) = blockR_infinity_[irrep].adjoint() * dressedASC.segment(irrep*irrDim, irrDim);
+  return bareASC;
+}
+
+inline Eigen::VectorXd VIEFSolver::getDressedMEP(const Eigen::VectorXd & bareMEP, int irrep) const
+{
+  int irrDim = blockR_infinity_[irrep].rows();
+  Eigen::VectorXd dressedMEP = Eigen::VectorXd::Zero(bareMEP.size());
+  dressedMEP.segment(irrep*irrDim, irrDim) = blockR_infinity_[irrep] * bareMEP.segment(irrep*irrDim, irrDim);
+  return dressedMEP;
+}
+
 Eigen::VectorXd VIEFSolver::computeCharge_impl(const Eigen::VectorXd & potential, int irrep, double CGtol) const
 {
   // The potential and charge vector are of dimension equal to the
@@ -148,13 +164,17 @@ Eigen::VectorXd VIEFSolver::initialGuessLowAccuracy(const Eigen::VectorXd & pote
   return computeCharge_impl(potential, irrep, 1.0e-04);
 }
 
-// TODO Transformation from dressed to bare representation!!!
-Eigen::VectorXd VIEFSolver::updateCharge_impl(const Eigen::VectorXd & dressedASC, const Eigen::VectorXd & bareMEP, int irrep) const
+Eigen::VectorXd VIEFSolver::updateCharge_impl(const Eigen::VectorXd & dressedASC,
+    const Eigen::VectorXd & bareMEP, int irrep) const
 {
+  Eigen::VectorXd tmp = Eigen::VectorXd::Zero(bareMEP.size());
   switch(update_) {
-    case SSD:        return updateChargeSSD(dressedASC, bareMEP, irrep);
-    case LineSearch: return updateChargeLineSearch(dressedASC, bareMEP, irrep);
+    case SSD:        tmp = updateChargeSSD(dressedASC, bareMEP, irrep);
+                     break;
+    case LineSearch: tmp = updateChargeLineSearch(dressedASC, bareMEP, irrep);
+                     break;
   }
+  return getBareASC(tmp, irrep);
 }
 
 std::ostream & VIEFSolver::printSolver(std::ostream & os)

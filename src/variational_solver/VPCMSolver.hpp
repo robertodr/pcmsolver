@@ -93,10 +93,6 @@ public:
     Eigen::VectorXd updateCharge(const Eigen::VectorXd & dressedASC, const Eigen::VectorXd & bareMEP, int irrep = 0) const {
         if (!built_) PCMSOLVER_ERROR("PCM matrix not calculated yet");
         return updateCharge_impl(dressedASC, bareMEP, irrep);
-        switch(update_) {
-          case SSD:        return updateChargeSSD(dressedASC, bareMEP, irrep);
-          case LineSearch: return updateChargeLineSearch(dressedASC, bareMEP, irrep);
-        }
     }
     /*! \brief Calculates the error
      *  \param[in] dressedASC vector containing the dressed ASC at cavity points

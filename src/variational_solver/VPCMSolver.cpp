@@ -45,8 +45,8 @@ Eigen::VectorXd VPCMSolver::updateChargeSSD(const Eigen::VectorXd & dressedASC,
   Eigen::VectorXd residual = -error_impl(dressedASC, bareMEP, irrep);
 
   Eigen::VectorXd updated = Eigen::VectorXd::Zero(fullDim);
-  updated.segment(irrep*irrDim, irrDim) =
-    dressedASC.segment(irrep*irrDim, irrDim) + residual.segment(irrep*irrDim, irrDim).cwiseQuotient(blockPCMMatrix_[irrep].diagonal());
+  updated.segment(irrep*irrDim, irrDim) = dressedASC.segment(irrep*irrDim, irrDim)
+    + (residual.segment(irrep*irrDim, irrDim)).cwiseQuotient(blockPCMMatrix_[irrep].diagonal());
   return updated;
 }
 
@@ -59,8 +59,10 @@ Eigen::VectorXd VPCMSolver::updateChargeLineSearch(const Eigen::VectorXd & dress
   // Get the residual
   Eigen::VectorXd residual = -error_impl(dressedASC, bareMEP, irrep);
   // Calculate the coefficient:
-  double alpha = residual.segment(irrep*irrDim, irrDim).norm()
-          / (residual.segment(irrep*irrDim, irrDim).transpose() * blockPCMMatrix_[irrep] * residual.segment(irrep*irrDim, irrDim));
+  double num = (residual.segment(irrep*irrDim, irrDim)).squaredNorm();
+  double den = (residual.segment(irrep*irrDim, irrDim).transpose()
+      * blockPCMMatrix_[irrep] * residual.segment(irrep*irrDim, irrDim));
+  double alpha = num / den;
 
   Eigen::VectorXd updated = Eigen::VectorXd::Zero(fullDim);
   updated.segment(irrep*irrDim, irrDim) =
