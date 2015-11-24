@@ -27,3 +27,12 @@ add_Catch_test(vcpcm_symmetry "variational_solver;vcpcm;vcpcm_symmetry")
 # vcpcm_gepol-NH3.cpp test
 set_property(GLOBAL APPEND PROPERTY UnitTestsSources ${CMAKE_CURRENT_LIST_DIR}/vcpcm_gepol-NH3.cpp)
 add_Catch_test(vcpcm_gepol-NH3 "variational_solver;vcpcm;vcpcm_gepol-NH3")
+
+# vcpcm-error_gepol-C2H4_D2h.cpp test
+set_property(GLOBAL APPEND PROPERTY UnitTestsSources ${CMAKE_CURRENT_LIST_DIR}/vcpcm-error_gepol-C2H4_D2h.cpp)
+add_Catch_test(vcpcm-error_gepol-C2H4_D2h "variational_solver;error;vcpcm;vcpcm-error_gepol-C2H4_D2h")
+
+# vcpcm-update_gepol-C2H4_D2h.cpp test
+configure_file(vcpcm-update_gepol-C2H4_D2h.cpp.in ${CMAKE_CURRENT_LIST_DIR}/vcpcm-update_gepol-C2H4_D2h.cpp @ONLY)
+set_property(GLOBAL APPEND PROPERTY UnitTestsSources ${CMAKE_CURRENT_LIST_DIR}/vcpcm-update_gepol-C2H4_D2h.cpp)
+add_Catch_test(vcpcm-update_gepol-C2H4_D2h "variational_solver;update;vcpcm;vcpcm-update_gepol-C2H4_D2h")

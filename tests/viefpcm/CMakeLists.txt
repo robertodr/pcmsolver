@@ -37,12 +37,12 @@ add_Catch_test(viefpcm-guess_gepol-C2H4_D2h "variational_solver;initial_guess;vi
 
 # viefpcm-error_gepol-C2H4_D2h.cpp test
 set_property(GLOBAL APPEND PROPERTY UnitTestsSources ${CMAKE_CURRENT_LIST_DIR}/viefpcm-error_gepol-C2H4_D2h.cpp)
-add_Catch_test(viefpcm-error_gepol-C2H4_D2h "variational_solver;error;viefpcm;viefpcm_gepol-C2H4_D2h")
+add_Catch_test(viefpcm-error_gepol-C2H4_D2h "variational_solver;error;viefpcm;viefpcm-error_gepol-C2H4_D2h")
 
 # viefpcm-update_gepol-C2H4_D2h.cpp test
 configure_file(viefpcm-update_gepol-C2H4_D2h.cpp.in ${CMAKE_CURRENT_LIST_DIR}/viefpcm-update_gepol-C2H4_D2h.cpp @ONLY)
 set_property(GLOBAL APPEND PROPERTY UnitTestsSources ${CMAKE_CURRENT_LIST_DIR}/viefpcm-update_gepol-C2H4_D2h.cpp)
-add_Catch_test(viefpcm-update_gepol-C2H4_D2h "variational_solver;update;viefpcm;viefpcm_gepol-C2H4_D2h")
+add_Catch_test(viefpcm-update_gepol-C2H4_D2h "variational_solver;update;viefpcm;viefpcm-update_gepol-C2H4_D2h")
 
 # viefpcm_gepol-point_from-file.cpp test
 set_property(GLOBAL APPEND PROPERTY UnitTestsSources ${CMAKE_CURRENT_LIST_DIR}/viefpcm_gepol-point_from-file.cpp)
