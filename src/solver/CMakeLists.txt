@@ -1,5 +1,5 @@
 # List of headers
-list(APPEND headers_list CPCMSolver.hpp IEFSolver.hpp PCMSolver.hpp RegisterSolverToFactory.hpp)
+list(APPEND headers_list CPCMSolver.hpp IEFSolver.hpp PCMSolver.hpp SolverImpl.hpp RegisterSolverToFactory.hpp)
 
 # List of sources
 list(APPEND sources_list CPCMSolver.cpp IEFSolver.cpp)

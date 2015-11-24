@@ -309,5 +309,70 @@ SCENARIO("Input reading using GetKw", "[input]")
                 }
             }
         }
+
+        /*! \class Input
+         *  \test \b InputiVariationalTest_Variational tests input reading on an input file parsed by pcmsolver.py
+         */
+        WHEN("The input file is for a variational solver")
+        {
+            std::string filename = "@CMAKE_CURRENT_LIST_DIR@/@variational.inp";
+            Input parsedInput = Input(filename);
+            std::string units = "ANGSTROM";
+            int CODATAyear = 1998;
+            std::string type = "GEPOL";
+            bool scaling = true;
+            std::string radiiSet = "BONDI";
+            std::string mode = "EXPLICIT";
+            Eigen::Vector3d c1, c2, c3;
+            c1 <<  0.00,  0.00, 0.00;
+            c2 <<  0.00, -0.96, 0.00;
+            c3 << -0.905, 0.32, 0.00;
+            c2 *= angstromToBohr(CODATAyear);
+            c3 *= angstromToBohr(CODATAyear);
+            Sphere sph1(c1, 1.80 * angstromToBohr(CODATAyear));
+            Sphere sph2(c2, 1.44 * angstromToBohr(CODATAyear));
+            Sphere sph3(c3, 1.44 * angstromToBohr(CODATAyear));
+            std::vector<Sphere> spheres;
+            spheres.push_back(sph1);
+            spheres.push_back(sph2);
+            spheres.push_back(sph3);
+            std::string solverType = "VIEFPCM";
+            int guess = 3; // Low accuracy guess
+            int update = 1; // Line search update
+            double probeRadius = 1.385 * angstromToBohr(CODATAyear); // The value for water
+            std::string greenInsideType = "VACUUM";
+            std::string greenOutsideType = "UNIFORMDIELECTRIC";
+            int derivativeInsideType = 0;
+            int derivativeOutsideType = 2;
+            double epsilonInside = 1.0;
+            double epsilonStaticOutside = 78.39;
+            double epsilonDynamicOutside = 10.423;
+            THEN("the input reading returns...")
+            {
+                REQUIRE(units                 == parsedInput.units());
+                REQUIRE(CODATAyear            == parsedInput.CODATAyear());
+                REQUIRE(type                  == parsedInput.cavityType());
+                REQUIRE(scaling               == parsedInput.scaling());
+                REQUIRE(radiiSet              == parsedInput.radiiSet());
+                REQUIRE(mode                  == parsedInput.mode());
+                for (size_t i = 0; i < spheres.size(); ++i) {
+                    for (size_t j = 0; j < 3; ++j) {
+                        REQUIRE(spheres[i].center(j) == Approx(parsedInput.spheres(i).center(j)));
+                    }
+                    REQUIRE(spheres[i].radius() == Approx(parsedInput.spheres(i).radius()));
+                }
+                REQUIRE(solverType            == parsedInput.solverType());
+                REQUIRE(guess                 == parsedInput.guess());
+                REQUIRE(update                == parsedInput.update());
+                REQUIRE(probeRadius           == Approx(parsedInput.cavityParams().probeRadius));
+                REQUIRE(greenInsideType       == parsedInput.greenInsideType());
+                REQUIRE(greenOutsideType      == parsedInput.greenOutsideType());
+                REQUIRE(derivativeInsideType  == parsedInput.insideGreenParams().howDerivative);
+                REQUIRE(derivativeOutsideType == parsedInput.outsideStaticGreenParams().howDerivative);
+                REQUIRE(epsilonInside         == Approx(parsedInput.insideGreenParams().epsilon));
+                REQUIRE(epsilonStaticOutside  == Approx(parsedInput.outsideStaticGreenParams().epsilon));
+                REQUIRE(epsilonDynamicOutside == Approx(parsedInput.outsideDynamicGreenParams().epsilon));
+            }
+        }
     }
 }

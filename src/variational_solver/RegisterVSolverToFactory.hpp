@@ -23,34 +23,42 @@
  */
 /* pcmsolver_copyright_end */
 
-#ifndef SOLVERDATA_HPP
-#define SOLVERDATA_HPP
+#ifndef REGISTERSOLVERTOFACTORY_HPP
+#define REGISTERSOLVERTOFACTORY_HPP
 
-#include "Config.hpp"
+#include <string>
 
-/*! @struct solverData
- *  @brief Contains all data defined from user input in the solver section.
+#include "Factory.hpp"
+#include "SolverData.hpp"
+#include "VCPCMSolver.hpp"
+#include "VIEFSolver.hpp"
+
+/*! \file RegisterVSolverToFactory.hpp
+ *  \brief Register each variational solver to the factory.
+ *  \author Roberto Di Remigio
+ *  \date 2015
  */
 
-struct solverData
+namespace
 {
-    /*! The correction factor to be use in a CPCM calculation */
-    double correction;
-    /*! The type of integral equation to solve, relevant only for wavelet solvers */
-    int integralEquation;
-    /*! Triggers hermitivitization of the PCM matrix obtained by collocation */
-    bool hermitivitize;
-    /*! Type of initial guess for the variational solver */
-    int guess;
-    /*! Type of ASC update for the variational solver */
-    int update;
-    /*! Whether the structure was initialized with user input or not */
-    bool empty;
+    VPCMSolver * createVCPCMSolver(const solverData & data)
+    {
+        return new VCPCMSolver(data.guess, data.update, data.correction);
+    }
+    const std::string VCPCMSOLVER("VCPCM");
+    const bool registeredVCPCMSolver =
+        Factory<VPCMSolver, solverData>::TheFactory().registerObject(VCPCMSOLVER, createVCPCMSolver);
+}
 
-    solverData() { empty = true; }
-    solverData(double corr,  int int_eq = 1, bool symm = true, int g = 0, int u = 0) :
-       correction(corr), integralEquation(int_eq), hermitivitize(symm),
-      guess(g), update(u) { empty = false; }
-};
+namespace
+{
+    VPCMSolver * createVIEFSolver(const solverData & data)
+    {
+        return new VIEFSolver(data.guess, data.update);
+    }
+    const std::string VIEFSOLVER("VIEFPCM");
+    const bool registeredVIEFSolver =
+        Factory<VPCMSolver, solverData>::TheFactory().registerObject(VIEFSOLVER, createVIEFSolver);
+}
 
-#endif // SOLVERDATA_HPP
+#endif // REGISTERVSOLVERTOFACTORY_HPP

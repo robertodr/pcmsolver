@@ -169,6 +169,9 @@ void Input::reader(const std::string & filename)
     correction_ = medium.getDbl("CORRECTION");
     hermitivitize_ = medium.getBool("MATRIXSYMM");
     isDynamic_ = medium.getBool("NONEQUILIBRIUM");
+    isVariational_ = ((solverType_ == "VIEFCM") || (solverType_ == "VCPCM"));
+    guess_ = ::guess(medium.getStr("GUESS"));
+    update_ = ::update(medium.getStr("UPDATE"));
 
     providedBy_ = std::string("API-side");
 }
@@ -366,7 +369,7 @@ greenData Input::outsideDynamicGreenParams()
 solverData Input::solverParams()
 {
     if (solverData_.empty) {
-        solverData_ = solverData(correction_, equationType_, hermitivitize_);
+        solverData_ = solverData(correction_, equationType_, hermitivitize_, guess_, update_);
     }
     return solverData_;
 }
@@ -406,6 +409,26 @@ int integralEquation(const std::string & name)
     mapStringToInt.insert(std::map<std::string, int>::value_type("FIRSTKIND",0));
     mapStringToInt.insert(std::map<std::string, int>::value_type("SECONDKIND", 1));
     mapStringToInt.insert(std::map<std::string, int>::value_type("FULL", 2));
+
+    return mapStringToInt.find(name)->second;
+}
+
+int guess(const std::string & name)
+{
+    static std::map<std::string, int> mapStringToInt;
+    mapStringToInt.insert(std::map<std::string, int>::value_type("TRIVIAL",0));
+    mapStringToInt.insert(std::map<std::string, int>::value_type("UNIFORM", 1));
+    mapStringToInt.insert(std::map<std::string, int>::value_type("DIAGONAL", 2));
+    mapStringToInt.insert(std::map<std::string, int>::value_type("LOWACCURACY", 3));
+
+    return mapStringToInt.find(name)->second;
+}
+
+int update(const std::string & name)
+{
+    static std::map<std::string, int> mapStringToInt;
+    mapStringToInt.insert(std::map<std::string, int>::value_type("SSD",0));
+    mapStringToInt.insert(std::map<std::string, int>::value_type("LINESEARCH", 1));
 
     return mapStringToInt.find(name)->second;
 }

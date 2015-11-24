@@ -1,5 +1,5 @@
 # List of headers
-list(APPEND headers_list VCPCMSolver.hpp VIEFSolver.hpp VPCMSolver.hpp VSolverImpl.hpp)
+list(APPEND headers_list VCPCMSolver.hpp VIEFSolver.hpp VPCMSolver.hpp VSolverImpl.hpp RegisterVSolverToFactory.hpp)
 
 # List of sources
 list(APPEND sources_list VPCMSolver.cpp VCPCMSolver.cpp VIEFSolver.cpp)

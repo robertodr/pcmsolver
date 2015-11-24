@@ -33,9 +33,7 @@ CODATAdict = dict([(2010, 0.52917721092), (2006, 0.52917720859), (2002, 0.529177
 import sys
 import re
 import os
-import string
 import subprocess
-import tempfile
 from copy import deepcopy
 
 sys.path.append('@PROJECT_SOURCE_DIR@/cmake/lib/docopt')
@@ -254,7 +252,7 @@ def setup_keywords():
     # Medium section
     medium = getkw.Section('MEDIUM', callback = verify_medium)
     # Type of solver
-    # Valid values: IEFPCM, CPCM, WAVELET or LINEAR
+    # Valid values: IEFPCM, CPCM, WAVELET, LINEAR, VIEFPCM or VCPCM
     medium.add_kw('SOLVERTYPE',   'STR', 'IEFPCM')
     # Whether nonequilibrium response is to be used
     # Valid for: IEFPCM, CPCM, WAVELET or LINEAR
@@ -298,6 +296,16 @@ def setup_keywords():
     # Valid values: double in ]0, 1[
     # Default: 0.001
     medium.add_kw('B', 'DBL', 0.001)
+    # Type of initial guess for the variational solver
+    # Valid for: VIEFPCM and VCPCM
+    # Valid values: TRIVIAL, UNIFORM, DIAGONAL or LOWACCURACY
+    # Default: TRIVIAL
+    medium.add_kw('GUESS', 'STR', 'TRIVIAL')
+    # Type of ASC update for the variational solver
+    # Valid for: VIEFPCM and VCPCM
+    # Valid values: SSD or LINESEARCH
+    # Default: SSD
+    medium.add_kw('UPDATE', 'STR', 'SSD')
     top.add_sect(medium)
 
     # Green's function section
@@ -566,11 +574,15 @@ def verify_medium(section):
         print('Probe radius has to be within [0.1,100] Atomic Units')
         sys.exit(1)
 
-    allowed_types = ('IEFPCM', 'CPCM', 'WAVELET', 'LINEAR')
+    allowed_types = ('IEFPCM', 'CPCM', 'WAVELET', 'LINEAR', 'VIEFPCM', 'VCPCM')
     key = section.get('SOLVERTYPE')
     val = key.get()
     if (val not in allowed_types):
         print('Allowed types are: {}'.format(allowed_types))
+        sys.exit(1)
+    # Nonequilibrium and variational solvers are not compatible
+    if (section.get('NONEQUILIBRIUM').get() & ((val == 'VIEFPCM') | (val == 'VCPCM'))):
+        print('Nonequilibrium currently not implemented with variational solvers')
         sys.exit(1)
     allowed_equations = ('FIRSTKIND', 'SECONDKIND', 'FULL')
     key = section.get('EQUATIONTYPE')
@@ -594,6 +606,19 @@ def verify_medium(section):
     b = section.get('B')
     if (b.get() >= 1.0 and b.get() <= 0.0):
         print('A posteriori compression parameter has to be in ]0.0, 1.0[')
+        sys.exit(1)
+
+    allowed_guess = ('TRIVIAL', 'UNIFORM', 'DIAGONAL', 'LOWACCURACY')
+    key = section.get('GUESS')
+    val = key.get()
+    if (val not in allowed_guess):
+        print('Allowed guesses are: {}'.format(allowed_guess))
+        sys.exit(1)
+    allowed_update = ('SSD', 'LINESEARCH')
+    key = section.get('UPDATE')
+    val = key.get()
+    if (val not in allowed_update):
+        print('Allowed updates are: {}'.format(allowed_update))
         sys.exit(1)
 
 def verify_green(section):
