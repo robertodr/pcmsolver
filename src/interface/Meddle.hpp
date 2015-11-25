@@ -114,6 +114,27 @@ namespace pcm {
              *  otherwise.
              */
             void computeResponseASC(const char * mep_name, const char * asc_name, int irrep) const;
+            /*! \brief Computes initial guess for the ASC given a MEP and the desired irreducible representation
+             *  \param[in] mep_name label of the MEP surface function
+             *  \param[in] asc_name label of the ASC surface function
+             *  \param[in] nuc_chg  total nuclear charge of the molecule
+             *  \param[in] irrep index of the desired irreducible representation
+             */
+            void computeInitialGuessASC(const char * mep_name, const char * asc_name, double nuc_chg, int irrep) const;
+            /*! \brief Computes error for the ASC given a MEP and the desired irreducible representation
+             *  \param[in] mep_name label of the MEP surface function
+             *  \param[in] asc_name label of the ASC surface function
+             *  \param[in] err_name label of the error vector surface function
+             *  \param[in] irrep index of the desired irreducible representation
+             */
+            void computeErrorASC(const char * mep_name, const char * asc_name, const char * err_name, int irrep) const;
+            /*! \brief Computes update for the ASC given an error vector and the desired irreducible representation
+             *  \param[in, out] context the PCM context object
+             *  \param[in] asc_name label of the ASC surface function
+             *  \param[in] err_name label of the error surface function
+             *  \param[in] irrep index of the desired irreducible representation
+             */
+            void computeUpdateASC(const char * asc_name, const char * err_name, int irrep) const;
             /*! \brief Computes the polarization energy
              *  \param[in] mep_name label of the MEP surface function
              *  \param[in] asc_name label of the ASC surface function

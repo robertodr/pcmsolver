@@ -191,33 +191,37 @@ PCMSOLVER_API void pcmsolver_compute_response_asc(pcmsolver_context_t * context,
  *  \param[in, out] context the PCM context object
  *  \param[in] mep_name label of the MEP surface function
  *  \param[in] asc_name label of the ASC surface function
+ *  \param[in] nuc_chg  total nuclear charge of the molecule
  *  \param[in] irrep index of the desired irreducible representation
  */
 PCMSOLVER_API void pcmsolver_compute_initial_guess_asc(pcmsolver_context_t * context,
                                         const char * mep_name,
                                         const char * asc_name,
+                                        double nuc_chg,
                                         int irrep);
 
-/*! \brief Computes update for the ASC given a MEP and the desired irreducible representation
+/*! \brief Computes error for the ASC given a MEP and the desired irreducible representation
  *  \param[in, out] context the PCM context object
  *  \param[in] mep_name label of the MEP surface function
  *  \param[in] asc_name label of the ASC surface function
+ *  \param[in] err_name label of the error vector surface function
+ *  \param[in] irrep index of the desired irreducible representation
+ */
+PCMSOLVER_API void pcmsolver_compute_error_asc(pcmsolver_context_t * context,
+                                        const char * mep_name,
+                                        const char * asc_name,
+                                        const char * err_name,
+                                        int irrep);
+
+/*! \brief Computes update for the ASC given an error vector and the desired irreducible representation
+ *  \param[in, out] context the PCM context object
+ *  \param[in] asc_name label of the ASC surface function
+ *  \param[in] err_name label of the error surface function
  *  \param[in] irrep index of the desired irreducible representation
  */
 PCMSOLVER_API void pcmsolver_compute_update_asc(pcmsolver_context_t * context,
-                                        const char * mep_name,
                                         const char * asc_name,
-                                        int irrep);
-
-/*! \brief Computes residual for the ASC given a MEP and the desired irreducible representation
- *  \param[in, out] context the PCM context object
- *  \param[in] mep_name label of the MEP surface function
- *  \param[in] asc_name label of the ASC surface function
- *  \param[in] irrep index of the desired irreducible representation
- */
-PCMSOLVER_API void pcmsolver_compute_residual_asc(pcmsolver_context_t * context,
-                                        const char * mep_name,
-                                        const char * asc_name,
+                                        const char * err_name,
                                         int irrep);
 
 /*! \brief Computes the polarization energy

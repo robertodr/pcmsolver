@@ -123,25 +123,27 @@ void pcmsolver_compute_response_asc(pcmsolver_context_t * context,
 void pcmsolver_compute_initial_guess_asc(pcmsolver_context_t * context,
                            const char * mep_name,
                            const char * asc_name,
+                           double nuc_chg,
                            int irrep)
 {
-    //AS_TYPE(pcm::Meddle, context)->computeInitialGuessASC(mep_name, asc_name, irrep);
+    AS_TYPE(pcm::Meddle, context)->computeInitialGuessASC(mep_name, asc_name, nuc_chg, irrep);
 }
 
 void pcmsolver_compute_update_asc(pcmsolver_context_t * context,
-                           const char * mep_name,
                            const char * asc_name,
+                           const char * err_name,
                            int irrep)
 {
-    //AS_TYPE(pcm::Meddle, context)->computeUpdateASC(mep_name, asc_name, irrep);
+    AS_TYPE(pcm::Meddle, context)->computeUpdateASC(asc_name, err_name, irrep);
 }
 
-void pcmsolver_compute_residual_asc(pcmsolver_context_t * context,
+void pcmsolver_compute_error_asc(pcmsolver_context_t * context,
                            const char * mep_name,
                            const char * asc_name,
+                           const char * err_name,
                            int irrep)
 {
-    //AS_TYPE(pcm::Meddle, context)->computeResidualASC(mep_name, asc_name, irrep);
+    AS_TYPE(pcm::Meddle, context)->computeErrorASC(mep_name, asc_name, err_name, irrep);
 }
 
 double pcmsolver_compute_polarization_energy(pcmsolver_context_t * context,
@@ -276,6 +278,61 @@ namespace pcm {
         } else { // Create key-value pair
             functions_.insert(std::make_pair(ASC, asc));
         }
+    }
+
+    void Meddle::computeInitialGuessASC(const char * mep_name, const char * asc_name, double nuc_chg, int irrep) const
+    {
+        std::string MEP(mep_name);
+        std::string ASC(asc_name);
+
+        // Get the proper iterators
+        SurfaceFunctionMap::const_iterator iter_pot = functions_.find(MEP);
+        SurfaceFunction asc(cavity_->size());
+        asc.vector() = Y_0_->initialGuess(iter_pot->second.vector(), nuc_chg, irrep);
+        // Renormalize
+        asc /= double(cavity_->pointGroup().nrIrrep());
+        if (functions_.count(ASC) == 1) { // Key in map already
+            functions_[ASC] = asc;
+        } else { // Create key-value pair
+            functions_.insert(std::make_pair(ASC, asc));
+        }
+    }
+
+    void Meddle::computeErrorASC(const char * mep_name, const char * asc_name, const char * err_name, int irrep) const
+    {
+        std::string MEP(mep_name);
+        std::string ASC(asc_name);
+        std::string ERR(err_name);
+
+        // Get the proper iterators
+        SurfaceFunctionMap::const_iterator iter_pot = functions_.find(MEP);
+        SurfaceFunctionMap::const_iterator iter_asc = functions_.find(ASC);
+        SurfaceFunction error(cavity_->size());
+        error.vector() = Y_0_->error(iter_pot->second.vector(), iter_asc->second.vector(), irrep);
+        // Renormalize
+        error /= double(cavity_->pointGroup().nrIrrep());
+        if (functions_.count(ERR) == 1) { // Key in map already
+            functions_[ERR] = error;
+        } else { // Create key-value pair
+            functions_.insert(std::make_pair(ERR, error));
+        }
+    }
+
+    void Meddle::computeUpdateASC(const char * asc_name, const char * err_name, int irrep) const
+    {
+        std::string ASC(asc_name);
+        std::string ERR(err_name);
+
+        // Get the proper iterators
+        // The ASC iterator is non-const since we will overwrite its SurfaceFunction
+        SurfaceFunctionMap::iterator iter_asc = functions_.find(ASC);
+        SurfaceFunctionMap::const_iterator iter_err = functions_.find(ERR);
+        Eigen::VectorXd asc = Eigen::VectorXd::Zero(cavity_->size());
+        asc = Y_0_->updateCharge(iter_asc->second.vector(), iter_err->second.vector(), irrep);
+        // Renormalize
+        asc /= double(cavity_->pointGroup().nrIrrep());
+        // Update
+        iter_asc->second.vector() = asc;
     }
 
     void Meddle::getSurfaceFunction(size_t size, double values[], const char * name) const

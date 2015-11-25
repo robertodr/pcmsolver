@@ -41,7 +41,7 @@ module pcmsolver
     public pcmsolver_compute_response_asc
     public pcmsolver_compute_initial_guess_asc
     public pcmsolver_compute_update_asc
-    public pcmsolver_compute_residual_asc
+    public pcmsolver_compute_error_asc
     public pcmsolver_compute_polarization_energy
     public pcmsolver_get_surface_function
     public pcmsolver_set_surface_function
@@ -164,31 +164,32 @@ module pcmsolver
     end interface pcmsolver_compute_response_asc
 
     interface pcmsolver_compute_initial_guess_asc
-        subroutine pcmsolver_compute_initial_guess_asc(context, mep_name, asc_name, irrep) bind(C)
+        subroutine pcmsolver_compute_initial_guess_asc(context, mep_name, asc_name, nuc_chg, irrep) bind(C)
             import
             type(c_ptr), value :: context
             character(c_char), intent(in) :: mep_name, asc_name
+            real(c_double), value, intent(in) :: nuc_chg
             integer(c_int), value, intent(in) :: irrep
         end subroutine pcmsolver_compute_initial_guess_asc
     end interface pcmsolver_compute_initial_guess_asc
 
-    interface pcmsolver_compute_update_asc
-        subroutine pcmsolver_compute_update_asc(context, mep_name, asc_name, irrep) bind(C)
+    interface pcmsolver_compute_error_asc
+        subroutine pcmsolver_compute_error_asc(context, mep_name, asc_name, err_name, irrep) bind(C)
             import
             type(c_ptr), value :: context
-            character(c_char), intent(in) :: mep_name, asc_name
+            character(c_char), intent(in) :: mep_name, asc_name, err_name
+            integer(c_int), value, intent(in) :: irrep
+        end subroutine pcmsolver_compute_error_asc
+    end interface pcmsolver_compute_error_asc
+
+    interface pcmsolver_compute_update_asc
+        subroutine pcmsolver_compute_update_asc(context, asc_name, err_name, irrep) bind(C)
+            import
+            type(c_ptr), value :: context
+            character(c_char), intent(in) :: asc_name, err_name
             integer(c_int), value, intent(in) :: irrep
         end subroutine pcmsolver_compute_update_asc
     end interface pcmsolver_compute_update_asc
-
-    interface pcmsolver_compute_residual_asc
-        subroutine pcmsolver_compute_residual_asc(context, mep_name, asc_name, irrep) bind(C)
-            import
-            type(c_ptr), value :: context
-            character(c_char), intent(in) :: mep_name, asc_name
-            integer(c_int), value, intent(in) :: irrep
-        end subroutine pcmsolver_compute_residual_asc
-    end interface pcmsolver_compute_residual_asc
 
     interface pcmsolver_compute_polarization_energy
         function pcmsolver_compute_polarization_energy(context, mep_name, asc_name) result(energy) bind(C)
