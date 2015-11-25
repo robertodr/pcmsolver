@@ -139,7 +139,9 @@ def parse_pcm_input(inputFile):
     inkw.run_callbacks(valid_keywords)
 
     # The parsed, machine-readable file is now saved.
-    parsedFile = '@' + inputFile
+    path = os.path.dirname(inputFile)
+    fname = os.path.basename(inputFile)
+    parsedFile = os.path.join(path, '@' + fname)
     # If parsedFile already exists, it might be a leftover.
     # Remove it
     if (os.path.isfile(parsedFile)):

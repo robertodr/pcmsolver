@@ -1,0 +1,16 @@
+units = angstrom
+medium
+{
+  solvertype = vcpcm
+  guess = trivial
+  update = ssd
+  correction = 0.5
+  solvent = cyclohexane
+}
+
+cavity
+{
+  type = gepol
+  area = 0.3
+  mode = implicit
+}

@@ -23,8 +23,8 @@
  */
 /* pcmsolver_copyright_end */
 
-#ifndef REGISTERSOLVERTOFACTORY_HPP
-#define REGISTERSOLVERTOFACTORY_HPP
+#ifndef REGISTERVSOLVERTOFACTORY_HPP
+#define REGISTERVSOLVERTOFACTORY_HPP
 
 #include <string>
 
@@ -39,11 +39,13 @@
  *  \date 2015
  */
 
+// TODO These static casts are ugly, think of a better solution?
+
 namespace
 {
     VPCMSolver * createVCPCMSolver(const solverData & data)
     {
-        return new VCPCMSolver(data.guess, data.update, data.correction);
+        return new VCPCMSolver(static_cast<VPCMSolver::GuessType>(data.guess), static_cast<VPCMSolver::UpdateType>(data.update), data.correction);
     }
     const std::string VCPCMSOLVER("VCPCM");
     const bool registeredVCPCMSolver =
@@ -54,7 +56,7 @@ namespace
 {
     VPCMSolver * createVIEFSolver(const solverData & data)
     {
-        return new VIEFSolver(data.guess, data.update);
+        return new VIEFSolver(static_cast<VPCMSolver::GuessType>(data.guess), static_cast<VPCMSolver::UpdateType>(data.update));
     }
     const std::string VIEFSOLVER("VIEFPCM");
     const bool registeredVIEFSolver =
