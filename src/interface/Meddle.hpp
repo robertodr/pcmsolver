@@ -37,6 +37,7 @@ class IGreensFunction;
 class Input;
 struct PCMInput;
 class PCMSolver;
+class VPCMSolver;
 
 #include "Input.hpp"
 #include "SurfaceFunction.hpp"
@@ -158,20 +159,27 @@ namespace pcm {
             PCMSolver * K_0_;
             /*! Solver with dynamic permittivity */
             PCMSolver * K_d_;
+            /*! Variational solver with static permittivity */
+            VPCMSolver * Y_0_;
             /*! PCMSolver set up information */
             mutable std::ostringstream infoStream_;
             /*! Whether K_d_ was initialized */
             bool hasDynamic_;
+            /*! Whether Y_0_ was initialized */
+            bool hasVariational_;
             /*! SurfaceFunction map */
             mutable SurfaceFunctionMap functions_;
             /*! Initialize input_ */
-            void initInput(pcmsolver_reader_t input_reading, int nr_nuclei, double charges[], double coordinates[], int symmetry_info[], const PCMInput & host_input);
+            void initInput(pcmsolver_reader_t input_reading, int nr_nuclei,
+                double charges[], double coordinates[], int symmetry_info[], const PCMInput & host_input);
             /*! Initialize cavity_ */
             void initCavity();
             /*! Initialize static solver K_0_ */
             void initStaticSolver();
             /*! Initialize dynamic solver K_d_ */
             void initDynamicSolver();
+            /*! Initialize static, variational solver Y_0_ */
+            void initStaticVariationalSolver();
             /*! Collect info on medium */
             void mediumInfo(IGreensFunction * gf_i, IGreensFunction * gf_o) const;
             void printer(const std::string & message) const;

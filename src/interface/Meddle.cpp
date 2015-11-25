@@ -41,6 +41,8 @@
 #include "RegisterGreensFunctionToFactory.hpp"
 #include "PCMSolver.hpp"
 #include "RegisterSolverToFactory.hpp"
+#include "VPCMSolver.hpp"
+#include "RegisterVSolverToFactory.hpp"
 #include "Atom.hpp"
 #include "Citation.hpp"
 #include "cnpy.hpp"
@@ -188,7 +190,11 @@ namespace pcm {
     {
         initInput(input_reading, nr_nuclei, charges, coordinates, symmetry_info, host_input);
         initCavity();
-        initStaticSolver();
+        if (input_.isVariational()) {
+          initStaticVariationalSolver();
+        } else {
+          initStaticSolver();
+        }
         if (input_.isDynamic()) initDynamicSolver();
         // Reserve space for Tot-MEP/ASC, Nuc-MEP/ASC and Ele-MEP/ASC
         functions_.reserve(12);
@@ -197,7 +203,11 @@ namespace pcm {
     Meddle::~Meddle()
     {
         delete cavity_;
-        delete K_0_;
+        if (hasVariational_) {
+          delete Y_0_;
+        } else {
+          delete K_0_;
+        }
         if (hasDynamic_) delete K_d_;
     }
 
@@ -359,7 +369,8 @@ namespace pcm {
         TIMER_DONE("pcmsolver.timer.dat");
     }
 
-    void Meddle::initInput(pcmsolver_reader_t input_reading, int nr_nuclei, double charges[], double coordinates[], int symmetry_info[], const PCMInput & host_input)
+    void Meddle::initInput(pcmsolver_reader_t input_reading, int nr_nuclei,
+        double charges[], double coordinates[], int symmetry_info[], const PCMInput & host_input)
     {
         if (input_reading) {
             input_ = Input(host_input);
@@ -423,6 +434,24 @@ namespace pcm {
 
         infoStream_ << "========== Dynamic solver " << std::endl;
         infoStream_ << *K_d_ << std::endl;
+        mediumInfo(gf_i, gf_o);
+        delete gf_o;
+        delete gf_i;
+    }
+
+    void Meddle::initStaticVariationalSolver()
+    {
+        IGreensFunction * gf_i = Factory<IGreensFunction, greenData>::TheFactory().create(input_.greenInsideType(),
+          input_.insideGreenParams());
+        IGreensFunction * gf_o = Factory<IGreensFunction, greenData>::TheFactory().create(input_.greenOutsideType(),
+                input_.outsideStaticGreenParams());
+        std::string modelType = input_.solverType();
+        Y_0_ = Factory<VPCMSolver, solverData>::TheFactory().create(modelType, input_.solverParams());
+        Y_0_->buildSystemMatrix(*cavity_, *gf_i, *gf_o);
+        hasVariational_ = true;
+
+        infoStream_ << "========== Static variational solver " << std::endl;
+        infoStream_ << *Y_0_ << std::endl;
         mediumInfo(gf_i, gf_o);
         delete gf_o;
         delete gf_i;
