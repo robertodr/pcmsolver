@@ -36,13 +36,11 @@
 #include "MathUtils.hpp"
 
 Eigen::VectorXd VPCMSolver::updateChargeSSD(const Eigen::VectorXd & dressedASC,
-    const Eigen::VectorXd & bareMEP, int irrep) const
+    const Eigen::VectorXd & residual, int irrep) const
 {
   int fullDim = PCMMatrix_.rows();
   int nrBlocks = blockPCMMatrix_.size();
   int irrDim = fullDim/nrBlocks;
-  // Get the residual
-  Eigen::VectorXd residual = -error_impl(dressedASC, bareMEP, irrep);
 
   Eigen::VectorXd updated = Eigen::VectorXd::Zero(fullDim);
   updated.segment(irrep*irrDim, irrDim) = dressedASC.segment(irrep*irrDim, irrDim)
@@ -51,13 +49,11 @@ Eigen::VectorXd VPCMSolver::updateChargeSSD(const Eigen::VectorXd & dressedASC,
 }
 
 Eigen::VectorXd VPCMSolver::updateChargeLineSearch(const Eigen::VectorXd & dressedASC,
-    const Eigen::VectorXd & bareMEP, int irrep) const
+    const Eigen::VectorXd & residual, int irrep) const
 {
   int fullDim = PCMMatrix_.rows();
   int nrBlocks = blockPCMMatrix_.size();
   int irrDim = fullDim/nrBlocks;
-  // Get the residual
-  Eigen::VectorXd residual = -error_impl(dressedASC, bareMEP, irrep);
   // Calculate the coefficient:
   double num = (residual.segment(irrep*irrDim, irrDim)).squaredNorm();
   double den = (residual.segment(irrep*irrDim, irrDim).transpose()
@@ -98,3 +94,20 @@ Eigen::VectorXd VPCMSolver::initialGuessLowAccuracy(const Eigen::VectorXd & MEP,
   return computeCharge_impl(MEP, irrep, CGtol);
 }
 
+std::string guess(VPCMSolver::GuessType g)
+{
+  switch(g) {
+    case VPCMSolver::Trivial: return "trivial";
+    case VPCMSolver::Uniform: return "uniform";
+    case VPCMSolver::Diagonal: return "diagonal PCM matrix";
+    case VPCMSolver::LowAccuracy: return "low accuracy";
+  }
+}
+
+std::string update(VPCMSolver::UpdateType u)
+{
+  switch(u) {
+    case VPCMSolver::SSD:        return "scaled steepest descent";
+    case VPCMSolver::LineSearch: return "line search steepest descent";
+  }
+}

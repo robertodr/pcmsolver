@@ -150,13 +150,13 @@ Eigen::VectorXd VIEFSolver::error_impl(const Eigen::VectorXd & dressedASC,
 }
 
 Eigen::VectorXd VIEFSolver::updateCharge_impl(const Eigen::VectorXd & dressedASC,
-    const Eigen::VectorXd & bareMEP, int irrep) const
+    const Eigen::VectorXd & residual, int irrep) const
 {
-  Eigen::VectorXd tmp = Eigen::VectorXd::Zero(bareMEP.size());
+  Eigen::VectorXd tmp = Eigen::VectorXd::Zero(dressedASC.size());
   switch(update_) {
-    case SSD:        tmp = updateChargeSSD(dressedASC, bareMEP, irrep);
+    case SSD:        tmp = updateChargeSSD(dressedASC, residual, irrep);
                      break;
-    case LineSearch: tmp = updateChargeLineSearch(dressedASC, bareMEP, irrep);
+    case LineSearch: tmp = updateChargeLineSearch(dressedASC, residual, irrep);
                      break;
   }
   return getBareASC(tmp, irrep);
@@ -170,7 +170,9 @@ std::ostream & VIEFSolver::printSolver(std::ostream & os)
   } else {
     type = "Variational IEFPCM, anisotropic";
   }
-  os << "Solver Type: " << type << std::endl;
+  os << "Solver Type:       " << type << std::endl;
+  os << "ASC initial guess: " << guess(guess_) << std::endl;
+  os << "ASC update:        " << update(update_);
   return os;
 }
 

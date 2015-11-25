@@ -72,7 +72,8 @@ TEST_CASE("Test variational solver ASC updates for the IEFPCM with C2H4 molecule
     solver.buildSystemMatrix(cavity, gfInside, gfOutside);
     Eigen::VectorXd guess = solver.initialGuess(fake_mep);
     // Perform the update on the trivial guess
-    Eigen::VectorXd update = solver.updateCharge(Eigen::VectorXd::Zero(size), fake_mep);
+    Eigen::VectorXd residual = -solver.error(Eigen::VectorXd::Zero(size), fake_mep);
+    Eigen::VectorXd update = solver.updateCharge(Eigen::VectorXd::Zero(size), residual);
     for (size_t i = 0; i < size; ++i) {
       INFO("update(" << i << ") = " << update(i));
       REQUIRE(update(i) == Approx(guess(i)));
@@ -87,7 +88,8 @@ TEST_CASE("Test variational solver ASC updates for the IEFPCM with C2H4 molecule
       INFO("guess(" << i << ") = " << guess(i));
     }
     REQUIRE(guess.sum() == Approx(0.0));
-    Eigen::VectorXd update = solver.updateCharge(guess, fake_mep);
+    Eigen::VectorXd residual = -solver.error(guess, fake_mep);
+    Eigen::VectorXd update = solver.updateCharge(guess, residual);
     /* Uncomment to update the reference file
     unsigned int dim = static_cast<unsigned int>(size);
     const unsigned int shape[] = {dim};

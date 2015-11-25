@@ -75,9 +75,9 @@ public:
     void buildSystemMatrix(const Cavity & cavity, const IGreensFunction & gf_i, const IGreensFunction & gf_o) {
         buildSystemMatrix_impl(cavity, gf_i, gf_o);
     }
-    /*! \brief Updates the bare ASC given the dressed ASC, bare MEP and the desired irreducible representation
+    /*! \brief Updates the bare ASC given the dressed ASC, the residual and the desired irreducible representation
      *  \param[in] dressedASC vector containing the dressed ASC at cavity points
-     *  \param[in] bareMEP the vector containing the MEP at cavity points
+     *  \param[in] residual the vector containing the MEP at cavity points
      *  \param[in] irrep the irreducible representation of the MEP and ASC
      *  \return the updated **bare** ASC
      *
@@ -88,11 +88,12 @@ public:
      *  and then transforms the updated ASC to the bare representation.
      *  \note This function takes care of the transformation to the bare representation
      *  of the ASC
-     *  \warning This function should only be called internally!
+     *  \warning This function should only be called internally **after** the error vector
+     *  has been calculated!
      */
-    Eigen::VectorXd updateCharge(const Eigen::VectorXd & dressedASC, const Eigen::VectorXd & bareMEP, int irrep = 0) const {
+    Eigen::VectorXd updateCharge(const Eigen::VectorXd & dressedASC, const Eigen::VectorXd & residual, int irrep = 0) const {
         if (!built_) PCMSOLVER_ERROR("PCM matrix not calculated yet");
-        return updateCharge_impl(dressedASC, bareMEP, irrep);
+        return updateCharge_impl(dressedASC, residual, irrep);
     }
     /*! \brief Calculates the error
      *  \param[in] dressedASC vector containing the dressed ASC at cavity points
@@ -229,9 +230,9 @@ protected:
 
     /*! \name ASC update methods */
     ///@{
-    /*! \brief Updates the bare ASC given the dressed ASC, bare MEP and the desired irreducible representation
+    /*! \brief Updates the bare ASC given the dressed ASC, the residual and the desired irreducible representation
      *  \param[in] dressedASC vector containing the dressed ASC at cavity points
-     *  \param[in] bareMEP the vector containing the MEP at cavity points
+     *  \param[in] residual the vector containing the MEP at cavity points
      *  \param[in] irrep the irreducible representation of the MEP and ASC
      *  \return the updated **bare** ASC
      *
@@ -243,10 +244,10 @@ protected:
      *  \note This function takes care of the transformation to the bare representation
      *  of the ASC
      */
-    virtual Eigen::VectorXd updateCharge_impl(const Eigen::VectorXd & dressedASC, const Eigen::VectorXd & bareMEP, int irrep = 0) const = 0;
+    virtual Eigen::VectorXd updateCharge_impl(const Eigen::VectorXd & dressedASC, const Eigen::VectorXd & residual, int irrep = 0) const = 0;
     /*! \brief Scaled steepest descent ASC update
      *  \param[in] dressedASC vector containing the dressed ASC at cavity points
-     *  \param[in] bareMEP the vector containing the MEP at cavity points
+     *  \param[in] residual the vector containing the MEP at cavity points
      *  \param[in] irrep the irreducible representation of the MEP and ASC
      *
      *  The update is calculated as:
@@ -258,10 +259,10 @@ protected:
      *  ASC to the bare representation
      */
     Eigen::VectorXd updateChargeSSD(const Eigen::VectorXd & dressedASC,
-        const Eigen::VectorXd & bareMEP, int irrep = 0) const attribute(const);
+        const Eigen::VectorXd & residual, int irrep = 0) const attribute(const);
     /*! \brief Line search ASC update
      *  \param[in] dressedASC vector containing the dressed ASC at cavity points
-     *  \param[in] bareMEP the vector containing the MEP at cavity points
+     *  \param[in] residual the vector containing the MEP at cavity points
      *  \param[in] irrep the irreducible representation of the MEP and ASC
      *
      *  The update is calculated as:
@@ -270,15 +271,18 @@ protected:
      *  \f]
      *  where the coefficient is given by the steepest descent line search formula:
      *  \f[
-     *     \alpha^{(i)} = \frac{\mathbf{r}^{(i), t}\cdot\mathbf{r}^{(i)}}{\mathbf{r}^{(i), t}\tilde{\mathbf{S}}\mathbf{r}^{(i)}}
+     *     \alpha^{(i)} = \frac{\mathbf{r}^{(i), t}\cdot\mathbf{r}^{(i)}}{\mathbf{r}^{(i), t}\tilde{\mathbf{Y}}\mathbf{r}^{(i)}}
      *  \f]
      *
      *  \warning This function **does NOT** perform the transformation of the updated
      *  ASC to the bare representation
      */
     Eigen::VectorXd updateChargeLineSearch(const Eigen::VectorXd & dressedASC,
-        const Eigen::VectorXd & bareMEP, int irrep = 0) const attribute(const);
+        const Eigen::VectorXd & residual, int irrep = 0) const attribute(const);
     ///@}
 };
+
+std::string guess(VPCMSolver::GuessType g);
+std::string update(VPCMSolver::UpdateType u);
 
 #endif // VPCMSOLVER_HPP

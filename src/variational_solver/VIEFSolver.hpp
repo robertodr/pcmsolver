@@ -122,9 +122,9 @@ private:
     virtual Eigen::VectorXd initialGuess_impl(const Eigen::VectorXd & MEP,
                                               double nuc_chg = 0.0, int irrep = 0) const __override;
 
-    /*! \brief Updates the bare ASC given the dressed ASC, bare MEP and the desired irreducible representation
+    /*! \brief Updates the bare ASC given the dressed ASC, the residual and the desired irreducible representation
      *  \param[in] dressedASC vector containing the dressed ASC at cavity points
-     *  \param[in] bareMEP the vector containing the MEP at cavity points
+     *  \param[in] residual the vector containing the MEP at cavity points
      *  \param[in] irrep the irreducible representation of the MEP and ASC
      *  \return the updated **bare** ASC
      *
@@ -137,7 +137,7 @@ private:
      *  of the ASC
      */
     virtual Eigen::VectorXd updateCharge_impl(const Eigen::VectorXd & dressedASC,
-        const Eigen::VectorXd & bareMEP, int irrep = 0) const __override;
+        const Eigen::VectorXd & residual, int irrep = 0) const __override;
 };
 
 #endif // VIEFSOLVER_HPP
