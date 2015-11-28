@@ -47,7 +47,7 @@
 TEST_CASE("Test variational solver ASC error vector for the CPCM with C2H4 molecule and a GePol cavity",
           "[variational_solver][error][vcpcm][vcpcm-error_gepol-C2H4_D2h]")
 {
-  Molecule molec = C2H4();
+  Molecule molec = C2H4_D2h();
   double area = 10.0;
   double probeRadius = 10.0;
   double minRadius = 100.0;

@@ -46,7 +46,7 @@
  */
 TEST_CASE("Test solver for the IEFPCM and the C2H4 molecule in D2h symmetry", "[solver][iefpcm][iefpcm_symmetry][iefpcm_gepol-C2H4_D2h]")
 {
-  Molecule molec = C2H4();
+  Molecule molec = C2H4_D2h();
   double area = 0.2 / convertBohr2ToAngstrom2;
   double probeRadius = 1.385 / convertBohrToAngstrom;
   double minRadius = 100.0 / convertBohrToAngstrom;

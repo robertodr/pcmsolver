@@ -2,22 +2,22 @@
 /*
  *     PCMSolver, an API for the Polarizable Continuum Model
  *     Copyright (C) 2013-2015 Roberto Di Remigio, Luca Frediani and contributors
- *     
+ *
  *     This file is part of PCMSolver.
- *     
+ *
  *     PCMSolver is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Lesser General Public License as published by
  *     the Free Software Foundation, either version 3 of the License, or
  *     (at your option) any later version.
- *     
+ *
  *     PCMSolver is distributed in the hope that it will be useful,
  *     but WITHOUT ANY WARRANTY; without even the implied warranty of
  *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *     GNU Lesser General Public License for more details.
- *     
+ *
  *     You should have received a copy of the GNU Lesser General Public License
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
- *     
+ *
  *     For information on the complete list of contributors to the
  *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
  */
@@ -66,9 +66,13 @@ Molecule CO2();
  */
 inline Molecule CH3();
 
-/*! Returns the C2H4 molecule
+/*! Returns the C2H4 molecule in C1 symmetry
  */
-inline Molecule C2H4();
+inline Molecule C2H4_C1();
+
+/*! Returns the C2H4 molecule in D2h symmetry
+ */
+inline Molecule C2H4_D2h();
 
 /*! Returns the benzene molecule
  */
@@ -364,7 +368,58 @@ Molecule CH3()
     return Molecule(nAtoms, charges, masses, geom, atoms, spheres, pGroup);
 };
 
-Molecule C2H4()
+Molecule C2H4_C1()
+{
+    int nAtoms = 6;
+
+    Eigen::Vector3d C1(0.0000000000,  0.0000000000,  1.2578920000);
+    Eigen::Vector3d H1(0.0000000000,  1.7454620000,  2.3427160000);
+    Eigen::Vector3d H2(0.0000000000, -1.7454620000,  2.3427160000);
+    Eigen::Vector3d C2(0.0000000000,  0.0000000000, -1.2578920000);
+    Eigen::Vector3d H3(0.0000000000,  1.7454620000, -2.3427160000);
+    Eigen::Vector3d H4(0.0000000000, -1.7454620000, -2.3427160000);
+
+    Eigen::MatrixXd geom(3, nAtoms);
+    geom.col(0) = C1.transpose();
+    geom.col(1) = H1.transpose();
+    geom.col(2) = H2.transpose();
+    geom.col(3) = C2.transpose();
+    geom.col(4) = H3.transpose();
+    geom.col(5) = H4.transpose();
+    Eigen::VectorXd charges(6), masses(6);
+    charges << 6.0, 1.0, 1.0, 6.0, 1.0, 1.0;
+    masses  << 12.00, 1.0078250, 1.0078250, 12.0, 1.0078250, 1.0078250;
+
+    double radiusC = (1.70 * 1.20) / convertBohrToAngstrom;
+    double radiusH = (1.20 * 1.20) / convertBohrToAngstrom;
+    std::vector<Atom> atoms;
+    atoms.push_back( Atom("Carbon",   "C", charges(0), masses(0), radiusC, C1, 1.0) );
+    atoms.push_back( Atom("Hydrogen", "H", charges(1), masses(1), radiusH, H1, 1.0) );
+    atoms.push_back( Atom("Hydrogen", "H", charges(2), masses(2), radiusH, H2, 1.0) );
+    atoms.push_back( Atom("Carbon",   "C", charges(3), masses(3), radiusC, C2, 1.0) );
+    atoms.push_back( Atom("Hydrogen", "H", charges(4), masses(4), radiusH, H3, 1.0) );
+    atoms.push_back( Atom("Hydrogen", "H", charges(5), masses(5), radiusH, H4, 1.0) );
+
+    std::vector<Sphere> spheres;
+    Sphere sph1(C1, radiusC);
+    Sphere sph2(H1, radiusH);
+    Sphere sph3(H2, radiusH);
+    Sphere sph4(C2, radiusC);
+    Sphere sph5(H3, radiusH);
+    Sphere sph6(H4, radiusH);
+    spheres.push_back(sph1);
+    spheres.push_back(sph2);
+    spheres.push_back(sph3);
+    spheres.push_back(sph4);
+    spheres.push_back(sph5);
+    spheres.push_back(sph6);
+
+    Symmetry pGroup = buildGroup(0, 0, 0, 0);
+
+    return Molecule(nAtoms, charges, masses, geom, atoms, spheres, pGroup);
+};
+
+Molecule C2H4_D2h()
 {
     int nAtoms = 6;
 

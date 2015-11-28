@@ -154,6 +154,10 @@ namespace pcm {
              *  \param[in] name label of the surface function
              */
             void setSurfaceFunction(size_t size, double values[], const char * name) const;
+            /*! \brief Prints contents of surface function
+             *  \param[in] name lable of the surface function
+             */
+            void printSurfaceFunction(const char * name) const;
             /*! \brief Dumps all currently saved surface functions to NumPy arrays in .npy files
              */
             void saveSurfaceFunctions() const;

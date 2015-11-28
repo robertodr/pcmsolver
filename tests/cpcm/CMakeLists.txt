@@ -20,7 +20,7 @@ add_Catch_test(cpcm_gepol-NH3 "solver;cpcm;cpcm_gepol-NH3")
 set_property(GLOBAL APPEND PROPERTY UnitTestsSources ${CMAKE_CURRENT_LIST_DIR}/cpcm_gepol-point.cpp)
 add_Catch_test(cpcm_gepol-point "solver;cpcm;cpcm_gepol-point")
 
-# cpcm_gepol-C2H4_D2h.cpp test
-set_property(GLOBAL APPEND PROPERTY UnitTestsSources ${CMAKE_CURRENT_LIST_DIR}/cpcm_gepol-C2H4_D2h.cpp)
-add_Catch_test(cpcm_gepol-C2H4_D2h "solver;cpcm;cpcm_symmetry;cpcm_gepol-C2H4_D2h")
+# cpcm_gepol-C2H4.cpp test
+set_property(GLOBAL APPEND PROPERTY UnitTestsSources ${CMAKE_CURRENT_LIST_DIR}/cpcm_gepol-C2H4.cpp)
+add_Catch_test(cpcm_gepol-C2H4 "solver;cpcm;cpcm_symmetry;cpcm_gepol-C2H4")
 

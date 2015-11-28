@@ -60,6 +60,9 @@ double asc_Ag_reference(int i);
 double asc_B3g_reference(int i);
 double asc_neq_B3g_reference(int i);
 
+double scalar_product(size_t size, double u[size], double v[size]);
+double norm(size_t size, double u[size]);
+
 struct PCMInput pcmsolver_input()
 {
   struct PCMInput host_input;
@@ -2470,6 +2473,20 @@ double asc_neq_B3g_reference(int i)
     0.000000000000,
     0.000000000000 };
    return asc_neq_B3g[i];
+}
+
+double scalar_product(size_t size, double u[size], double v[size])
+{
+  double result = 0.0;
+  for (size_t i = 0; i < size; i++) {
+    result += u[i] * v[i];
+  }
+  return result;
+}
+
+double norm(size_t size, double u[size])
+{
+  return sqrt(scalar_product(size, u, u));
 }
 
 #endif /* C_HOST_FUNCTIONS_H */

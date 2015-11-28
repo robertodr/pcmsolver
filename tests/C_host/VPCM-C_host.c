@@ -58,28 +58,14 @@ int main()
   const char * asc_lbl = {"NucASC"};
   // This is the Ag irreducible representation (totally symmetric)
   int irrep = 0;
-  pcmsolver_compute_asc(pcm_context, mep_lbl, asc_lbl, irrep);
-  double * asc_Ag = (double *) calloc(grid_size, sizeof(double));
-  pcmsolver_get_surface_function(pcm_context, grid_size, asc_Ag, asc_lbl);
+  double nuc_chg = 16.0;
+  pcmsolver_compute_initial_guess_asc(pcm_context, mep_lbl, asc_lbl, nuc_chg, irrep);
+  double * asc_guess = (double *) calloc(grid_size, sizeof(double));
+  pcmsolver_get_surface_function(pcm_context, grid_size, asc_guess, asc_lbl);
 
   double energy = pcmsolver_compute_polarization_energy(pcm_context, mep_lbl, asc_lbl);
 
   fprintf(output, "Polarization energy: %20.12f\n", energy);
-
-  double * asc_neq_B3g = (double *) calloc(grid_size, sizeof(double));
-  const char * asc_neq_B3g_lbl = {"OITASC"};
-  // This is the B3g irreducible representation
-  irrep = 3;
-  pcmsolver_compute_response_asc(pcm_context, mep_lbl, asc_neq_B3g_lbl, irrep);
-  pcmsolver_get_surface_function(pcm_context, grid_size, asc_neq_B3g, asc_neq_B3g_lbl);
-
-  // Equilibrium ASC in B3g symmetry.
-  // This is an internal check: the relevant segment of the vector
-  // should be the same as the one calculated using pcmsolver_compute_response_asc
-  double * asc_B3g = (double *) calloc(grid_size, sizeof(double));
-  const char * asc_B3g_lbl = {"ASCB3g"};
-  pcmsolver_compute_asc(pcm_context, mep_lbl, asc_B3g_lbl, irrep);
-  pcmsolver_get_surface_function(pcm_context, grid_size, asc_B3g, asc_B3g_lbl);
 
   // Check that everything calculated is OK
   // Cavity size
@@ -107,7 +93,7 @@ int main()
     fprintf(output, "%s\n", "Test on polarization energy: PASSED");
   }
   // Surface functions
-  test_surface_functions(output, grid_size, mep, asc_Ag, asc_B3g, asc_neq_B3g);
+  //test_surface_functions(output, grid_size, mep, asc_Ag, asc_B3g, asc_neq_B3g);
 
   pcmsolver_write_timings(pcm_context);
 
@@ -115,9 +101,7 @@ int main()
 
   free(grid);
   free(mep);
-  free(asc_Ag);
-  free(asc_B3g);
-  free(asc_neq_B3g);
+  free(asc_guess);
 
   fclose(output);
 

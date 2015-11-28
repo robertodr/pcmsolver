@@ -42,7 +42,7 @@ SCENARIO("GePol cavity for the C2H4 molecule in D2h symmetry", "[gepol][gepol_C2
 {
     GIVEN("The C2H4 molecule in D2h symmetry")
     {
-        Molecule molec = C2H4();
+        Molecule molec = C2H4_D2h();
 
         WHEN("the addition of spheres is enabled")
         {

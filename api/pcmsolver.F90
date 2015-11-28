@@ -220,6 +220,14 @@ module pcmsolver
         end subroutine pcmsolver_set_surface_function
     end interface pcmsolver_set_surface_function
 
+    interface pcmsolver_print_surface_function
+        subroutine pcmsolver_print_surface_function(context, name) bind(C)
+            import
+            type(c_ptr), value :: context
+            character(c_char), intent(in) :: name
+        end subroutine pcmsolver_print_surface_function
+    end interface pcmsolver_print_surface_function
+
     interface pcmsolver_save_surface_functions
         subroutine pcmsolver_save_surface_functions(context) bind(C)
             import
