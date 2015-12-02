@@ -23,8 +23,8 @@
  */
 /* pcmsolver_copyright_end */
 
-#ifndef REGISTERVSOLVERTOFACTORY_HPP
-#define REGISTERVSOLVERTOFACTORY_HPP
+#ifndef REGISTER_VSOLVER_TO_FACTORY_HPP
+#define REGISTER_VSOLVER_TO_FACTORY_HPP
 
 #include <string>
 
@@ -45,7 +45,7 @@ namespace
 {
     VPCMSolver * createVCPCMSolver(const solverData & data)
     {
-        return new VCPCMSolver(static_cast<VPCMSolver::GuessType>(data.guess), static_cast<VPCMSolver::UpdateType>(data.update), data.correction);
+        return new VCPCMSolver(static_cast<VPCMSolver::GuessType>(data.guess), data.correction);
     }
     const std::string VCPCMSOLVER("VCPCM");
     const bool registeredVCPCMSolver =
@@ -56,11 +56,11 @@ namespace
 {
     VPCMSolver * createVIEFSolver(const solverData & data)
     {
-        return new VIEFSolver(static_cast<VPCMSolver::GuessType>(data.guess), static_cast<VPCMSolver::UpdateType>(data.update));
+        return new VIEFSolver(static_cast<VPCMSolver::GuessType>(data.guess));
     }
     const std::string VIEFSOLVER("VIEFPCM");
     const bool registeredVIEFSolver =
         Factory<VPCMSolver, solverData>::TheFactory().registerObject(VIEFSOLVER, createVIEFSolver);
 }
 
-#endif // REGISTERVSOLVERTOFACTORY_HPP
+#endif // REGISTER_VSOLVER_TO_FACTORY_HPP

@@ -115,17 +115,14 @@ Eigen::VectorXd VCPCMSolver::error_impl(const Eigen::VectorXd & bareASC,
 Eigen::VectorXd VCPCMSolver::updateCharge_impl(const Eigen::VectorXd & dressedASC,
     const Eigen::VectorXd & residual, int irrep) const
 {
-  switch(update_) {
-    case SSD:        return updateChargeSSD(dressedASC, residual, irrep);
-    case LineSearch: return updateChargeLineSearch(dressedASC, residual, irrep);
-  }
+  return updateChargeLineSearch(dressedASC, residual, irrep);
 }
 
 std::ostream & VCPCMSolver::printSolver(std::ostream & os)
 {
   os << "Solver Type: Variational C-PCM" << std::endl;
   os << "ASC initial guess: " << guess(guess_) << std::endl;
-  os << "ASC update:        " << update(update_);
+  os << "ASC update: diagonally preconditioned line search";
   return os;
 }
 

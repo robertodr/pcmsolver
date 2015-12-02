@@ -152,13 +152,7 @@ Eigen::VectorXd VIEFSolver::error_impl(const Eigen::VectorXd & dressedASC,
 Eigen::VectorXd VIEFSolver::updateCharge_impl(const Eigen::VectorXd & dressedASC,
     const Eigen::VectorXd & residual, int irrep) const
 {
-  Eigen::VectorXd tmp = Eigen::VectorXd::Zero(dressedASC.size());
-  switch(update_) {
-    case SSD:        tmp = updateChargeSSD(dressedASC, residual, irrep);
-                     break;
-    case LineSearch: tmp = updateChargeLineSearch(dressedASC, residual, irrep);
-                     break;
-  }
+  Eigen::VectorXd tmp = updateChargeLineSearch(dressedASC, residual, irrep);
   return getBareASC(tmp, irrep);
 }
 
@@ -172,7 +166,7 @@ std::ostream & VIEFSolver::printSolver(std::ostream & os)
   }
   os << "Solver Type:       " << type << std::endl;
   os << "ASC initial guess: " << guess(guess_) << std::endl;
-  os << "ASC update:        " << update(update_);
+  os << "ASC update: diagonally preconditioned line search";
   return os;
 }
 

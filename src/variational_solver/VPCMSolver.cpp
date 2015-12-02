@@ -35,29 +35,17 @@
 
 #include "MathUtils.hpp"
 
-Eigen::VectorXd VPCMSolver::updateChargeSSD(const Eigen::VectorXd & dressedASC,
-    const Eigen::VectorXd & residual, int irrep) const
-{
-  int fullDim = PCMMatrix_.rows();
-  int nrBlocks = blockPCMMatrix_.size();
-  int irrDim = fullDim/nrBlocks;
-
-  Eigen::VectorXd updated = Eigen::VectorXd::Zero(fullDim);
-  updated.segment(irrep*irrDim, irrDim) = dressedASC.segment(irrep*irrDim, irrDim)
-    + (residual.segment(irrep*irrDim, irrDim)).cwiseQuotient(blockPCMMatrix_[irrep].diagonal());
-  return updated;
-}
-
 Eigen::VectorXd VPCMSolver::updateChargeLineSearch(const Eigen::VectorXd & dressedASC,
     const Eigen::VectorXd & residual, int irrep) const
 {
   int fullDim = PCMMatrix_.rows();
   int nrBlocks = blockPCMMatrix_.size();
   int irrDim = fullDim/nrBlocks;
-  // Calculate the coefficient:
-  double num = (residual.segment(irrep*irrDim, irrDim)).squaredNorm();
-  double den = (residual.segment(irrep*irrDim, irrDim).transpose()
-      * blockPCMMatrix_[irrep] * residual.segment(irrep*irrDim, irrDim));
+  // Diagonal preconditioning of residual
+  Eigen::VectorXd z = (residual.segment(irrep*irrDim, irrDim)).cwiseQuotient(blockPCMMatrix_[irrep].diagonal());
+  // Calculate the coefficient (z, r) / (z, Yr)
+  double num = z.dot(residual.segment(irrep*irrDim, irrDim));
+  double den = z.transpose() * blockPCMMatrix_[irrep] * residual.segment(irrep*irrDim, irrDim);
   double alpha = num / den;
 
   Eigen::VectorXd updated = Eigen::VectorXd::Zero(fullDim);
@@ -72,7 +60,7 @@ Eigen::VectorXd VPCMSolver::initialGuessUniform(double nuc_chg, int irrep) const
   int nrBlocks = blockPCMMatrix_.size();
   int irrDim = fullDim/nrBlocks;
   Eigen::VectorXd guess = Eigen::VectorXd::Zero(fullDim);
-  guess.segment(irrep*irrDim, irrDim) = Eigen::VectorXd::Constant(irrDim, -nuc_chg/fullDim);
+  guess.segment(irrep*irrDim, irrDim) = Eigen::VectorXd::Constant(irrDim, -nuc_chg/irrDim);
   return guess;
 }
 
@@ -101,13 +89,5 @@ std::string guess(VPCMSolver::GuessType g)
     case VPCMSolver::Uniform: return "uniform";
     case VPCMSolver::Diagonal: return "diagonal PCM matrix";
     case VPCMSolver::LowAccuracy: return "low accuracy";
-  }
-}
-
-std::string update(VPCMSolver::UpdateType u)
-{
-  switch(u) {
-    case VPCMSolver::SSD:        return "scaled steepest descent";
-    case VPCMSolver::LineSearch: return "line search steepest descent";
   }
 }

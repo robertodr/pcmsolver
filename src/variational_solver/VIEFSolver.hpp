@@ -55,7 +55,7 @@ class VIEFSolver __final : public VPCMSolver
 {
 public:
     VIEFSolver() : VPCMSolver() {}
-    VIEFSolver(GuessType guess, UpdateType update) : VPCMSolver(guess, update) {}
+    VIEFSolver(GuessType guess) : VPCMSolver(guess) {}
     virtual ~VIEFSolver() {}
 
     /*! \brief Builds PCM matrix for an anisotropic environment

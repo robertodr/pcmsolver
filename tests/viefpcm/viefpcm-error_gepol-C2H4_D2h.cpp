@@ -66,7 +66,7 @@ TEST_CASE("Test variational solver ASC error vector for the IEFPCM with C2H4 mol
   Eigen::VectorXd fake_mep = computeMEP(molec, cavity.elements());
 
   // Use the trivial initial guess, it makes easier to test the error vector
-  VIEFSolver solver(VPCMSolver::Trivial, VPCMSolver::SSD);
+  VIEFSolver solver(VPCMSolver::Trivial);
   solver.buildSystemMatrix(cavity, gfInside, gfOutside);
   Eigen::VectorXd guess = solver.initialGuess(fake_mep);
   for (size_t i = 0; i < size; ++i) {

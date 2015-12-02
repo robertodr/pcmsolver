@@ -66,7 +66,7 @@ TEST_CASE("Test variational solver ASC error vector for the CPCM with C2H4 molec
 
   // Use the trivial initial guess, it makes easier to test the error vector
   double correction = 0.0;
-  VCPCMSolver solver(VPCMSolver::Trivial, VPCMSolver::SSD, correction);
+  VCPCMSolver solver(VPCMSolver::Trivial, correction);
   solver.buildSystemMatrix(cavity, gfInside, gfOutside);
   Eigen::VectorXd guess = solver.initialGuess(fake_mep);
   for (size_t i = 0; i < size; ++i) {

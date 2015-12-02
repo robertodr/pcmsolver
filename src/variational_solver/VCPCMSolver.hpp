@@ -51,7 +51,7 @@ class VCPCMSolver __final : public VPCMSolver
 {
 public:
     VCPCMSolver(double corr) : VPCMSolver(), correction_(corr) {}
-    VCPCMSolver(GuessType guess, UpdateType update, double corr) : VPCMSolver(guess, update), correction_(corr) {}
+    VCPCMSolver(GuessType guess, double corr) : VPCMSolver(guess), correction_(corr) {}
     virtual ~VCPCMSolver() {}
 
     friend std::ostream & operator<<(std::ostream & os, VCPCMSolver & solver) {

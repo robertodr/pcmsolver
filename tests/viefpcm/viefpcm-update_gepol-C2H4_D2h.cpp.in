@@ -66,22 +66,9 @@ TEST_CASE("Test variational solver ASC updates for the IEFPCM with C2H4 molecule
   int nr_irrep = cavity.pointGroup().nrIrrep();
   Eigen::VectorXd fake_mep = computeMEP(molec, cavity.elements());
 
-  SECTION("Scaled steepest descent update")
-  {
-    VIEFSolver solver(VPCMSolver::Diagonal, VPCMSolver::SSD);
-    solver.buildSystemMatrix(cavity, gfInside, gfOutside);
-    Eigen::VectorXd guess = solver.initialGuess(fake_mep);
-    // Perform the update on the trivial guess
-    Eigen::VectorXd residual = -solver.error(Eigen::VectorXd::Zero(size), fake_mep);
-    Eigen::VectorXd update = solver.updateCharge(Eigen::VectorXd::Zero(size), residual);
-    for (size_t i = 0; i < size; ++i) {
-      INFO("update(" << i << ") = " << update(i));
-      REQUIRE(update(i) == Approx(guess(i)));
-    }
-  }
   SECTION("Line search update")
   {
-    VIEFSolver solver(VPCMSolver::Trivial, VPCMSolver::LineSearch);
+    VIEFSolver solver(VPCMSolver::Trivial);
     solver.buildSystemMatrix(cavity, gfInside, gfOutside);
     Eigen::VectorXd guess = solver.initialGuess(fake_mep);
     for (size_t i = 0; i < size; ++i) {

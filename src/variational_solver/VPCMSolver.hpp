@@ -58,13 +58,8 @@ public:
       Diagonal, /**< ASC calculated from a diagonal approximation of the PCM matrix */
       LowAccuracy /**< ASC calculated from a low accuracy solution */
     };
-    /*! \brief ASC update types */
-    enum UpdateType {
-      SSD,       /**< Scaled steepest descent update */
-      LineSearch /**< Line search update */
-    };
-    VPCMSolver() : built_(false), isotropic_(true), guess_(Trivial), update_(SSD) {}
-    VPCMSolver(GuessType guess, UpdateType update) : built_(false), isotropic_(true), guess_(guess), update_(update) {}
+    VPCMSolver() : built_(false), isotropic_(true), guess_(Trivial) {}
+    VPCMSolver(GuessType guess) : built_(false), isotropic_(true), guess_(guess) {}
     virtual ~VPCMSolver() {}
 
     /*! \brief Calculation of the PCM matrix
@@ -141,8 +136,6 @@ protected:
     bool isotropic_;
     /*! Type of initial ASC guess */
     GuessType guess_;
-    /*! Type of ASC update */
-    UpdateType update_;
     /*! The VPCM matrix
      *  \note It can either be \f$ \tilde{\mathbf{Y}} \f$ (IEF) or
      *  \f$\mathbf{S}\f$ (CPCM)
@@ -245,22 +238,7 @@ protected:
      *  of the ASC
      */
     virtual Eigen::VectorXd updateCharge_impl(const Eigen::VectorXd & dressedASC, const Eigen::VectorXd & residual, int irrep = 0) const = 0;
-    /*! \brief Scaled steepest descent ASC update
-     *  \param[in] dressedASC vector containing the dressed ASC at cavity points
-     *  \param[in] residual the vector containing the MEP at cavity points
-     *  \param[in] irrep the irreducible representation of the MEP and ASC
-     *
-     *  The update is calculated as:
-     *  \f[
-     *     \tilde{q}^{(i+1)}_k = \tilde{q}^{(i)}_k + \frac{{r}^{(i)}_k}{\tilde{Y}_k}
-     *  \f]
-     *
-     *  \warning This function **does NOT** perform the transformation of the updated
-     *  ASC to the bare representation
-     */
-    Eigen::VectorXd updateChargeSSD(const Eigen::VectorXd & dressedASC,
-        const Eigen::VectorXd & residual, int irrep = 0) const attribute(const);
-    /*! \brief Line search ASC update
+    /*! \brief Diagonally preconditioned line search ASC update
      *  \param[in] dressedASC vector containing the dressed ASC at cavity points
      *  \param[in] residual the vector containing the MEP at cavity points
      *  \param[in] irrep the irreducible representation of the MEP and ASC
@@ -271,7 +249,11 @@ protected:
      *  \f]
      *  where the coefficient is given by the steepest descent line search formula:
      *  \f[
-     *     \alpha^{(i)} = \frac{\mathbf{r}^{(i), t}\cdot\mathbf{r}^{(i)}}{\mathbf{r}^{(i), t}\tilde{\mathbf{Y}}\mathbf{r}^{(i)}}
+     *     \alpha^{(i)} = \frac{\mathbf{z}^{(i), t}\cdot\mathbf{r}^{(i)}}{\mathbf{z}^{(i), t}\tilde{\mathbf{Y}}\mathbf{r}^{(i)}}
+     *  \f]
+     *  and:
+     *  \f[
+     *     \mathbf{z}^{(i)} = \mathrm{diag}(\tilde{\mathbf{Y}}^{-1})\mathbf{r}^{(i)}
      *  \f]
      *
      *  \warning This function **does NOT** perform the transformation of the updated
@@ -283,6 +265,5 @@ protected:
 };
 
 std::string guess(VPCMSolver::GuessType g);
-std::string update(VPCMSolver::UpdateType u);
 
 #endif // VPCMSOLVER_HPP

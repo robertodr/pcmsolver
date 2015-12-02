@@ -165,6 +165,12 @@ void pcmsolver_set_surface_function(pcmsolver_context_t * context,
     AS_TYPE(pcm::Meddle, context)->setSurfaceFunction(size, values, name);
 }
 
+void pcmsolver_print_surface_function(pcmsolver_context_t * context,
+                                      const char * name)
+{
+    AS_TYPE(pcm::Meddle, context)->printSurfaceFunction(name);
+}
+
 void pcmsolver_save_surface_functions(pcmsolver_context_t * context)
 {
     AS_TYPE(pcm::Meddle, context)->saveSurfaceFunctions();
@@ -247,7 +253,12 @@ namespace pcm {
         // Get the proper iterators
         SurfaceFunctionMap::const_iterator iter_pot = functions_.find(MEP);
         SurfaceFunction asc(cavity_->size());
-        asc.vector() = K_0_->computeCharge(iter_pot->second.vector(), irrep);
+        // FIXME This is ugly
+        if (hasVariational_) {
+          asc.vector() = Y_0_->computeCharge(iter_pot->second.vector(), irrep);
+        } else {
+          asc.vector() = K_0_->computeCharge(iter_pot->second.vector(), irrep);
+        }
         // Renormalize
         asc /= double(cavity_->pointGroup().nrIrrep());
         // Insert it into the map
@@ -308,7 +319,7 @@ namespace pcm {
         SurfaceFunctionMap::const_iterator iter_pot = functions_.find(MEP);
         SurfaceFunctionMap::const_iterator iter_asc = functions_.find(ASC);
         SurfaceFunction error(cavity_->size());
-        error.vector() = Y_0_->error(iter_pot->second.vector(), iter_asc->second.vector(), irrep);
+        error.vector() = Y_0_->error(iter_asc->second.vector(), iter_pot->second.vector(), irrep);
         // Renormalize
         error /= double(cavity_->pointGroup().nrIrrep());
         if (functions_.count(ERR) == 1) { // Key in map already
@@ -328,10 +339,11 @@ namespace pcm {
         SurfaceFunctionMap::iterator iter_asc = functions_.find(ASC);
         SurfaceFunctionMap::const_iterator iter_err = functions_.find(ERR);
         Eigen::VectorXd asc = Eigen::VectorXd::Zero(cavity_->size());
-        asc = Y_0_->updateCharge(iter_asc->second.vector(), iter_err->second.vector(), irrep);
+        asc = Y_0_->updateCharge(iter_asc->second.vector(), -iter_err->second.vector(), irrep);
         // Renormalize
         asc /= double(cavity_->pointGroup().nrIrrep());
         // Update
+        iter_asc->second.clear();
         iter_asc->second.vector() = asc;
     }
 
@@ -361,6 +373,14 @@ namespace pcm {
             SurfaceFunction func(size, values);
             functions_.insert(std::make_pair(functionName, func));
         }
+    }
+
+    void Meddle::printSurfaceFunction(const char * name) const
+    {
+        std::string functionName(name);
+        std::stringstream out;
+        out << functionName << "\n" << functions_[functionName] << std::endl;
+        printer(out.str());
     }
 
     void Meddle::saveSurfaceFunctions() const

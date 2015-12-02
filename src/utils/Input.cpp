@@ -248,6 +248,9 @@ void Input::reader(const PCMInput & host_input)
     correction_ = host_input.correction;
     hermitivitize_ = true;
     isDynamic_ = false;
+    isVariational_ = false;
+    guess_ = 0;
+    update_ = 0;
 
     providedBy_ = std::string("host-side");
 }
