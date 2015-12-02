@@ -101,7 +101,6 @@ public:
     bool isDynamic() const { return isDynamic_; }
     bool isVariational() const { return isVariational_; }
     int guess() const { return guess_; }
-    int update() const { return update_; }
     /// @}
 
     /// Green's function section input
@@ -197,8 +196,6 @@ private:
     bool isVariational_;
     /// Guess type for variational solver
     int guess_;
-    /// Update type for variational solver
-    int update_;
     /// Solvent probe radius
     double probeRadius_;
     /// Type of integrator for the diagonal of the boundary integral operators
@@ -275,9 +272,6 @@ int integralEquation(const std::string & name);
 
 /*! A useful map to convert the Guess string to an integer which will be passed to the Solver CTOR. */
 int guess(const std::string & name);
-
-/*! A useful map to convert the Update string to an integer which will be passed to the Solver CTOR. */
-int update(const std::string & name);
 
 std::string trim(const char * src);
 

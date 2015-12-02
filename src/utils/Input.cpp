@@ -171,7 +171,6 @@ void Input::reader(const std::string & filename)
     isDynamic_ = medium.getBool("NONEQUILIBRIUM");
     isVariational_ = ((solverType_ == "VIEFCM") || (solverType_ == "VCPCM"));
     guess_ = ::guess(medium.getStr("GUESS"));
-    update_ = ::update(medium.getStr("UPDATE"));
 
     providedBy_ = std::string("API-side");
 }
@@ -250,7 +249,6 @@ void Input::reader(const PCMInput & host_input)
     isDynamic_ = false;
     isVariational_ = false;
     guess_ = 0;
-    update_ = 0;
 
     providedBy_ = std::string("host-side");
 }
@@ -372,7 +370,7 @@ greenData Input::outsideDynamicGreenParams()
 solverData Input::solverParams()
 {
     if (solverData_.empty) {
-        solverData_ = solverData(correction_, equationType_, hermitivitize_, guess_, update_);
+        solverData_ = solverData(correction_, equationType_, hermitivitize_, guess_);
     }
     return solverData_;
 }
@@ -423,15 +421,6 @@ int guess(const std::string & name)
     mapStringToInt.insert(std::map<std::string, int>::value_type("UNIFORM", 1));
     mapStringToInt.insert(std::map<std::string, int>::value_type("DIAGONAL", 2));
     mapStringToInt.insert(std::map<std::string, int>::value_type("LOWACCURACY", 3));
-
-    return mapStringToInt.find(name)->second;
-}
-
-int update(const std::string & name)
-{
-    static std::map<std::string, int> mapStringToInt;
-    mapStringToInt.insert(std::map<std::string, int>::value_type("SSD",0));
-    mapStringToInt.insert(std::map<std::string, int>::value_type("LINESEARCH", 1));
 
     return mapStringToInt.find(name)->second;
 }

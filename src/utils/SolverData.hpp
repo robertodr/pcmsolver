@@ -42,15 +42,13 @@ struct solverData
     bool hermitivitize;
     /*! Type of initial guess for the variational solver */
     int guess;
-    /*! Type of ASC update for the variational solver */
-    int update;
     /*! Whether the structure was initialized with user input or not */
     bool empty;
 
     solverData() { empty = true; }
-    solverData(double corr,  int int_eq = 1, bool symm = true, int g = 0, int u = 0) :
+    solverData(double corr,  int int_eq = 1, bool symm = true, int g = 0) :
        correction(corr), integralEquation(int_eq), hermitivitize(symm),
-      guess(g), update(u) { empty = false; }
+      guess(g) { empty = false; }
 };
 
 #endif // SOLVERDATA_HPP

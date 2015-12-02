@@ -303,11 +303,6 @@ def setup_keywords():
     # Valid values: TRIVIAL, UNIFORM, DIAGONAL or LOWACCURACY
     # Default: TRIVIAL
     medium.add_kw('GUESS', 'STR', 'TRIVIAL')
-    # Type of ASC update for the variational solver
-    # Valid for: VIEFPCM and VCPCM
-    # Valid values: SSD or LINESEARCH
-    # Default: SSD
-    medium.add_kw('UPDATE', 'STR', 'SSD')
     top.add_sect(medium)
 
     # Green's function section
@@ -615,12 +610,6 @@ def verify_medium(section):
     val = key.get()
     if (val not in allowed_guess):
         print('Allowed guesses are: {}'.format(allowed_guess))
-        sys.exit(1)
-    allowed_update = ('SSD', 'LINESEARCH')
-    key = section.get('UPDATE')
-    val = key.get()
-    if (val not in allowed_update):
-        print('Allowed updates are: {}'.format(allowed_update))
         sys.exit(1)
 
 def verify_green(section):

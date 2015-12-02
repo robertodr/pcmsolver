@@ -338,7 +338,6 @@ SCENARIO("Input reading using GetKw", "[input]")
             spheres.push_back(sph3);
             std::string solverType = "VIEFPCM";
             int guess = 3; // Low accuracy guess
-            int update = 1; // Line search update
             double probeRadius = 1.385 * angstromToBohr(CODATAyear); // The value for water
             std::string greenInsideType = "VACUUM";
             std::string greenOutsideType = "UNIFORMDIELECTRIC";
@@ -363,7 +362,6 @@ SCENARIO("Input reading using GetKw", "[input]")
                 }
                 REQUIRE(solverType            == parsedInput.solverType());
                 REQUIRE(guess                 == parsedInput.guess());
-                REQUIRE(update                == parsedInput.update());
                 REQUIRE(probeRadius           == Approx(parsedInput.cavityParams().probeRadius));
                 REQUIRE(greenInsideType       == parsedInput.greenInsideType());
                 REQUIRE(greenOutsideType      == parsedInput.greenOutsideType());
