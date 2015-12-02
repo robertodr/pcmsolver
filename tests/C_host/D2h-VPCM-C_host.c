@@ -20,7 +20,7 @@ void host_writer(const char * message, size_t UNUSED(message_length))
 int main()
 {
 
-  output = fopen("VPCM-C_host.log", "w+");
+  output = fopen("D2h-VPCM-C_host.log", "w+");
   if (!pcmsolver_is_compatible_library())
   {
     fprintf(stderr, "%s\n", "PCMSolver library not compatible");
@@ -34,7 +34,6 @@ int main()
   // This means the molecular point group has three generators:
   // the Oxy, Oxz and Oyz planes
   int symmetry_info[4] = {3, 4, 2, 1};
-  //int symmetry_info[4] = {0, 0, 0, 0};
   struct PCMInput host_input = pcmsolver_input();
 
   pcmsolver_context_t * pcm_context = pcmsolver_new(PCMSOLVER_READER_OWN,

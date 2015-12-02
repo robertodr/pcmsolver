@@ -8,7 +8,7 @@
 
 #include "C_host-functions.h"
 
-#define NR_NUCLEI 6
+#define NR_NUCLEI 1
 
 FILE * output;
 
@@ -20,7 +20,7 @@ void host_writer(const char * message, size_t UNUSED(message_length))
 int main()
 {
 
-  output = fopen("VPCM-C_host.log", "w+");
+  output = fopen("C1-VPCM-C_host.log", "w+");
   if (!pcmsolver_is_compatible_library())
   {
     fprintf(stderr, "%s\n", "PCMSolver library not compatible");
@@ -28,18 +28,11 @@ int main()
   }
 
   fprintf(output, "%s\n", "Starting a PCMSolver calculation");
-  // Use C2H4 in D2h symmetry
-  double charges[NR_NUCLEI] = {6.0, 1.0, 1.0, 6.0, 1.0, 1.0};
-  double coordinates[3 * NR_NUCLEI] = { 0.0,  0.000000,  1.257892,
-                    0.0,  1.745462,  2.342716,
-                    0.0, -1.745462,  2.342716,
-                    0.0,  0.000000, -1.257892,
-                    0.0,  1.745462, -2.342716,
-                    0.0, -1.745462, -2.342716
-                  };
-  // This means the molecular point group has three generators:
-  // the Oxy, Oxz and Oyz planes
-  int symmetry_info[4] = {3, 4, 2, 1};
+  // Use C2H4_D2h in D2h symmetry
+  double charges[NR_NUCLEI] = {6.0};
+  double coordinates[3 * NR_NUCLEI] = { 0.0, 0.0, 0.0};
+  // This means that the molecular point group is C1
+  int symmetry_info[4] = {0, 0, 0, 0};
   struct PCMInput host_input = pcmsolver_input();
 
   pcmsolver_context_t * pcm_context = pcmsolver_new(PCMSOLVER_READER_OWN,
@@ -58,14 +51,41 @@ int main()
   const char * asc_lbl = {"NucASC"};
   // This is the Ag irreducible representation (totally symmetric)
   int irrep = 0;
-  double nuc_chg = 16.0;
+  // Exact ASC
+  const char * exact_asc_lbl = {"ExactASC"};
+  pcmsolver_compute_asc(pcm_context, mep_lbl, exact_asc_lbl, irrep);
+  // Get initial guess
+  double nuc_chg = 6.0;
   pcmsolver_compute_initial_guess_asc(pcm_context, mep_lbl, asc_lbl, nuc_chg, irrep);
-  double * asc_guess = (double *) calloc(grid_size, sizeof(double));
-  pcmsolver_get_surface_function(pcm_context, grid_size, asc_guess, asc_lbl);
 
+  double * asc = (double *) calloc(grid_size, sizeof(double));
+  pcmsolver_get_surface_function(pcm_context, grid_size, asc, asc_lbl);
   double energy = pcmsolver_compute_polarization_energy(pcm_context, mep_lbl, asc_lbl);
 
-  fprintf(output, "Polarization energy: %20.12f\n", energy);
+  // Compute error (aka the residual changed of sign)
+  const char * err_lbl = {"ErrASC"};
+  pcmsolver_compute_error_asc(pcm_context, mep_lbl, asc_lbl, err_lbl, irrep);
+  double * error = (double *) calloc(grid_size, sizeof(double));
+  pcmsolver_get_surface_function(pcm_context, grid_size, error, err_lbl);
+  double residual_norm = norm(grid_size, error);
+
+  int iteration = 0;
+  int max_it = 50;
+  fprintf(output, "  Iteration          Residual norm          Polarization energy\n");
+  while(residual_norm >= 1.0e-07)
+  {
+    fprintf(output, "    %2i       %20.10f          %20.12f\n", iteration, residual_norm, energy);
+    if (iteration >= max_it) break;
+    // Compute update
+    pcmsolver_compute_update_asc(pcm_context, asc_lbl, err_lbl, irrep);
+    // Compute error
+    pcmsolver_compute_error_asc(pcm_context, mep_lbl, asc_lbl, err_lbl, irrep);
+    // Compute residual norm
+    pcmsolver_get_surface_function(pcm_context, grid_size, error, err_lbl);
+    residual_norm = norm(grid_size, error);
+    energy = pcmsolver_compute_polarization_energy(pcm_context, mep_lbl, asc_lbl);
+    iteration += 1;
+  }
 
   // Check that everything calculated is OK
   // Cavity size
@@ -101,7 +121,8 @@ int main()
 
   free(grid);
   free(mep);
-  free(asc_guess);
+  free(asc);
+  free(error);
 
   fclose(output);
 
