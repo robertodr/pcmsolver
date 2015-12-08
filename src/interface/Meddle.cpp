@@ -350,13 +350,13 @@ namespace pcm {
     void Meddle::getSurfaceFunction(size_t size, double values[], const char * name) const
     {
         if (cavity_->size() != size)
-            PCMSOLVER_ERROR("You are trying to access a SurfaceFunction bigger than the cavity!");
+            PCMSOLVER_ERROR("SurfaceFunction " + std::string(name) + " is bigger than the cavity!");
 
         std::string functionName(name);
 
         SurfaceFunctionMap::const_iterator iter = functions_.find(functionName);
         if (iter == functions_.end())
-            PCMSOLVER_ERROR("You are trying to access a non-existing SurfaceFunction.");
+            PCMSOLVER_ERROR("SurfaceFunction " + std::string(name) + " does not exist.");
 
         Eigen::Map<Eigen::VectorXd>(values, size, 1) = iter->second.vector();
     }
@@ -364,7 +364,7 @@ namespace pcm {
     void Meddle::setSurfaceFunction(size_t size, double values[], const char * name) const
     {
         if (cavity_->size() != size)
-            PCMSOLVER_ERROR("You are trying to allocate a SurfaceFunction bigger than the cavity!");
+            PCMSOLVER_ERROR("Allocating SurfaceFunction " + std::string(name) + " bigger than the cavity!");
 
         std::string functionName(name);
         if (functions_.count(functionName) == 1) { // Key in map already

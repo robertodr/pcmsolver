@@ -129,7 +129,6 @@ namespace pcm {
              */
             void computeErrorASC(const char * mep_name, const char * asc_name, const char * err_name, int irrep) const;
             /*! \brief Computes update for the ASC given an error vector and the desired irreducible representation
-             *  \param[in, out] context the PCM context object
              *  \param[in] asc_name label of the ASC surface function
              *  \param[in] err_name label of the error surface function
              *  \param[in] irrep index of the desired irreducible representation
