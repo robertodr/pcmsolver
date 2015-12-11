@@ -169,7 +169,7 @@ void Input::reader(const std::string & filename)
     correction_ = medium.getDbl("CORRECTION");
     hermitivitize_ = medium.getBool("MATRIXSYMM");
     isDynamic_ = medium.getBool("NONEQUILIBRIUM");
-    isVariational_ = ((solverType_ == "VIEFCM") || (solverType_ == "VCPCM"));
+    isVariational_ = ((solverType_ == "VIEFPCM") || (solverType_ == "VCPCM"));
     guess_ = ::guess(medium.getStr("GUESS"));
 
     providedBy_ = std::string("API-side");
