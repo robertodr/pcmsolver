@@ -1,6 +1,5 @@
 language: cpp
 sudo: false
-
 notifications:
   slack:
     secure: F2nQIW6SiaGdw1LjuZOlgBu8rUVMllrDG/5bhmTQP7gyETfViFBjTsHQdTle6jtdb+LudleZaG7WhdEiVcKUa834rKqDk1UOt9p6bsmgbsBZBAaxmPh01iVFhKn3ML7JLjfr1YtH7MWJcsS60cNBrohXfVKfFzNgDqZEu/llr90=
@@ -29,7 +28,5 @@ addons: &gcc5
       description: "An API for the Polarizable Continuum Model"
     notification_email: roberto.d.remigio@uit.no
     build_command_prepend: "python setup.py --cxx=g++-5 --cc=gcc-5 --fc=gfortran-5 --type=debug --cmake-options=\"-DENABLE_TESTS=OFF -DENABLE_FORTRAN_API=ON\"; cd build"
-    build_command: "make -j 2"
+    build_command: "make"
     branch_pattern: coverity_scan
-script:
-  - make -j 2
