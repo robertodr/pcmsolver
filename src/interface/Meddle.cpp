@@ -19,7 +19,7 @@
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
  *
  *     For information on the complete list of contributors to the
- *     PCMSolver API, see: <http://pcmsolver.github.io/pcmsolver-doc>
+ *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
  */
 /* pcmsolver_copyright_end */
 
@@ -44,6 +44,7 @@
 #include "Atom.hpp"
 #include "Citation.hpp"
 #include "cnpy.hpp"
+#include "PCMInput.h"
 #include "PhysicalConstants.hpp"
 #include "Solvent.hpp"
 #include "Sphere.hpp"
@@ -56,57 +57,51 @@
 #define AS_CTYPE(Type, Obj) reinterpret_cast<const Type *>(Obj)
 #endif
 
-PCMSOLVER_API
-pcmsolver_context_t * pcmsolver_new(pcmsolver_reader_t input_reading, int nr_nuclei, double charges[], double coordinates[], int symmetry_info[], PCMInput host_input)
+pcmsolver_context_t * pcmsolver_new(pcmsolver_reader_t input_reading, int
+    nr_nuclei, double charges[], double coordinates[], int symmetry_info[],
+    PCMInput * host_input)
 {
-    return AS_TYPE(pcmsolver_context_t, new pcm::Meddle(input_reading, nr_nuclei, charges, coordinates, symmetry_info, host_input));
+    return AS_TYPE(pcmsolver_context_t, new pcm::Meddle(input_reading,
+          nr_nuclei, charges, coordinates, symmetry_info, *host_input));
 }
 
-PCMSOLVER_API
 void pcmsolver_delete(pcmsolver_context_t * context)
 {
     if (!context) return;
     delete AS_TYPE(pcm::Meddle, context);
 }
 
-PCMSOLVER_API
 bool pcmsolver_is_compatible_library(void)
 {
     unsigned int major = (pcm::pcmsolver_get_version() >> 16);
     return (major == PROJECT_VERSION_MAJOR);
 }
 
-PCMSOLVER_API
 void pcmsolver_print(pcmsolver_context_t * context)
 {
     AS_TYPE(pcm::Meddle, context)->printInfo();
 }
 
-PCMSOLVER_API
 size_t pcmsolver_get_cavity_size(pcmsolver_context_t * context)
 {
     return (AS_TYPE(pcm::Meddle, context)->getCavitySize());
 }
 
-PCMSOLVER_API
 size_t pcmsolver_get_irreducible_cavity_size(pcmsolver_context_t * context)
 {
     return (AS_TYPE(pcm::Meddle, context)->getIrreducibleCavitySize());
 }
 
-PCMSOLVER_API
 void pcmsolver_get_centers(pcmsolver_context_t * context, double centers[])
 {
     AS_TYPE(pcm::Meddle, context)->getCenters(centers);
 }
 
-PCMSOLVER_API
 void pcmsolver_get_center(pcmsolver_context_t * context, int its, double center[])
 {
     AS_TYPE(pcm::Meddle, context)->getCenter(its, center);
 }
 
-PCMSOLVER_API
 void pcmsolver_compute_asc(pcmsolver_context_t * context,
                            const char * mep_name,
                            const char * asc_name,
@@ -115,7 +110,6 @@ void pcmsolver_compute_asc(pcmsolver_context_t * context,
     AS_TYPE(pcm::Meddle, context)->computeASC(mep_name, asc_name, irrep);
 }
 
-PCMSOLVER_API
 void pcmsolver_compute_response_asc(pcmsolver_context_t * context,
                            const char * mep_name,
                            const char * asc_name,
@@ -124,7 +118,6 @@ void pcmsolver_compute_response_asc(pcmsolver_context_t * context,
     AS_TYPE(pcm::Meddle, context)->computeResponseASC(mep_name, asc_name, irrep);
 }
 
-PCMSOLVER_API
 double pcmsolver_compute_polarization_energy(pcmsolver_context_t * context,
                                              const char * mep_name,
                                              const char * asc_name)
@@ -132,46 +125,41 @@ double pcmsolver_compute_polarization_energy(pcmsolver_context_t * context,
     return (AS_TYPE(pcm::Meddle, context)->computePolarizationEnergy(mep_name, asc_name));
 }
 
-PCMSOLVER_API
 void pcmsolver_get_surface_function(pcmsolver_context_t * context,
                                     size_t size, double values[], const char * name)
 {
     AS_TYPE(pcm::Meddle, context)->getSurfaceFunction(size, values, name);
 }
 
-PCMSOLVER_API
 void pcmsolver_set_surface_function(pcmsolver_context_t * context,
                                     size_t size, double values[], const char * name)
 {
     AS_TYPE(pcm::Meddle, context)->setSurfaceFunction(size, values, name);
 }
 
-PCMSOLVER_API
 void pcmsolver_save_surface_functions(pcmsolver_context_t * context)
 {
     AS_TYPE(pcm::Meddle, context)->saveSurfaceFunctions();
 }
 
-PCMSOLVER_API
 void pcmsolver_save_surface_function(pcmsolver_context_t * context, const char * name)
 {
     AS_TYPE(pcm::Meddle, context)->saveSurfaceFunction(name);
 }
 
-PCMSOLVER_API
 void pcmsolver_load_surface_function(pcmsolver_context_t * context, const char * name)
 {
     AS_TYPE(pcm::Meddle, context)->loadSurfaceFunction(name);
 }
 
-PCMSOLVER_API
 void pcmsolver_write_timings(pcmsolver_context_t * context)
 {
     AS_TYPE(pcm::Meddle, context)->writeTimings();
 }
 
 namespace pcm {
-    Meddle::Meddle(pcmsolver_reader_t input_reading, int nr_nuclei, double charges[], double coordinates[], int symmetry_info[], const PCMInput & host_input)
+    Meddle::Meddle(pcmsolver_reader_t input_reading, int nr_nuclei, double
+        charges[], double coordinates[], int symmetry_info[], const PCMInput & host_input)
         : hasDynamic_(false)
     {
         initInput(input_reading, nr_nuclei, charges, coordinates, symmetry_info, host_input);
@@ -224,6 +212,7 @@ namespace pcm {
         SurfaceFunctionMap::const_iterator iter_pot = functions_.find(MEP);
         SurfaceFunction asc(cavity_->size());
         asc.vector() = K_0_->computeCharge(iter_pot->second.vector(), irrep);
+        // Renormalize
         asc /= double(cavity_->pointGroup().nrIrrep());
         // Insert it into the map
         if (functions_.count(ASC) == 1) { // Key in map already
@@ -246,6 +235,7 @@ namespace pcm {
         } else {
             asc.vector() = K_0_->computeCharge(iter_pot->second.vector(), irrep);
         }
+        // Renormalize
         asc /= double(cavity_->pointGroup().nrIrrep());
         if (functions_.count(ASC) == 1) { // Key in map already
             functions_[ASC] = asc;

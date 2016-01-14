@@ -19,7 +19,7 @@
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
  *
  *     For information on the complete list of contributors to the
- *     PCMSolver API, see: <http://pcmsolver.github.io/pcmsolver-doc>
+ *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
  */
 /* pcmsolver_copyright_end */
 
@@ -138,7 +138,7 @@ private:
      */
     void reader(const PCMInput & host_input);
     /*! Perform semantic input parsing aka sanity check */
-    void semanticCheck();
+    void semanticCheck() attribute(const);
 
     /// Units of measure
     std::string units_;

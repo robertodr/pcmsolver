@@ -19,7 +19,7 @@
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
  *
  *     For information on the complete list of contributors to the
- *     PCMSolver API, see: <http://pcmsolver.github.io/pcmsolver-doc>
+ *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
  */
 /* pcmsolver_copyright_end */
 
@@ -46,7 +46,7 @@
  *  of cavities according to the GePol algorithm.
  */
 
-class GePolCavity : public Cavity
+class GePolCavity __final : public Cavity
 {
 public:
     GePolCavity() {}
@@ -75,8 +75,8 @@ private:
     double probeRadius;
     double minimalRadius;
     int addedSpheres;
-    virtual std::ostream & printCavity(std::ostream & os);
-    virtual void makeCavity() { build(std::string("PEDRA.OUT"), 10000, 200, 25000); }
+    virtual std::ostream & printCavity(std::ostream & os) __override;
+    virtual void makeCavity() __override { build(std::string("PEDRA.OUT"), 10000, 200, 25000); }
     /*! \brief Driver for PEDRA Fortran module.
      *  \param[in]  suffix for the cavity.off and PEDRA.OUT files, the PID will also be added
      *  \param[in]   maxts maximum number of tesserae

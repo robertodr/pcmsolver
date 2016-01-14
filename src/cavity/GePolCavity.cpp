@@ -19,7 +19,7 @@
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
  *
  *     For information on the complete list of contributors to the
- *     PCMSolver API, see: <http://pcmsolver.github.io/pcmsolver-doc>
+ *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
  */
 /* pcmsolver_copyright_end */
 
@@ -38,7 +38,6 @@
 
 #include <Eigen/Core>
 #include <boost/format.hpp>
-#include <boost/lexical_cast.hpp>
 
 #include "Sphere.hpp"
 #include "Symmetry.hpp"
@@ -89,7 +88,7 @@ extern "C" void generatecavity_cpp(int * maxts, int * maxsph, int * maxvert,
                                    double * xe, double * ye, double * ze, double * rin, double * masses,
                                    double * avgArea, double * rsolv, double * ret,
                                    int * nr_gen, int * gen1, int * gen2, int * gen3,
-				   int * nvert, double * vert, double * centr, int * isphe, char * pedra, int * len_f_pedra);
+				   int * nvert, double * vert, double * centr, int * isphe, const char * pedra, int * len_f_pedra);
 
 void GePolCavity::build(const std::string & suffix, int maxts, int maxsph, int maxvert)
 {
@@ -174,8 +173,7 @@ void GePolCavity::build(const std::string & suffix, int maxts, int maxsph, int m
 
     std::stringstream pedra;
     pedra << "PEDRA.OUT_" << suffix << "_" << ::getpid();
-    char * f_pedra = const_cast<char *>(pedra.str().c_str());
-    int len_f_pedra = std::strlen(f_pedra);
+    int len_f_pedra = std::strlen(pedra.str().c_str());
     // Go PEDRA, Go!
     TIMER_ON("GePolCavity::generatecavity_cpp");
     generatecavity_cpp(&maxts, &maxsph, &maxvert,
@@ -184,7 +182,7 @@ void GePolCavity::build(const std::string & suffix, int maxts, int maxsph, int m
                        xe, ye, ze, rin, mass,
 		       &averageArea, &probeRadius, &minimalRadius,
                        &nr_gen, &gen1, &gen2, &gen3,
-                nvert, vert, centr, isphe, f_pedra, &len_f_pedra);
+                nvert, vert, centr, isphe, pedra.str().c_str(), &len_f_pedra);
     TIMER_OFF("GePolCavity::generatecavity_cpp");
 
     // The "intensive" part of updating the spheres related class data members will be of course
@@ -212,8 +210,8 @@ void GePolCavity::build(const std::string & suffix, int maxts, int maxsph, int m
     }
 
     // Now take care of updating the rest of the cavity info.
-    nElements_ = static_cast<int>(nts);
-    nIrrElements_ = static_cast<int>(ntsirr);
+    nElements_ = nts;
+    nIrrElements_ = ntsirr;
     elementCenter_.resize(Eigen::NoChange, nElements_);
     elementSphereCenter_.resize(Eigen::NoChange, nElements_);
     elementNormal_.resize(Eigen::NoChange, nElements_);
@@ -248,11 +246,11 @@ void GePolCavity::build(const std::string & suffix, int maxts, int maxsph, int m
         // Not sure that printing the list of pairs is actually of any help...
         std::string list_of_pairs;
         for ( size_t i = 0; i < equal_elements.size(); ++i) {
-            list_of_pairs += "(" + boost::lexical_cast<std::string>(equal_elements[i].first)
-                             + ", " + boost::lexical_cast<std::string>(equal_elements[i].second) + ")\n";
+            list_of_pairs += "(" + pcm::to_string(equal_elements[i].first)
+                             + ", " + pcm::to_string(equal_elements[i].second) + ")\n";
         }
         // Prepare the error message:
-        std::string message = boost::lexical_cast<std::string>(equal_elements.size()) +
+        std::string message = pcm::to_string(equal_elements.size()) +
                               " cavity finite element centers overlap exactly!\n" + list_of_pairs;
         PCMSOLVER_ERROR(message);
     }

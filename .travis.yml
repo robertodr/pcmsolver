@@ -2,32 +2,34 @@ language: cpp
 sudo: false
 
 notifications:
-  recipients:
-    - roberto.d.remigio@uit.no
-    - luca.frediani@uit.no
-  email:
-    on_success: change
-    on_failure: always
-
+  slack:
+    secure: F2nQIW6SiaGdw1LjuZOlgBu8rUVMllrDG/5bhmTQP7gyETfViFBjTsHQdTle6jtdb+LudleZaG7WhdEiVcKUa834rKqDk1UOt9p6bsmgbsBZBAaxmPh01iVFhKn3ML7JLjfr1YtH7MWJcsS60cNBrohXfVKfFzNgDqZEu/llr90=
 env:
   global:
     # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
     #   via the "travis encrypt" command using the project repo's public key
     - secure: "eZ9fwnEh/a8EzVU6qJt24wDk8UyZxQFP6lEZoOAfH7wuG6rBTH3Q8hwT9rPt20k2yE+RX0zsxENMuQWLoicX3WbDKp+c9VMh9bmFcQxCFpXGx8YFeZEa7dY/JV8NuMJJZ27G0QvYCWRz/HZ2xkwcu4ffwJukj82WXlLGqAnBNKM="
-
 addons: &gcc5
   apt:
-    sources: ['ubuntu-toolchain-r-test', 'boost-latest']
-    packages: ['g++-5', 'gcc-5', 'libboost1.55-all-dev', 'gfortran-5']
+    sources:
+      - ubuntu-toolchain-r-test
+      - boost-latest
+      - george-edison55-precise-backports
+    packages:
+      - cmake
+      - cmake-data
+      - g++-5
+      - gcc-5
+      - libboost1.55-all-dev
+      - gfortran-5
   coverity_scan:
     project:
       name: "PCMSolver/pcmsolver"
       version: 1.0.4
       description: "An API for the Polarizable Continuum Model"
     notification_email: roberto.d.remigio@uit.no
-    build_command_prepend: "python setup.py --cxx=g++-5 --cc=gcc-5 --fc=gfortran-5 --type=debug --cmake-options=\"-DENABLE_TESTS=OFF\"; cd build"
+    build_command_prepend: "python setup.py --cxx=g++-5 --cc=gcc-5 --fc=gfortran-5 --type=debug --cmake-options=\"-DENABLE_TESTS=OFF -DENABLE_FORTRAN_API=ON\"; cd build"
     build_command: "make -j 2"
     branch_pattern: coverity_scan
-
 script:
   - make -j 2

@@ -19,7 +19,7 @@
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
  *
  *     For information on the complete list of contributors to the
- *     PCMSolver API, see: <http://pcmsolver.github.io/pcmsolver-doc>
+ *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
  */
 /* pcmsolver_copyright_end */
 
@@ -27,8 +27,8 @@
 #define ERRORHANDLING_HPP
 
 #include <cassert>
+#include <stdexcept>
 
-#include "Exception.hpp"
 
 /*! \file ErrorHandling.hpp
  *  \brief Provide macros for error handling
@@ -41,7 +41,6 @@
  *  PCMSOLVER_ERROR(<Error Message>)
  *  \endverbatim
  *
- *  The output contains the most recent 5 function calls.
  *  Use this to catch errors that might occur because of faulty
  *  data, i.e. other people's errors. Mainly in the API to the
  *  external world.
@@ -70,7 +69,7 @@
  */
 
 /// Macro to be used to throw exceptions
-#define PCMSOLVER_ERROR(arg) throw Exception(arg, __FILE__, __LINE__)
+#define PCMSOLVER_ERROR(arg) throw std::runtime_error(arg)
 
 /// Macro to be used for assertions
 #define PCMSOLVER_ASSERT(arg) assert(arg)

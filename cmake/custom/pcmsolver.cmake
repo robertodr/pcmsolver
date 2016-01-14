@@ -1,7 +1,15 @@
-option(ENABLE_LOGGER "Enable logger" ON)
+option(ENABLE_LOGGER "Enable logger" OFF)
 option(ENABLE_TIMER "Enable timer" ON)
 option(BUILD_STANDALONE "Enable build of standalone executables" ON)
 option(ENABLE_FORTRAN_API "Builds optional Fortran90 API" OFF)
+
+# Add definitions
+if(ENABLE_TIMER)
+  add_definitions(-DENABLE_TIMER)
+endif()
+if(ENABLE_LOGGER)
+  add_definitions(-DENABLE_LOGGER)
+endif()
 
 # This can be set by the host project
 # and tweaks the location of the submodules install location
@@ -11,9 +19,6 @@ endif()
 
 set(BOOST_MINIMUM_REQUIRED 1.54.0)
 set(BOOST_COMPONENTS_REQUIRED "")
-if(BUILD_STANDALONE OR ENABLE_TIMER)
-  set(BOOST_COMPONENTS_REQUIRED "chrono;timer;system")
-endif()
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)

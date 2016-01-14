@@ -19,7 +19,7 @@
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
  *
  *     For information on the complete list of contributors to the
- *     PCMSolver API, see: <http://pcmsolver.github.io/pcmsolver-doc>
+ *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
  */
 /* pcmsolver_copyright_end */
 
@@ -56,6 +56,8 @@
 #include "Sphere.hpp"
 
 //#include "BuildInfo.hpp"
+extern "C"
+void host_writer(const char * message, size_t message_length);
 
 int main(int argc, char * argv[])
 {
@@ -124,7 +126,10 @@ int main(int argc, char * argv[])
     delete solver;
 
     // Write timings out
-    TIMER_DONE();
+    TIMER_DONE("pcmsolver.timer.dat");
 
     return EXIT_SUCCESS;
 }
+
+void host_writer(const char * /* message */, size_t /* message_length */) {}
+

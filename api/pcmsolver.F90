@@ -1,3 +1,26 @@
+!pcmsolver_copyright_start
+!       PCMSolver, an API for the Polarizable Continuum Model
+!       Copyright (C) 2013-2015 Roberto Di Remigio, Luca Frediani and contributors
+! 
+!       This file is part of PCMSolver.
+! 
+!       PCMSolver is free software: you can redistribute it and/or modify
+!       it under the terms of the GNU Lesser General Public License as published by
+!       the Free Software Foundation, either version 3 of the License, or
+!       (at your option) any later version.
+! 
+!       PCMSolver is distributed in the hope that it will be useful,
+!       but WITHOUT ANY WARRANTY; without even the implied warranty of
+!       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!       GNU Lesser General Public License for more details.
+! 
+!       You should have received a copy of the GNU Lesser General Public License
+!       along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
+! 
+!       For information on the complete list of contributors to the
+!       PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
+!pcmsolver_copyright_end
+
 module pcmsolver
 
     use, intrinsic :: iso_c_binding
@@ -60,7 +83,7 @@ module pcmsolver
             real(c_double), intent(in)        :: charges(*)
             real(c_double), intent(in)        :: coordinates(*)
             integer(c_int), intent(in)        :: symmetry_info(*)
-            type(PCMInput), intent(in), value :: host_input
+            type(PCMInput), intent(in)        :: host_input
             type(c_ptr) :: context
         end function pcmsolver_new
     end interface pcmsolver_new

@@ -19,7 +19,7 @@
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
  *
  *     For information on the complete list of contributors to the
- *     PCMSolver API, see: <http://pcmsolver.github.io/pcmsolver-doc>
+ *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
  */
 /* pcmsolver_copyright_end */
 
@@ -60,11 +60,17 @@ namespace pcm {
     using std::make_tuple;
     using std::tie;
     using std::ignore;
+    using std::get;
 } /* end namespace pcm */
 /* <array> workarounds */
 #include <array>
 namespace pcm {
     using std::array;
+} /* end namespace pcm */
+/* std::to_string workarounds */
+#include <string>
+namespace pcm {
+    using std::to_string;
 } /* end namespace pcm */
 #else /* HAS_CXX11*/
 /* Smart pointers workarounds */
@@ -92,11 +98,22 @@ namespace pcm {
     using boost::make_tuple;
     using boost::tie;
     using boost::tuples::ignore;
+    using boost::get;
 } /* end namespace pcm */
 /* <array> workarounds */
 #include <boost/array.hpp>
 namespace pcm {
     using boost::array;
+} /* end namespace pcm */
+/* std::to_string workarounds */
+#include <string>
+#include <boost/lexical_cast.hpp>
+namespace pcm {
+  template <typename Source>
+  std::string to_string(const Source & arg)
+  {
+    return boost::lexical_cast<std::string>(arg);
+  }
 } /* end namespace pcm */
 #endif /* HAS_CXX11 */
 
