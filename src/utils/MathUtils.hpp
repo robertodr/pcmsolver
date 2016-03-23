@@ -308,12 +308,12 @@ inline void print_eigen_matrix(const Eigen::MatrixBase<Derived> & matrix, const 
 {
   std::ofstream fout;
   fout.open(fname.c_str());
-  fout << " Row index " << '\t' << " Column index " << '\t' << " Matrix entry " << std::endl;
+  fout << " Row index " << "      " << " Column index " << "      " << " Matrix entry " << std::endl;
   int rows = matrix.rows();
   int cols = matrix.cols();
   for (int i = 0; i < rows; ++i) {
     for (int j = 0; j < cols; ++j) {
-      fout << i << '\t' << j << '\t' << matrix(i, j) << std::endl;
+      fout << i << "      " << j << "      " << matrix(i, j) << std::endl;
     }
   }
   fout.close();

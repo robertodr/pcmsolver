@@ -38,7 +38,7 @@
 #include "solver/IEFSolver.hpp"
 #include "TestingMolecules.hpp"
 
-SCENARIO("Test solver for the IEFPCM for a point charge outside a GePol cavity", 
+SCENARIO("Test solver for the IEFPCM for a point charge outside a GePol cavity",
          "[solver][iefpcm][iefpcm_gepol-outcharge][outcharge]")
 {
     GIVEN("An isotropic environment and a point charge")
@@ -62,9 +62,9 @@ SCENARIO("Test solver for the IEFPCM for a point charge outside a GePol cavity",
             double area = 0.4;
             double probeRadius = 0.0;
             double minRadius = 100.0;
-			std::vector<Sphere> spheres(1);
-			Eigen::Vector3d chargePos(0.0, 0.0, 3.0);
-			spheres[0] = Sphere(Eigen::Vector3d::Zero(), 1.0);
+            std::vector<Sphere> spheres(1);
+            Eigen::Vector3d chargePos(0.0, 0.0, 3.0);
+            spheres[0] = Sphere(Eigen::Vector3d::Zero(), 1.0);
             GePolCavity cavity = GePolCavity(spheres, area, probeRadius, minRadius);
 
             IEFSolver solver(symm);
