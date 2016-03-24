@@ -35,6 +35,7 @@
 #include "bi_operators/CollocationIntegrator.hpp"
 #include "green/DerivativeTypes.hpp"
 #include "green/Vacuum.hpp"
+#include "green/IonicLiquid.hpp"
 #include "green/UniformDielectric.hpp"
 #include "utils/ChargeDistribution.hpp"
 #include "TestingMolecules.hpp"
@@ -52,9 +53,9 @@ SCENARIO("Calculation of the Newton potential", "[utils][newton_potential][utils
 
     WHEN("the Newton potential is calculated in vacuum")
     {
-      Vacuum<AD_directional, CollocationIntegrator> gf_i = Vacuum<AD_directional, CollocationIntegrator>();
+      Vacuum<AD_directional, CollocationIntegrator> gf = Vacuum<AD_directional, CollocationIntegrator>();
       Eigen::VectorXd newton = computeNewtonPotential(
-          pcm::bind(&Vacuum<AD_directional, CollocationIntegrator>::kernelS, gf_i, pcm::_1, pcm::_2),
+          pcm::bind(&Vacuum<AD_directional, CollocationIntegrator>::kernelS, gf, pcm::_1, pcm::_2),
           cavity.elementCenter(), dist);
       THEN("comparison with the computeMEP method results in")
       {
@@ -69,10 +70,30 @@ SCENARIO("Calculation of the Newton potential", "[utils][newton_potential][utils
     AND_WHEN("the Newton potential is calculated in a uniform dielectric")
     {
       double permittivity = 78.39;
-      UniformDielectric<AD_directional, CollocationIntegrator> gf_o =
+      UniformDielectric<AD_directional, CollocationIntegrator> gf =
         UniformDielectric<AD_directional, CollocationIntegrator>(permittivity);
       Eigen::VectorXd newton = computeNewtonPotential(
-          pcm::bind(&UniformDielectric<AD_directional, CollocationIntegrator>::kernelS, gf_o, pcm::_1, pcm::_2),
+          pcm::bind(&UniformDielectric<AD_directional, CollocationIntegrator>::kernelS, gf, pcm::_1, pcm::_2),
+          cavity.elementCenter(), dist);
+      THEN("comparison with the computeMEP method results in")
+      {
+        Eigen::VectorXd mep = computeMEP(molec, cavity.elements());
+        mep /= permittivity;
+        REQUIRE(newton.size() == mep.size());
+        for (int i = 0; i < mep.size(); ++i) {
+          REQUIRE(newton(i) == Approx(mep(i)));
+        }
+      }
+    }
+
+    AND_WHEN("the Newton potential is calculated in an ionic liquid with kappa = 0.0")
+    {
+      double permittivity = 78.39;
+      double kappa = 0.0;
+      IonicLiquid<AD_directional, CollocationIntegrator> gf =
+        IonicLiquid<AD_directional, CollocationIntegrator>(permittivity, kappa);
+      Eigen::VectorXd newton = computeNewtonPotential(
+          pcm::bind(&IonicLiquid<AD_directional, CollocationIntegrator>::kernelS, gf, pcm::_1, pcm::_2),
           cavity.elementCenter(), dist);
       THEN("comparison with the computeMEP method results in")
       {
