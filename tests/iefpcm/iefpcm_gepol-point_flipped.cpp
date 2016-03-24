@@ -52,7 +52,9 @@ SCENARIO("Test a point charge and a GePol cavity in flipped environment (uniform
         double totalASC = charge * (permittivity - 1) / permittivity;
 
         /*! \class IEFSolver
-         *  \test \b pointChargeGePol tests IEFSolver using a point charge with a GePol cavity
+         *  \test \b pointChargeGePolFlipped tests IEFSolver using a point charge with a GePol cavity and a flipped environment
+         *  We force also usage of the buildAnisotropicMatrix method.
+         *  The results are compared with Gauss' theorem and the results from the buildIsotropicMatrix method
          *  The point charge is at the origin.
          */
         WHEN("the point charge is located at the origin")
@@ -63,34 +65,48 @@ SCENARIO("Test a point charge and a GePol cavity in flipped environment (uniform
             double minRadius = 100.0;
             GePolCavity cavity = GePolCavity(point, area, probeRadius, minRadius);
 
-            IEFSolver solver(symm);
-            solver.buildSystemMatrix(cavity, gf_i, gf_o);
+            IEFSolver aniso_solver(symm);
+            aniso_solver.buildAnisotropicMatrix(cavity, gf_i, gf_o);
+
+            IEFSolver iso_solver(symm);
+            iso_solver.buildIsotropicMatrix(cavity, gf_i, gf_o);
 
             size_t size = cavity.size();
             Eigen::VectorXd fake_mep = computeMEP(cavity.elements(), charge);
-            Eigen::VectorXd fake_asc = Eigen::VectorXd::Zero(size);
-            // The RHS has the opposite sign for the flipped case
-            fake_asc = - solver.computeCharge(fake_mep);
-
             for (size_t i = 0; i < size; ++i) {
                 INFO("fake_mep(" << i << ") = " << fake_mep(i));
             }
-            for (size_t i = 0; i < size; ++i) {
-                INFO("fake_asc(" << i << ") = " << fake_asc(i));
-            }
 
-            double totalFakeASC = fake_asc.sum();
             THEN("the apparent surface charge is")
             {
-                CAPTURE(totalASC);
-                CAPTURE(totalFakeASC);
-                CAPTURE(totalASC - totalFakeASC);
-                REQUIRE(totalASC == Approx(totalFakeASC).epsilon(1.0e-03));
+              // The RHS has the MEP scaled by the permittivity
+              Eigen::VectorXd aniso_fake_asc = aniso_solver.computeCharge(fake_mep / permittivity);
+              // The RHS has the opposite sign for the flipped case
+              Eigen::VectorXd iso_fake_asc = - iso_solver.computeCharge(fake_mep);
+              double totalAnisoASC = aniso_fake_asc.sum();
+              double totalIsoASC = iso_fake_asc.sum();
+
+              for (size_t i = 0; i < size; ++i) {
+                INFO("aniso_fake_asc(" << i << ") = " << aniso_fake_asc(i));
+              }
+              for (size_t i = 0; i < size; ++i) {
+                INFO("iso_fake_asc(" << i << ") = " << iso_fake_asc(i));
+              }
+              print_eigen_matrix(aniso_fake_asc, "aniso.log");
+              print_eigen_matrix(iso_fake_asc, "iso.log");
+
+              CAPTURE(totalASC);
+              CAPTURE(totalAnisoASC);
+              CAPTURE(totalASC - totalAnisoASC);
+              REQUIRE(totalASC == Approx(totalAnisoASC).epsilon(1.0e-03));
+              REQUIRE(totalIsoASC == Approx(totalAnisoASC));
             }
         }
 
         /*! \class IEFSolver
-         *  \test \b pointChargeShiftedGePol tests IEFSolver using a point charge with a GePol cavity
+         *  \test \b pointChargeShiftedGePolFlipped tests IEFSolver using a point charge with a GePol cavity and a flipped environment
+         *  We force also usage of the buildAnisotropicMatrix method.
+         *  The results are compared with Gauss' theorem and the results from the buildIsotropicMatrix method
          *  The point charge is away from the origin.
          */
         AND_WHEN("the point charge is located away from the origin")
@@ -102,30 +118,40 @@ SCENARIO("Test a point charge and a GePol cavity in flipped environment (uniform
             double minRadius = 100.0;
             GePolCavity cavity = GePolCavity(point, area, probeRadius, minRadius);
 
-            IEFSolver solver(symm);
-            solver.buildSystemMatrix(cavity, gf_i, gf_o);
+            IEFSolver aniso_solver(symm);
+            aniso_solver.buildAnisotropicMatrix(cavity, gf_i, gf_o);
+
+            IEFSolver iso_solver(symm);
+            iso_solver.buildIsotropicMatrix(cavity, gf_i, gf_o);
 
             double charge = 8.0;
             size_t size = cavity.size();
             Eigen::VectorXd fake_mep = computeMEP(cavity.elements(), charge, origin);
-            Eigen::VectorXd fake_asc = Eigen::VectorXd::Zero(size);
-            // The RHS has the opposite sign for the flipped case
-            fake_asc = - solver.computeCharge(fake_mep);
-
             for (size_t i = 0; i < size; ++i) {
                 INFO("fake_mep(" << i << ") = " << fake_mep(i));
             }
-            for (size_t i = 0; i < size; ++i) {
-                INFO("fake_asc(" << i << ") = " << fake_asc(i));
-            }
 
-            double totalFakeASC = fake_asc.sum();
-            THEN("the surface charge is")
+            THEN("the apparent surface charge is")
             {
-                CAPTURE(totalASC);
-                CAPTURE(totalFakeASC);
-                CAPTURE(totalASC - totalFakeASC);
-                REQUIRE(totalASC == Approx(totalFakeASC).epsilon(1.0e-03));
+              // The RHS has the MEP scaled by the permittivity
+              Eigen::VectorXd aniso_fake_asc = aniso_solver.computeCharge(fake_mep / permittivity);
+              // The RHS has the opposite sign for the flipped case
+              Eigen::VectorXd iso_fake_asc = - iso_solver.computeCharge(fake_mep);
+              double totalAnisoASC = aniso_fake_asc.sum();
+              double totalIsoASC = iso_fake_asc.sum();
+
+              for (size_t i = 0; i < size; ++i) {
+                INFO("aniso_fake_asc(" << i << ") = " << aniso_fake_asc(i));
+              }
+              for (size_t i = 0; i < size; ++i) {
+                INFO("iso_fake_asc(" << i << ") = " << iso_fake_asc(i));
+              }
+
+              CAPTURE(totalASC);
+              CAPTURE(totalAnisoASC);
+              CAPTURE(totalASC - totalAnisoASC);
+              REQUIRE(totalASC == Approx(totalAnisoASC).epsilon(1.0e-03));
+              REQUIRE(totalIsoASC == Approx(totalAnisoASC));
             }
         }
     }
