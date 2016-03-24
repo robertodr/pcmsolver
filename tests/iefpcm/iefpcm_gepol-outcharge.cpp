@@ -44,9 +44,8 @@ SCENARIO("Test solver for the IEFPCM for a point charge outside a GePol cavity",
     GIVEN("An isotropic environment and a point charge")
     {
         double permittivity = 78.39;
-        Vacuum<AD_directional, CollocationIntegrator> gfInside = Vacuum<AD_directional, CollocationIntegrator>();
-        UniformDielectric<AD_directional, CollocationIntegrator> gfOutside =
-            UniformDielectric<AD_directional, CollocationIntegrator>(permittivity);
+        Vacuum<> gf_i;
+        UniformDielectric<> gf_o(permittivity);
         bool symm = true;
 
         double charge = 8.0;
@@ -68,7 +67,7 @@ SCENARIO("Test solver for the IEFPCM for a point charge outside a GePol cavity",
             GePolCavity cavity = GePolCavity(spheres, area, probeRadius, minRadius);
 
             IEFSolver solver(symm);
-            solver.buildSystemMatrix(cavity, gfInside, gfOutside);
+            solver.buildSystemMatrix(cavity, gf_i, gf_o);
 
             size_t size = cavity.size();
             Eigen::VectorXd fake_mep = computeMEP(cavity.elements(), charge, chargePos);

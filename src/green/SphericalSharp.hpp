@@ -34,7 +34,9 @@
 
 #include <Eigen/Core>
 
+#include "DerivativeTypes.hpp"
 #include "DerivativeUtils.hpp"
+#include "bi_operators/IntegratorForward.hpp"
 #include "GreensFunction.hpp"
 #include "utils/legendre.h"
 #include "utils/MathUtils.hpp"
@@ -49,8 +51,8 @@
  *  \tparam IntegratorPolicy policy for the calculation of the matrix represenation of S and D
  */
 
-template <typename DerivativeTraits,
-          typename IntegratorPolicy>
+template <typename DerivativeTraits = AD_directional,
+          typename IntegratorPolicy = CollocationIntegrator>
 class SphericalSharp __final : public GreensFunction<DerivativeTraits, IntegratorPolicy, Sharp,
                                               SphericalSharp<DerivativeTraits, IntegratorPolicy> >
 {

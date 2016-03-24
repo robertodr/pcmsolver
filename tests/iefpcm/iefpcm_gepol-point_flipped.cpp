@@ -36,6 +36,7 @@
 #include "green/Vacuum.hpp"
 #include "green/UniformDielectric.hpp"
 #include "solver/IEFSolver.hpp"
+#include "utils/ChargeDistribution.hpp"
 #include "TestingMolecules.hpp"
 
 SCENARIO("Test a point charge and a GePol cavity in flipped environment (uniform dielectric inside, vacuum outside)", "[solver][iefpcm][iefpcm_gepol-point_flipped][flipped]")
@@ -43,9 +44,8 @@ SCENARIO("Test a point charge and a GePol cavity in flipped environment (uniform
     GIVEN("An isotropic environment inside the cavity and a point charge")
     {
         double permittivity = 78.39;
-        UniformDielectric<AD_directional, CollocationIntegrator> gf_i =
-            UniformDielectric<AD_directional, CollocationIntegrator>(permittivity);
-        Vacuum<AD_directional, CollocationIntegrator> gf_o = Vacuum<AD_directional, CollocationIntegrator>();
+        UniformDielectric<> gf_i(permittivity);
+        Vacuum<> gf_o;
         bool symm = true;
 
         double charge = 8.0;
@@ -72,6 +72,13 @@ SCENARIO("Test a point charge and a GePol cavity in flipped environment (uniform
             iso_solver.buildIsotropicMatrix(cavity, gf_i, gf_o);
 
             size_t size = cavity.size();
+            // Newton potential for a uniform dielectric
+            Eigen::VectorXd newton = computeNewtonPotential(gf_i.exportKernelS(),
+                cavity.elementCenter(), nuclearChargeDistribution(point));
+            for (size_t i = 0; i < size; ++i) {
+                INFO("newton(" << i << ") = " << newton(i));
+            }
+            // Newton potential for vacuum
             Eigen::VectorXd fake_mep = computeMEP(cavity.elements(), charge);
             for (size_t i = 0; i < size; ++i) {
                 INFO("fake_mep(" << i << ") = " << fake_mep(i));
@@ -79,8 +86,7 @@ SCENARIO("Test a point charge and a GePol cavity in flipped environment (uniform
 
             THEN("the apparent surface charge is")
             {
-              // The RHS has the MEP scaled by the permittivity
-              Eigen::VectorXd aniso_fake_asc = aniso_solver.computeCharge(fake_mep / permittivity);
+              Eigen::VectorXd aniso_fake_asc = aniso_solver.computeCharge(newton);
               // The RHS has the opposite sign for the flipped case
               Eigen::VectorXd iso_fake_asc = - iso_solver.computeCharge(fake_mep);
               double totalAnisoASC = aniso_fake_asc.sum();
@@ -96,9 +102,13 @@ SCENARIO("Test a point charge and a GePol cavity in flipped environment (uniform
               print_eigen_matrix(iso_fake_asc, "iso.log");
 
               CAPTURE(totalASC);
+              CAPTURE(totalIsoASC);
+              CAPTURE(totalASC - totalIsoASC);
+              REQUIRE(totalASC == Approx(totalIsoASC).epsilon(1.0e-03));
               CAPTURE(totalAnisoASC);
               CAPTURE(totalASC - totalAnisoASC);
               REQUIRE(totalASC == Approx(totalAnisoASC).epsilon(1.0e-03));
+              CAPTURE(totalIsoASC - totalAnisoASC);
               REQUIRE(totalIsoASC == Approx(totalAnisoASC));
             }
         }
@@ -126,15 +136,21 @@ SCENARIO("Test a point charge and a GePol cavity in flipped environment (uniform
 
             double charge = 8.0;
             size_t size = cavity.size();
-            Eigen::VectorXd fake_mep = computeMEP(cavity.elements(), charge, origin);
+            // Newton potential for a uniform dielectric
+            Eigen::VectorXd newton = computeNewtonPotential(gf_i.exportKernelS(),
+                cavity.elementCenter(), nuclearChargeDistribution(point));
+            for (size_t i = 0; i < size; ++i) {
+                INFO("newton(" << i << ") = " << newton(i));
+            }
+            // Newton potential for vacuum
+            Eigen::VectorXd fake_mep = computeMEP(cavity.elements(), charge);
             for (size_t i = 0; i < size; ++i) {
                 INFO("fake_mep(" << i << ") = " << fake_mep(i));
             }
 
             THEN("the apparent surface charge is")
             {
-              // The RHS has the MEP scaled by the permittivity
-              Eigen::VectorXd aniso_fake_asc = aniso_solver.computeCharge(fake_mep / permittivity);
+              Eigen::VectorXd aniso_fake_asc = aniso_solver.computeCharge(newton);
               // The RHS has the opposite sign for the flipped case
               Eigen::VectorXd iso_fake_asc = - iso_solver.computeCharge(fake_mep);
               double totalAnisoASC = aniso_fake_asc.sum();
@@ -148,9 +164,13 @@ SCENARIO("Test a point charge and a GePol cavity in flipped environment (uniform
               }
 
               CAPTURE(totalASC);
+              CAPTURE(totalIsoASC);
+              CAPTURE(totalASC - totalIsoASC);
+              REQUIRE(totalASC == Approx(totalIsoASC).epsilon(1.0e-03));
               CAPTURE(totalAnisoASC);
               CAPTURE(totalASC - totalAnisoASC);
               REQUIRE(totalASC == Approx(totalAnisoASC).epsilon(1.0e-03));
+              CAPTURE(totalIsoASC - totalAnisoASC);
               REQUIRE(totalIsoASC == Approx(totalAnisoASC));
             }
         }

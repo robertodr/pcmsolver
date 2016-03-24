@@ -32,6 +32,8 @@
 
 #include <Eigen/Core>
 
+class Molecule;
+
 /*! \file ChargeDistribution.hpp
  *  \class ChargeDistribution
  *  \brief Class representing a classical charge distribution
@@ -69,5 +71,11 @@ typedef pcm::function<double(const Eigen::Vector3d &, const Eigen::Vector3d &)> 
  *  \return the Newton potential on the grid
  */
 Eigen::VectorXd computeNewtonPotential(const GreensFunctionValue & gf, const Eigen::Matrix3Xd & grid, const ChargeDistribution & dist);
+
+/*! \brief Return classical nuclear charge distribution from a Molecule object
+ *  \param[in] mol the Molecule object
+ *  \return the classical nuclear charge distribution
+ */
+ChargeDistribution nuclearChargeDistribution(const Molecule & mol);
 
 #endif // CHARGEDISTRIBUTION_HPP

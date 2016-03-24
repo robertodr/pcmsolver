@@ -49,11 +49,11 @@ SCENARIO("Calculation of the Newton potential", "[utils][newton_potential][utils
     double minRadius = 100.0;
     Molecule molec = C2H4();
     GePolCavity cavity = GePolCavity(molec, area, probeRadius, minRadius, "newton");
-    ChargeDistribution dist(molec.charges(), molec.geometry());
+    ChargeDistribution dist = nuclearChargeDistribution(molec);
 
     WHEN("the Newton potential is calculated in vacuum")
     {
-      Vacuum<AD_directional, CollocationIntegrator> gf = Vacuum<AD_directional, CollocationIntegrator>();
+      Vacuum<> gf;
       Eigen::VectorXd newton = computeNewtonPotential(gf.exportKernelS(),
           cavity.elementCenter(), dist);
       THEN("comparison with the computeMEP method results in")
@@ -69,8 +69,7 @@ SCENARIO("Calculation of the Newton potential", "[utils][newton_potential][utils
     AND_WHEN("the Newton potential is calculated in a uniform dielectric")
     {
       double permittivity = 78.39;
-      UniformDielectric<AD_directional, CollocationIntegrator> gf =
-        UniformDielectric<AD_directional, CollocationIntegrator>(permittivity);
+      UniformDielectric<> gf(permittivity);
       Eigen::VectorXd newton = computeNewtonPotential(gf.exportKernelS(),
           cavity.elementCenter(), dist);
       THEN("comparison with the computeMEP method results in")
@@ -88,8 +87,7 @@ SCENARIO("Calculation of the Newton potential", "[utils][newton_potential][utils
     {
       double permittivity = 78.39;
       double kappa = 0.0;
-      IonicLiquid<AD_directional, CollocationIntegrator> gf =
-        IonicLiquid<AD_directional, CollocationIntegrator>(permittivity, kappa);
+      IonicLiquid<> gf(permittivity, kappa);
       Eigen::VectorXd newton = computeNewtonPotential(gf.exportKernelS(),
           cavity.elementCenter(), dist);
       THEN("comparison with the computeMEP method results in")

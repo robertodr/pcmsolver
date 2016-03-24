@@ -36,7 +36,9 @@
 
 class Element;
 
+#include "DerivativeTypes.hpp"
 #include "DerivativeUtils.hpp"
+#include "bi_operators/IntegratorForward.hpp"
 #include "GreensFunction.hpp"
 #include "dielectric_profile/Yukawa.hpp"
 
@@ -49,8 +51,8 @@ class Element;
  *  \tparam IntegratorPolicy policy for the calculation of the matrix represenation of S and D
  */
 
-template <typename DerivativeTraits,
-          typename IntegratorPolicy>
+template <typename DerivativeTraits = AD_directional,
+          typename IntegratorPolicy = CollocationIntegrator>
 class IonicLiquid __final : public GreensFunction<DerivativeTraits, IntegratorPolicy, Yukawa,
                                      IonicLiquid<DerivativeTraits, IntegratorPolicy> >
 {

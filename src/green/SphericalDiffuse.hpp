@@ -39,6 +39,9 @@
 // Boost.Math includes
 #include <boost/math/special_functions/legendre.hpp>
 
+#include "DerivativeUtils.hpp"
+#include "bi_operators/IntegratorForward.hpp"
+#include "dielectric_profile/ProfileForward.hpp"
 #include "GreensFunction.hpp"
 #include "utils/MathUtils.hpp"
 
@@ -64,8 +67,8 @@
  *  at a pair of points, a translation of the sampling points is performed first.
  */
 
-template <typename IntegratorPolicy,
-          typename ProfilePolicy>
+template <typename IntegratorPolicy = CollocationIntegrator,
+          typename ProfilePolicy = OneLayerTanh>
 class SphericalDiffuse __final : public GreensFunction<Numerical, IntegratorPolicy, ProfilePolicy,
                                                SphericalDiffuse<IntegratorPolicy, ProfilePolicy> >
 {

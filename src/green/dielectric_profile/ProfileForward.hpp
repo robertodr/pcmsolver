@@ -23,31 +23,16 @@
  */
 /* pcmsolver_copyright_end */
 
-#include "ChargeDistribution.hpp"
+#ifndef PROFILEFORWARD_HPP
+#define PROFILEFORWARD_HPP
 
-#include "Config.hpp"
+class Anisotropic;
+class OneLayerErf;
+class OneLayerTanh;
+class MembraneTanh;
+struct Metal;
+struct Sharp;
+struct Uniform;
+struct Yukawa;
 
-#include <Eigen/Core>
-
-#include "Molecule.hpp"
-
-ChargeDistribution::ChargeDistribution(const Eigen::VectorXd & chg,
-    const Eigen::Matrix3Xd & pos) : monopoles_(chg), monopolesSites_(pos) {};
-
-Eigen::VectorXd computeNewtonPotential(const GreensFunctionValue & gf, const Eigen::Matrix3Xd & grid, const ChargeDistribution & dist)
-{
-  Eigen::VectorXd newton = Eigen::VectorXd::Zero(grid.cols());
-  int nSites = dist.monopoles().size();
-  for (int i = 0; i < nSites; ++i) {
-    for (int j = 0; j < grid.cols(); ++j) {
-      newton(j) += dist.monopoles(i) * gf(grid.col(j), dist.monopolesSites(i));
-    }
-  }
-  return newton;
-}
-
-ChargeDistribution nuclearChargeDistribution(const Molecule & mol)
-{
-  return ChargeDistribution(mol.charges(), mol.geometry());
-}
-
+#endif // PROFILEFORWARD_HPP
