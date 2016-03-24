@@ -248,6 +248,12 @@ private:
 
         return (eps_r2 * this->derivativeProbe(direction, p1, p2));
     }
+    virtual KernelS exportKernelS_impl() const __override {
+      return pcm::bind(&SphericalDiffuse<IntegratorPolicy, ProfilePolicy>::kernelS, *this, pcm::_1, pcm::_2);
+    }
+    virtual KernelD exportKernelD_impl() const __override {
+      return pcm::bind(&SphericalDiffuse<IntegratorPolicy, ProfilePolicy>::kernelD, *this, pcm::_1, pcm::_2, pcm::_3);
+    }
     virtual std::ostream & printObject(std::ostream & os) __override
     {
         Eigen::IOFormat CleanFmt(Eigen::StreamPrecision, 0, ", ", "\n", "(", ")");

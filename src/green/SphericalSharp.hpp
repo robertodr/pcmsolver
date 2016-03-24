@@ -154,6 +154,12 @@ private:
     {
         return (this->profile_.epsilonSolvent * this->derivativeProbe(direction, p1, p2));
     }
+    virtual KernelS exportKernelS_impl() const __override {
+      return pcm::bind(&SphericalSharp<DerivativeTraits, IntegratorPolicy>::kernelS, *this, pcm::_1, pcm::_2);
+    }
+    virtual KernelD exportKernelD_impl() const __override {
+      return pcm::bind(&SphericalSharp<DerivativeTraits, IntegratorPolicy>::kernelD, *this, pcm::_1, pcm::_2, pcm::_3);
+    }
     DerivativeTraits imagePotential_impl(DerivativeTraits * sp, DerivativeTraits * pp) const
     {
         // Data from permittivity profile

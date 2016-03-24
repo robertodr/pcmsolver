@@ -54,8 +54,7 @@ SCENARIO("Calculation of the Newton potential", "[utils][newton_potential][utils
     WHEN("the Newton potential is calculated in vacuum")
     {
       Vacuum<AD_directional, CollocationIntegrator> gf = Vacuum<AD_directional, CollocationIntegrator>();
-      Eigen::VectorXd newton = computeNewtonPotential(
-          pcm::bind(&Vacuum<AD_directional, CollocationIntegrator>::kernelS, gf, pcm::_1, pcm::_2),
+      Eigen::VectorXd newton = computeNewtonPotential(gf.exportKernelS(),
           cavity.elementCenter(), dist);
       THEN("comparison with the computeMEP method results in")
       {
@@ -72,8 +71,7 @@ SCENARIO("Calculation of the Newton potential", "[utils][newton_potential][utils
       double permittivity = 78.39;
       UniformDielectric<AD_directional, CollocationIntegrator> gf =
         UniformDielectric<AD_directional, CollocationIntegrator>(permittivity);
-      Eigen::VectorXd newton = computeNewtonPotential(
-          pcm::bind(&UniformDielectric<AD_directional, CollocationIntegrator>::kernelS, gf, pcm::_1, pcm::_2),
+      Eigen::VectorXd newton = computeNewtonPotential(gf.exportKernelS(),
           cavity.elementCenter(), dist);
       THEN("comparison with the computeMEP method results in")
       {
@@ -92,8 +90,7 @@ SCENARIO("Calculation of the Newton potential", "[utils][newton_potential][utils
       double kappa = 0.0;
       IonicLiquid<AD_directional, CollocationIntegrator> gf =
         IonicLiquid<AD_directional, CollocationIntegrator>(permittivity, kappa);
-      Eigen::VectorXd newton = computeNewtonPotential(
-          pcm::bind(&IonicLiquid<AD_directional, CollocationIntegrator>::kernelS, gf, pcm::_1, pcm::_2),
+      Eigen::VectorXd newton = computeNewtonPotential(gf.exportKernelS(),
           cavity.elementCenter(), dist);
       THEN("comparison with the computeMEP method results in")
       {

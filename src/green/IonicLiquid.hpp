@@ -106,6 +106,12 @@ private:
     {
         return this->profile_.epsilon * (this->derivativeProbe(direction, p1, p2));
     }
+    virtual KernelS exportKernelS_impl() const __override {
+      return pcm::bind(&IonicLiquid<DerivativeTraits, IntegratorPolicy>::kernelS, *this, pcm::_1, pcm::_2);
+    }
+    virtual KernelD exportKernelD_impl() const __override {
+      return pcm::bind(&IonicLiquid<DerivativeTraits, IntegratorPolicy>::kernelD, *this, pcm::_1, pcm::_2, pcm::_3);
+    }
     virtual std::ostream & printObject(std::ostream & os) __override
     {
         os << "Green's function type: ionic liquid" << std::endl;
