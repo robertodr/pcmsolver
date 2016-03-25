@@ -44,8 +44,21 @@
 
 void IEFSolver::buildSystemMatrix_impl(const Cavity & cavity, const IGreensFunction & gf_i, const IGreensFunction & gf_o)
 {
-  isotropic_ = (gf_i.uniform() && gf_o.uniform());
-  isotropic_ ? buildIsotropicMatrix(cavity, gf_i, gf_o) : buildAnisotropicMatrix(cavity, gf_i, gf_o);
+  // Route computation of system matrix based on environment
+  switch(environment_) {
+    case RegularIsotropic:
+      buildRegularIsotropicMatrix(cavity, gf_i, gf_o);
+      break;
+    case FlippedIsotropic:
+      buildFlippedIsotropicMatrix(cavity, gf_i, gf_o);
+      break;
+    case AnisotropicEnv:
+      buildAnisotropicMatrix(cavity, gf_i, gf_o);
+      break;
+    default:
+      buildAnisotropicMatrix(cavity, gf_i, gf_o);
+      break;
+  }
 }
 
 void IEFSolver::buildAnisotropicMatrix(const Cavity & cav, const IGreensFunction & gf_i, const IGreensFunction & gf_o)
@@ -66,9 +79,27 @@ void IEFSolver::buildAnisotropicMatrix(const Cavity & cav, const IGreensFunction
   built_ = true;
 }
 
-void IEFSolver::buildIsotropicMatrix(const Cavity & cav, const IGreensFunction & gf_i, const IGreensFunction & gf_o)
+void IEFSolver::buildRegularIsotropicMatrix(const Cavity & cav, const IGreensFunction & gf_i, const IGreensFunction & gf_o)
 {
-  fullPCMMatrix_ = isotropicIEFMatrix(cav, gf_i, profiles::epsilon(gf_o.permittivity()));
+  fullPCMMatrix_ = regularIsotropicIEFMatrix(cav, gf_i, profiles::epsilon(gf_o.permittivity()));
+  // Symmetrize K := (K + K+)/2
+  if (hermitivitize_) {
+    hermitivitize(fullPCMMatrix_);
+  }
+  // Pack into a block diagonal matrix
+  // The number of irreps in the group
+  int nrBlocks = cav.pointGroup().nrIrrep();
+  // The size of the irreducible portion of the cavity
+  int dimBlock = cav.irreducible_size();
+  // For the moment just packs into a std::vector<Eigen::MatrixXd>
+  symmetryPacking(blockPCMMatrix_, fullPCMMatrix_, dimBlock, nrBlocks);
+
+  built_ = true;
+}
+
+void IEFSolver::buildFlippedIsotropicMatrix(const Cavity & cav, const IGreensFunction & gf_i, const IGreensFunction & gf_o)
+{
+  fullPCMMatrix_ = flippedIsotropicIEFMatrix(cav, gf_o, profiles::epsilon(gf_i.permittivity()));
   // Symmetrize K := (K + K+)/2
   if (hermitivitize_) {
     hermitivitize(fullPCMMatrix_);
@@ -101,10 +132,20 @@ Eigen::VectorXd IEFSolver::computeCharge_impl(const Eigen::VectorXd & potential,
 std::ostream & IEFSolver::printSolver(std::ostream & os)
 {
   std::string type;
-  if (isotropic_) {
-    type = "IEFPCM, isotropic";
-  } else {
-    type = "IEFPCM, anisotropic";
+  // Route computation of system matrix based on environment
+  switch(environment_) {
+    case RegularIsotropic:
+      type = "IEFPCM, regular isotropic";
+      break;
+    case FlippedIsotropic:
+      type = "IEFPCM, flipped isotropic";
+      break;
+    case AnisotropicEnv:
+      type = "IEFPCM, anisotropic";
+      break;
+    default:
+      type = "IEFPCM, anisotropic";
+      break;
   }
   os << "Solver Type: " << type << std::endl;
   if (hermitivitize_) {

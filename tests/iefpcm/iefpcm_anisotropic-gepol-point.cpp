@@ -54,7 +54,7 @@ SCENARIO("Test solver for the anisotropic IEFPCM for a point charge and a GePol 
         /*! \class IEFSolver
          *  \test \b anisotropicPointChargeGePol tests IEFSolver using a point charge with a GePol cavity
          *  We are forcing the usage of the buildAnisotropicMatrix method.
-         *  The results are compared with Gauss' theorem and the results from the buildIsotropicMatrix method
+         *  The results are compared with Gauss' theorem and the results from the buildRegularIsotropicMatrix method
          *  The point charge is at the origin.
          */
         WHEN("the point charge is located at the origin")
@@ -69,7 +69,7 @@ SCENARIO("Test solver for the anisotropic IEFPCM for a point charge and a GePol 
             aniso_solver.buildAnisotropicMatrix(cavity, gf_i, gf_o);
 
             IEFSolver iso_solver(symm);
-            iso_solver.buildIsotropicMatrix(cavity, gf_i, gf_o);
+            iso_solver.buildRegularIsotropicMatrix(cavity, gf_i, gf_o);
 
             size_t size = cavity.size();
             Eigen::VectorXd fake_mep = computeMEP(cavity.elements(), charge);
@@ -102,7 +102,7 @@ SCENARIO("Test solver for the anisotropic IEFPCM for a point charge and a GePol 
         /*! \class IEFSolver
          *  \test \b anisotropicPointChargeShiftedGePol tests IEFSolver using a point charge with a GePol cavity
          *  We are forcing the usage of the buildAnisotropicMatrix method.
-         *  The results are compared with Gauss' theorem and the results from the buildIsotropicMatrix method
+         *  The results are compared with Gauss' theorem and the results from the buildRegularIsotropicMatrix method
          *  The point charge is away from the origin.
          */
         AND_WHEN("the point charge is located away from the origin")
@@ -118,7 +118,7 @@ SCENARIO("Test solver for the anisotropic IEFPCM for a point charge and a GePol 
             aniso_solver.buildAnisotropicMatrix(cavity, gf_i, gf_o);
 
             IEFSolver iso_solver(symm);
-            iso_solver.buildIsotropicMatrix(cavity, gf_i, gf_o);
+            iso_solver.buildRegularIsotropicMatrix(cavity, gf_i, gf_o);
 
             size_t size = cavity.size();
             Eigen::VectorXd fake_mep = computeMEP(cavity.elements(), charge, origin);

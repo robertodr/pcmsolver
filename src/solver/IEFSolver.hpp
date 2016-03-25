@@ -2,22 +2,22 @@
 /*
  *     PCMSolver, an API for the Polarizable Continuum Model
  *     Copyright (C) 2013-2015 Roberto Di Remigio, Luca Frediani and contributors
- *     
+ *
  *     This file is part of PCMSolver.
- *     
+ *
  *     PCMSolver is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Lesser General Public License as published by
  *     the Free Software Foundation, either version 3 of the License, or
  *     (at your option) any later version.
- *     
+ *
  *     PCMSolver is distributed in the hope that it will be useful,
  *     but WITHOUT ANY WARRANTY; without even the implied warranty of
  *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *     GNU Lesser General Public License for more details.
- *     
+ *
  *     You should have received a copy of the GNU Lesser General Public License
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
- *     
+ *
  *     For information on the complete list of contributors to the
  *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
  */
@@ -61,12 +61,18 @@ public:
      *  \param[in] gf_o Green's function outside the cavity
      */
     void buildAnisotropicMatrix(const Cavity & cavity, const IGreensFunction & gf_i, const IGreensFunction & gf_o);
-    /*! \brief Builds PCM matrix for an isotropic environment
+    /*! \brief Builds PCM matrix for a regular isotropic environment
      *  \param[in] cavity the cavity to be used.
      *  \param[in] gf_i Green's function inside the cavity
      *  \param[in] gf_o Green's function outside the cavity
      */
-    void buildIsotropicMatrix(const Cavity & cavity, const IGreensFunction & gf_i, const IGreensFunction & gf_o);
+    void buildRegularIsotropicMatrix(const Cavity & cavity, const IGreensFunction & gf_i, const IGreensFunction & gf_o);
+    /*! \brief Builds PCM matrix for a flipped isotropic environment
+     *  \param[in] cavity the cavity to be used.
+     *  \param[in] gf_i Green's function inside the cavity
+     *  \param[in] gf_o Green's function outside the cavity
+     */
+    void buildFlippedIsotropicMatrix(const Cavity & cavity, const IGreensFunction & gf_i, const IGreensFunction & gf_o);
     friend std::ostream & operator<<(std::ostream & os, IEFSolver & solver) {
         return solver.printSolver(os);
     }
