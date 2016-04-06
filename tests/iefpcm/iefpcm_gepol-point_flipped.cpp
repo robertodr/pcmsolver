@@ -43,7 +43,7 @@ SCENARIO("Test a point charge and a GePol cavity in flipped environment (uniform
 {
     GIVEN("An isotropic environment inside the cavity and a point charge")
     {
-        double permittivity = 80.00;
+        double permittivity = 2.00;
         UniformDielectric<> gf_i(permittivity);
         Vacuum<> gf_o;
         bool symm = true;
