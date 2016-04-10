@@ -19,7 +19,7 @@
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
  *     
  *     For information on the complete list of contributors to the
- *     PCMSolver API, see: <http://pcmsolver.github.io/pcmsolver-doc>
+ *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
  */
 /* pcmsolver_copyright_end */
 
@@ -36,13 +36,14 @@
 
 // Has to be included here
 #include "InterfacesImpl.hpp"
-#include "RadialFunction.hpp"
-#include <boost/lexical_cast.hpp>
 // Boost.Math includes
 #include <boost/math/special_functions/legendre.hpp>
 
+#include "DerivativeUtils.hpp"
+#include "bi_operators/IntegratorForward.hpp"
+#include "dielectric_profile/ProfileForward.hpp"
 #include "GreensFunction.hpp"
-#include "MathUtils.hpp"
+#include "utils/MathUtils.hpp"
 
 /*! \file SphericalDiffuse.hpp
  *  \class SphericalDiffuse
@@ -66,9 +67,9 @@
  *  at a pair of points, a translation of the sampling points is performed first.
  */
 
-template <typename IntegratorPolicy,
-          typename ProfilePolicy>
-class SphericalDiffuse : public GreensFunction<Numerical, IntegratorPolicy, ProfilePolicy,
+template <typename IntegratorPolicy = CollocationIntegrator,
+          typename ProfilePolicy = OneLayerTanh>
+class SphericalDiffuse __final : public GreensFunction<Numerical, IntegratorPolicy, ProfilePolicy,
                                                SphericalDiffuse<IntegratorPolicy, ProfilePolicy> >
 {
 public:
@@ -81,6 +82,20 @@ public:
      */
     SphericalDiffuse(double e1, double e2, double w, double c, const Eigen::Vector3d & o, int l)
         : GreensFunction<Numerical, IntegratorPolicy, ProfilePolicy, SphericalDiffuse<IntegratorPolicy, ProfilePolicy> >(),
+          origin_(o), maxLGreen_(l), maxLC_(2*l)
+    {
+        initProfilePolicy(e1, e2, w, c);
+        initSphericalDiffuse();
+    }
+    /*! Constructor for a one-layer interface
+     * \param[in] e1 left-side dielectric constant
+     * \param[in] e2 right-side dielectric constant
+     * \param[in] w width of the interface layer
+     * \param[in] c center of the diffuse layer
+     * \param[in] o center of the sphere
+     */
+    SphericalDiffuse(double e1, double e2, double w, double c, const Eigen::Vector3d & o, int l, double f)
+        : GreensFunction<Numerical, IntegratorPolicy, ProfilePolicy, SphericalDiffuse<IntegratorPolicy, ProfilePolicy> >(f),
           origin_(o), maxLGreen_(l), maxLC_(2*l)
     {
         initProfilePolicy(e1, e2, w, c);
@@ -191,8 +206,8 @@ public:
         writeToFile(zetaC_, tmp + "zetaC.dat");
         writeToFile(omegaC_, tmp + "omegaC.dat");
 	for (int L = 1; L <= maxLGreen_; ++L) {
-	    writeToFile(zeta_[L], tmp + "zeta_" + boost::lexical_cast<std::string>(L) + ".dat");
-	    writeToFile(omega_[L], tmp + "omega_" + boost::lexical_cast<std::string>(L) + ".dat");
+	    writeToFile(zeta_[L], tmp + "zeta_" + pcm::to_string(L) + ".dat");
+	    writeToFile(omega_[L], tmp + "omega_" + pcm::to_string(L) + ".dat");
 	}
     }
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW /* See http://eigen.tuxfamily.org/dox/group__TopicStructHavingEigenMembers.html */
@@ -236,6 +251,12 @@ private:
 
         return (eps_r2 * this->derivativeProbe(direction, p1, p2));
     }
+    virtual KernelS exportKernelS_impl() const __override {
+      return pcm::bind(&SphericalDiffuse<IntegratorPolicy, ProfilePolicy>::kernelS, *this, pcm::_1, pcm::_2);
+    }
+    virtual KernelD exportKernelD_impl() const __override {
+      return pcm::bind(&SphericalDiffuse<IntegratorPolicy, ProfilePolicy>::kernelD, *this, pcm::_1, pcm::_2, pcm::_3);
+    }
     virtual std::ostream & printObject(std::ostream & os) __override
     {
         Eigen::IOFormat CleanFmt(Eigen::StreamPrecision, 0, ", ", "\n", "(", ")");
@@ -272,17 +293,17 @@ private:
         ProfileEvaluator eval_ = pcm::bind(&ProfilePolicy::operator(), this->profile_, pcm::_1);
 
         LOG("Computing coefficient for the separation of the Coulomb singularity");
-        LOG("Computing first radial solution L = " + std::to_string(maxLC_));
+        LOG("Computing first radial solution L = " + pcm::to_string(maxLC_));
         TIMER_ON("computeZeta for coefficient");
         zetaC_ = RadialFunction<StateType, LnTransformedRadial, Zeta>(maxLC_, r_0_, r_infinity_, eval_, params_);
         TIMER_OFF("computeZeta for coefficient");
-        LOG("DONE: Computing first radial solution L = " + std::to_string(maxLC_));
+        LOG("DONE: Computing first radial solution L = " + pcm::to_string(maxLC_));
 
-        LOG("Computing second radial solution L = " + std::to_string(maxLC_));
+        LOG("Computing second radial solution L = " + pcm::to_string(maxLC_));
         TIMER_ON("computeOmega for coefficient");
         omegaC_ = RadialFunction<StateType, LnTransformedRadial, Omega>(maxLC_, r_0_, r_infinity_, eval_, params_);
         TIMER_OFF("computeOmega for coefficient");
-        LOG("Computing second radial solution L = " + std::to_string(maxLC_));
+        LOG("Computing second radial solution L = " + pcm::to_string(maxLC_));
         LOG("DONE: Computing coefficient for the separation of the Coulomb singularity");
 
         LOG("Computing radial solutions for Green's function");
@@ -291,22 +312,22 @@ private:
         omega_.reserve(maxLGreen_+1);
         for (int L = 0; L <= maxLGreen_; ++L) {
             // First radial solution
-            LOG("Computing first radial solution L = " + std::to_string(L));
-            TIMER_ON("computeZeta L = " + std::to_string(L));
+            LOG("Computing first radial solution L = " + pcm::to_string(L));
+            TIMER_ON("computeZeta L = " + pcm::to_string(L));
             // Create an empty RadialSolution
             RadialFunction<StateType, LnTransformedRadial, Zeta> tmp_zeta_(L, r_0_, r_infinity_, eval_, params_);
             zeta_.push_back(tmp_zeta_);
-            TIMER_OFF("computeZeta L = " + std::to_string(L));
-            LOG("DONE: Computing first radial solution L = " + std::to_string(L));
+            TIMER_OFF("computeZeta L = " + pcm::to_string(L));
+            LOG("DONE: Computing first radial solution L = " + pcm::to_string(L));
 
             // Second radial solution
-            LOG("Computing second radial solution L = " + std::to_string(L));
-            TIMER_ON("computeOmega L = " + std::to_string(L));
+            LOG("Computing second radial solution L = " + pcm::to_string(L));
+            TIMER_ON("computeOmega L = " + pcm::to_string(L));
             // Create an empty RadialSolution
             RadialFunction<StateType, LnTransformedRadial, Omega> tmp_omega_(L, r_0_, r_infinity_, eval_, params_);
             omega_.push_back(tmp_omega_);
-            TIMER_OFF("computeOmega L = " + std::to_string(L));
-            LOG("DONE: Computing second radial solution L = " + std::to_string(L));
+            TIMER_OFF("computeOmega L = " + pcm::to_string(L));
+            LOG("DONE: Computing second radial solution L = " + pcm::to_string(L));
         }
         TIMER_OFF("SphericalDiffuse: Looping over angular momentum");
         LOG("DONE: Computing radial solutions for Green's function");

@@ -19,7 +19,7 @@
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
  *     
  *     For information on the complete list of contributors to the
- *     PCMSolver API, see: <http://pcmsolver.github.io/pcmsolver-doc>
+ *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
  */
 /* pcmsolver_copyright_end */
 
@@ -30,10 +30,11 @@
 
 #include "Config.hpp"
 
-#include "DerivativeTypes.hpp"
-#include "Factory.hpp"
-#include "ForId.hpp"
-#include "IntegratorTypes.hpp"
+#include "green/DerivativeTypes.hpp"
+#include "utils/Factory.hpp"
+#include "utils/ForId.hpp"
+#include "bi_operators/IntegratorForward.hpp"
+#include "bi_operators/IntegratorTypes.hpp"
 #include "TDCPCMSolver.hpp"
 #include "TDCPCMIterativeSolver.hpp"
 #include "TDIEFSolver.hpp"

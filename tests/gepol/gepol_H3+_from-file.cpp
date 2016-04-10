@@ -19,7 +19,7 @@
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
  *
  *     For information on the complete list of contributors to the
- *     PCMSolver API, see: <http://pcmsolver.github.io/pcmsolver-doc>
+ *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
  */
 /* pcmsolver_copyright_end */
 
@@ -28,11 +28,10 @@
 #include <vector>
 #include <cmath>
 
-#include "Config.hpp"
 
 #include <Eigen/Core>
 
-#include "GePolCavity.hpp"
+#include "cavity/GePolCavity.hpp"
 
 TEST_CASE("Restart GePol cavity for an H3+ molecule in C1 symmetry", "[gepol][gepol_H3+_from-file]")
 {

@@ -2,24 +2,24 @@
 /*
  *     PCMSolver, an API for the Polarizable Continuum Model
  *     Copyright (C) 2013-2015 Roberto Di Remigio, Luca Frediani and contributors
- *     
+ *
  *     This file is part of PCMSolver.
- *     
+ *
  *     PCMSolver is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Lesser General Public License as published by
  *     the Free Software Foundation, either version 3 of the License, or
  *     (at your option) any later version.
- *     
+ *
  *     PCMSolver is distributed in the hope that it will be useful,
  *     but WITHOUT ANY WARRANTY; without even the implied warranty of
  *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *     GNU Lesser General Public License for more details.
- *     
+ *
  *     You should have received a copy of the GNU Lesser General Public License
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
- *     
+ *
  *     For information on the complete list of contributors to the
- *     PCMSolver API, see: <http://pcmsolver.github.io/pcmsolver-doc>
+ *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
  */
 /* pcmsolver_copyright_end */
 
@@ -27,17 +27,16 @@
 
 #include <iostream>
 
-#include "Config.hpp"
 
 #include <Eigen/Core>
 
-#include "CollocationIntegrator.hpp"
-#include "DerivativeTypes.hpp"
-#include "GePolCavity.hpp"
-#include "Molecule.hpp"
-#include "Vacuum.hpp"
-#include "IEFSolver.hpp"
-#include "SphericalDiffuse.hpp"
+#include "bi_operators/CollocationIntegrator.hpp"
+#include "green/DerivativeTypes.hpp"
+#include "cavity/GePolCavity.hpp"
+#include "utils/Molecule.hpp"
+#include "green/Vacuum.hpp"
+#include "solver/IEFSolver.hpp"
+#include "green/SphericalDiffuse.hpp"
 #include "TestingMolecules.hpp"
 
 SCENARIO("Test solver for the IEFPCM for a point charge in a spherical diffuse environment and a GePol cavity", "[solver][iefpcm][iefpcm_diffuse-gepol-point][anisotropic]")
@@ -49,8 +48,7 @@ SCENARIO("Test solver for the IEFPCM for a point charge in a spherical diffuse e
         double eps2 = 78.39;
         double center = 100.0;
         double width = 5.0;
-        Vacuum<AD_directional, CollocationIntegrator> gfInside =
-            Vacuum<AD_directional, CollocationIntegrator>();
+        Vacuum<> gf_i;
         bool symm = true;
 
         double charge = 8.0;
@@ -67,10 +65,9 @@ SCENARIO("Test solver for the IEFPCM for a point charge in a spherical diffuse e
             double minRadius = 100.0;
             GePolCavity cavity = GePolCavity(point, area, probeRadius, minRadius);
 
-            SphericalDiffuse<CollocationIntegrator, OneLayerTanh> gfOutside =
-                SphericalDiffuse<CollocationIntegrator, OneLayerTanh>(eps1, eps2, width, center, Eigen::Vector3d::Zero(), 3);
+            SphericalDiffuse<> gf_o(eps1, eps2, width, center, Eigen::Vector3d::Zero(), 3);
             IEFSolver solver(symm);
-            solver.buildSystemMatrix(cavity, gfInside, gfOutside);
+            solver.buildSystemMatrix(cavity, gf_i, gf_o);
             size_t size = cavity.size();
             Eigen::VectorXd fake_mep = computeMEP(cavity.elements(), charge, origin);
             for (size_t i = 0; i < size; ++i) {
@@ -100,11 +97,10 @@ SCENARIO("Test solver for the IEFPCM for a point charge in a spherical diffuse e
             double minRadius = 100.0;
             GePolCavity cavity = GePolCavity(point, area, probeRadius, minRadius);
 
-            SphericalDiffuse<CollocationIntegrator, OneLayerTanh> gfOutside =
-                SphericalDiffuse<CollocationIntegrator, OneLayerTanh>(eps1, eps2, width, center, origin, 3);
+            SphericalDiffuse<> gf_o(eps1, eps2, width, center, origin, 3);
 
             IEFSolver solver(symm);
-            solver.buildSystemMatrix(cavity, gfInside, gfOutside);
+            solver.buildSystemMatrix(cavity, gf_i, gf_o);
 
             size_t size = cavity.size();
             Eigen::VectorXd fake_mep = computeMEP(cavity.elements(), charge);

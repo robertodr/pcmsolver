@@ -18,7 +18,7 @@
 !       along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
 !
 !       For information on the complete list of contributors to the
-!       PCMSolver API, see: <http://pcmsolver.github.io/pcmsolver-doc>
+!       PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
 !pcmsolver_copyright_end
 
 !
@@ -111,6 +111,9 @@ do i = 1, nesfp
    rin(i) = rin_(i)
    alpha(i) = 1.0d0
 end do
+! Workaround to silence compilation warning
+maxsph_ = mxsp
+maxvert_= mxver
 
 ! Allocate space for the arrays containing the vertices and the centers
 ! of the tesserae arcs
@@ -151,7 +154,11 @@ do i = 1, nts
 end do
 
 do i = 1, nesf
-    isphe_(i) = isphe(i)
+  isphe_(i) = isphe(i)
+  xe_(i)  = xe(i)
+  ye_(i)  = ye(i)
+  ze_(i)  = ze(i)
+  rin_(i) = re(i)
 end do
 
 ! Clean-up

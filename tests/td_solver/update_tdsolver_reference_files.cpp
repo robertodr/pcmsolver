@@ -2,22 +2,22 @@
 /*
  *     PCMSolver, an API for the Polarizable Continuum Model
  *     Copyright (C) 2013-2015 Roberto Di Remigio, Luca Frediani and contributors
- *     
+ *
  *     This file is part of PCMSolver.
- *     
+ *
  *     PCMSolver is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Lesser General Public License as published by
  *     the Free Software Foundation, either version 3 of the License, or
  *     (at your option) any later version.
- *     
+ *
  *     PCMSolver is distributed in the hope that it will be useful,
  *     but WITHOUT ANY WARRANTY; without even the implied warranty of
  *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *     GNU Lesser General Public License for more details.
- *     
+ *
  *     You should have received a copy of the GNU Lesser General Public License
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
- *     
+ *
  *     For information on the complete list of contributors to the
  *     PCMSolver API, see: <http://pcmsolver.github.io/pcmsolver-doc>
  */
@@ -33,21 +33,24 @@
 
 #include <Eigen/Core>
 
-#include "cnpy.hpp"
-#include "CollocationIntegrator.hpp"
-#include "DerivativeTypes.hpp"
-#include "Element.hpp"
-#include "GePolCavity.hpp"
-#include "PhysicalConstants.hpp"
-#include "TDCPCMSolver.hpp"
-#include "TDIEFSolver.hpp"
-#include "TDSingleIEFSolver.hpp"
-#include "TDOnsagerIEFSolver.hpp"
-#include "TDCPCMIterativeSolver.hpp"
 #include "TestingMolecules.hpp"
-#include "Vacuum.hpp"
+#include "bi_operators/CollocationIntegrator.hpp"
+#include "cavity/Element.hpp"
+#include "cavity/GePolCavity.hpp"
+#include "green/DerivativeTypes.hpp"
+#include "green/Vacuum.hpp"
+#include "td_solver/TDCPCMSolver.hpp"
+#include "td_solver/TDIEFSolver.hpp"
+#include "td_solver/TDSingleIEFSolver.hpp"
+#include "td_solver/TDOnsagerIEFSolver.hpp"
+#include "td_solver/TDCPCMIterativeSolver.hpp"
+#include "utils/cnpy.hpp"
+#include "utils/MathUtils.hpp"
 
 const double secondsToAU = 2.418884326509e-17;
+
+extern "C"
+void host_writer(const char * message, size_t message_length);
 
 void save_tdief_lowdin_collocation(const GePolCavity &, double, double, double, double, double);
 void save_tdcpcm_collocation(const GePolCavity &, double, double, double, double, double);
@@ -58,7 +61,8 @@ void save_tdcpcmiterative_collocation(const GePolCavity &, double, double, doubl
 
 int main()
 {
-    double radius = 1.181 * 1.10 / convertBohrToAngstrom;
+    initBohrToAngstrom(bohrToAngstrom);
+    double radius = (1.181 * 1.10) / bohrToAngstrom();
     Molecule point = dummy<0>(radius);
     double area = 0.4;
     double probeRadius = 0.0;
@@ -85,17 +89,17 @@ void save_tdief_lowdin_collocation(const GePolCavity & cavity, double e_0, doubl
 {
     int steps = int(total_time/dt) + 1; // Number of steps
     bool cholesky = false;
-    TDIEFSolver<AD_directional, CollocationIntegrator> solver(e_0, e_d, tau, cholesky);
+    TDIEFSolver<> solver(e_0, e_d, tau, cholesky);
     solver.buildSystemMatrix(cavity);
 
     // Save diagonal matrix entries
     int size = cavity.size();
     unsigned int dim = static_cast<unsigned int>(size);
     const unsigned int shape[] = {dim};
-    cnpy::npy_save("tdief_lowdin_collocation_Lambda.npy", solver.Lambda().data(), shape, 1, "w", true);
-    cnpy::npy_save("tdief_lowdin_collocation_K_0.npy", solver.K_0().data(), shape, 1, "w", true);
-    cnpy::npy_save("tdief_lowdin_collocation_K_d.npy", solver.K_d().data(), shape, 1, "w", true);
-    cnpy::npy_save("tdief_lowdin_collocation_tau.npy", solver.tau().data(), shape, 1, "w", true);
+    cnpy::custom::npy_save("tdief_lowdin_collocation_Lambda.npy", solver.Lambda());
+    cnpy::custom::npy_save("tdief_lowdin_collocation_K_0.npy", solver.K_0());
+    cnpy::custom::npy_save("tdief_lowdin_collocation_K_d.npy", solver.K_d());
+    cnpy::custom::npy_save("tdief_lowdin_collocation_tau.npy", solver.tau());
 
     // The point-like dipole is at the origin, this is the direction
     Eigen::Vector3d dipole = Eigen::Vector3d::UnitZ();
@@ -129,7 +133,7 @@ void save_tdcpcm_collocation(const GePolCavity & cavity, double e_0, double e_d,
     // The point-like dipole is at the origin, this is the direction
     Eigen::Vector3d dipole = Eigen::Vector3d::UnitZ();
     double corr = 0.0;
-    TDCPCMSolver<AD_directional, CollocationIntegrator> solver(e_0, e_d, tau, corr);
+    TDCPCMSolver<> solver(e_0, e_d, tau, corr);
     solver.buildSystemMatrix(cavity);
 
     int size = cavity.size();
@@ -164,7 +168,7 @@ void save_tdsingleief_collocation(const GePolCavity & cavity, double e_0, double
     Eigen::Vector3d dipole = Eigen::Vector3d::UnitZ();
     // Quadrupole relaxation time
     double tauIEF = tau * (3 * e_d + 2) / (3 * e_0 + 2);
-    TDSingleIEFSolver<AD_directional, CollocationIntegrator> solver(e_0, e_d, tau, tauIEF);
+    TDSingleIEFSolver<> solver(e_0, e_d, tau, tauIEF);
     solver.buildSystemMatrix(cavity);
 
     int size = cavity.size();
@@ -197,7 +201,7 @@ void save_tdonsagerief_collocation(const GePolCavity & cavity, double e_0, doubl
     int steps = int(total_time/dt) + 1; // Number of steps
     // The point-like dipole is at the origin, this is the direction
     Eigen::Vector3d dipole = Eigen::Vector3d::UnitZ();
-    TDOnsagerIEFSolver<AD_directional, CollocationIntegrator> solver(e_0, e_d, tau);
+    TDOnsagerIEFSolver<> solver(e_0, e_d, tau);
     solver.buildSystemMatrix(cavity);
 
     int size = cavity.size();
@@ -231,7 +235,7 @@ void save_tdcpcmiterative_collocation(const GePolCavity & cavity, double e_0, do
     // The point-like dipole is at the origin, this is the direction
     Eigen::Vector3d dipole = Eigen::Vector3d::UnitZ();
     double corr = 0.0;
-    TDCPCMIterativeSolver<AD_directional, CollocationIntegrator> solver(e_0, e_d, tau, corr);
+    TDCPCMIterativeSolver<> solver(e_0, e_d, tau, corr);
     solver.buildSystemMatrix(cavity);
     int max_it = 60;
     double tol = 1.0e-10;
@@ -261,3 +265,6 @@ void save_tdcpcmiterative_collocation(const GePolCavity & cavity, double e_0, do
     const unsigned int shape[] = {dim};
     cnpy::npy_save("tdcpcmiterative_collocation.npy", TDCPCM.data(), shape, 1, "w", true);
 }
+
+extern "C"
+void host_writer(const char * /* message */, size_t /* message_length */) {}

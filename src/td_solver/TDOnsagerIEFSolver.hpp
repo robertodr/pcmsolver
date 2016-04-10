@@ -19,7 +19,7 @@
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
  *     
  *     For information on the complete list of contributors to the
- *     PCMSolver API, see: <http://pcmsolver.github.io/pcmsolver-doc>
+ *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
  */
 /* pcmsolver_copyright_end */
 
@@ -33,11 +33,13 @@
 #include <Eigen/Core>
 #include <Eigen/LU>
 
-#include "Cavity.hpp"
+#include "cavity/Cavity.hpp"
+#include "cavity/Element.hpp"
+#include "bi_operators/IntegratorForward.hpp"
+#include "green/DerivativeTypes.hpp"
+#include "green/Vacuum.hpp"
+#include "utils/MathUtils.hpp"
 #include "Debye.hpp"
-#include "Element.hpp"
-#include "MathUtils.hpp"
-#include "Vacuum.hpp"
 #include "TDSingleIEFSolver.hpp"
 
 /*! \file TDOnsagerIEFSolver.hpp
@@ -49,8 +51,8 @@
  *  \tparam IntegratorPolicy policy for the calculation of the matrix represenation of S and D
  */
 
-template <typename DerivativeTraits,
-          typename IntegratorPolicy>
+template <typename DerivativeTraits = AD_directional,
+          typename IntegratorPolicy = CollocationIntegrator>
 class TDOnsagerIEFSolver : public TDSingleIEFSolver<DerivativeTraits, IntegratorPolicy>
 {
 public:

@@ -19,7 +19,7 @@
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
  *
  *     For information on the complete list of contributors to the
- *     PCMSolver API, see: <http://pcmsolver.github.io/pcmsolver-doc>
+ *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
  */
 /* pcmsolver_copyright_end */
 
@@ -28,12 +28,10 @@
 #include <cmath>
 #include <vector>
 
-#include "Config.hpp"
 
 #include <Eigen/Core>
 
-#include "GePolCavity.hpp"
-#include "PhysicalConstants.hpp"
+#include "cavity/GePolCavity.hpp"
 #include "TestingMolecules.hpp"
 
 SCENARIO("GePol cavity for a single sphere in different Abelian point groups", "[gepol][gepol_point_symmetry]")

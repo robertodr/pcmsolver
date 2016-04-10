@@ -18,7 +18,7 @@
 !       along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
 !
 !       For information on the complete list of contributors to the
-!       PCMSolver API, see: <http://pcmsolver.github.io/pcmsolver-doc>
+!       PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
 !pcmsolver_copyright_end
 
 module pcmsolver
@@ -37,6 +37,7 @@ module pcmsolver
     public pcmsolver_get_irreducible_cavity_size
     public pcmsolver_get_centers
     public pcmsolver_get_center
+    public pcmsolver_get_areas
     public pcmsolver_compute_asc
     public pcmsolver_compute_response_asc
     public pcmsolver_compute_polarization_energy
@@ -85,7 +86,7 @@ module pcmsolver
             real(c_double), intent(in)        :: charges(*)
             real(c_double), intent(in)        :: coordinates(*)
             integer(c_int), intent(in)        :: symmetry_info(*)
-            type(PCMInput), intent(in), value :: host_input
+            type(PCMInput), intent(in)        :: host_input
             type(c_ptr) :: context
         end function pcmsolver_new
     end interface pcmsolver_new
@@ -143,6 +144,14 @@ module pcmsolver
             real(c_double), intent(inout) :: center(*)
         end subroutine pcmsolver_get_center
     end interface pcmsolver_get_center
+
+    interface pcmsolver_get_areas
+        subroutine pcmsolver_get_areas(context, areas) bind(C)
+            import
+            type(c_ptr), value :: context
+            real(c_double), intent(inout) :: areas(*)
+        end subroutine pcmsolver_get_areas
+    end interface pcmsolver_get_areas
 
     interface pcmsolver_compute_asc
         subroutine pcmsolver_compute_asc(context, mep_name, asc_name, irrep) bind(C)

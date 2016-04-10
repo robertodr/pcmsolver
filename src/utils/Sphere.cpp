@@ -19,7 +19,7 @@
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
  *
  *     For information on the complete list of contributors to the
- *     PCMSolver API, see: <http://pcmsolver.github.io/pcmsolver-doc>
+ *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
  */
 /* pcmsolver_copyright_end */
 
@@ -32,10 +32,22 @@
 
 #include <Eigen/Core>
 
-std::ostream & Sphere::printObject(std::ostream & os)
+std::ostream & operator<<(std::ostream & os, Sphere & sph)
 {
-    os << "Sphere radius " << radius_ << std::endl;
-    os << "Sphere center\n" << center_;
+    os << "Sphere radius " << sph.radius << std::endl;
+    os << "Sphere center\n" << sph.center;
 
     return os;
+}
+
+void transfer_spheres(const std::vector<Sphere> & spheres,
+                             Eigen::Matrix3Xd & sphereCenter, Eigen::VectorXd & sphereRadius)
+{
+    size_t nSpheres = spheres.size();
+    sphereCenter.resize(Eigen::NoChange, nSpheres);
+    sphereRadius.resize(nSpheres);
+    for (size_t i = 0; i < nSpheres; ++i) {
+        sphereCenter.col(i) = spheres[i].center;
+        sphereRadius(i) = spheres[i].radius;
+    }
 }

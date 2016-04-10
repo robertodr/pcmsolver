@@ -19,7 +19,7 @@
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
  *
  *     For information on the complete list of contributors to the
- *     PCMSolver API, see: <http://pcmsolver.github.io/pcmsolver-doc>
+ *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
  */
 /* pcmsolver_copyright_end */
 
@@ -27,22 +27,20 @@
 
 #include <cmath>
 
-#include "Config.hpp"
 
 #include <Eigen/Core>
 
-#include "GePolCavity.hpp"
-#include "Molecule.hpp"
-#include "PhysicalConstants.hpp"
-#include "Symmetry.hpp"
+#include "cavity/GePolCavity.hpp"
+#include "utils/Molecule.hpp"
+#include "utils/Symmetry.hpp"
 #include "TestingMolecules.hpp"
 
 TEST_CASE("GePol cavity for the CH3+ molecule in Cs symmetry", "[gepol][gepol_CH3+_Cs]")
 {
-    double area = 0.2 / convertBohr2ToAngstrom2;
-    double probeRadius = 1.385 / convertBohrToAngstrom;
+    double area = 0.2 / bohr2ToAngstrom2();
+    double probeRadius = 1.385 / bohrToAngstrom();
     // Addition of spheres is enabled, but will not happen in this particular case
-    double minRadius = 0.2 / convertBohrToAngstrom;
+    double minRadius = 0.2 / bohrToAngstrom();
     Molecule molec = CH3();
     GePolCavity cavity = GePolCavity(molec, area, probeRadius, minRadius, "cs");
 

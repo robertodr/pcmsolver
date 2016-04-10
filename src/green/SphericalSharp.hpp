@@ -2,24 +2,24 @@
 /*
  *     PCMSolver, an API for the Polarizable Continuum Model
  *     Copyright (C) 2013-2015 Roberto Di Remigio, Luca Frediani and contributors
- *     
+ *
  *     This file is part of PCMSolver.
- *     
+ *
  *     PCMSolver is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Lesser General Public License as published by
  *     the Free Software Foundation, either version 3 of the License, or
  *     (at your option) any later version.
- *     
+ *
  *     PCMSolver is distributed in the hope that it will be useful,
  *     but WITHOUT ANY WARRANTY; without even the implied warranty of
  *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *     GNU Lesser General Public License for more details.
- *     
+ *
  *     You should have received a copy of the GNU Lesser General Public License
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
- *     
+ *
  *     For information on the complete list of contributors to the
- *     PCMSolver API, see: <http://pcmsolver.github.io/pcmsolver-doc>
+ *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
  */
 /* pcmsolver_copyright_end */
 
@@ -34,11 +34,13 @@
 
 #include <Eigen/Core>
 
+#include "DerivativeTypes.hpp"
 #include "DerivativeUtils.hpp"
+#include "bi_operators/IntegratorForward.hpp"
 #include "GreensFunction.hpp"
-#include "legendre.h"
-#include "MathUtils.hpp"
-#include "Sharp.hpp"
+#include "utils/legendre.h"
+#include "utils/MathUtils.hpp"
+#include "dielectric_profile/Sharp.hpp"
 
 /*! \file SphericalSharp.hpp
  *  \class SphericalSharp
@@ -49,8 +51,8 @@
  *  \tparam IntegratorPolicy policy for the calculation of the matrix represenation of S and D
  */
 
-template <typename DerivativeTraits,
-          typename IntegratorPolicy>
+template <typename DerivativeTraits = AD_directional,
+          typename IntegratorPolicy = CollocationIntegrator>
 class SphericalSharp __final : public GreensFunction<DerivativeTraits, IntegratorPolicy, Sharp,
                                               SphericalSharp<DerivativeTraits, IntegratorPolicy> >
 {
@@ -63,6 +65,17 @@ public:
      */
     SphericalSharp(double e, double esolv, double r, const Eigen::Vector3d & o)
         : GreensFunction<DerivativeTraits, IntegratorPolicy, Sharp, SphericalSharp<DerivativeTraits, IntegratorPolicy> >(), origin_(o)
+    {
+        this->profile_ = Sharp(e, esolv, r);
+    }
+    /*! Constructor for a one-layer interface
+     * \param[in] e permittivity of the sphere
+     * \param[in] esolv permittivity of the solvent
+     * \param[in] r radius of the dielectric sphere
+     * \param[in] o center of the sphere
+     */
+    SphericalSharp(double e, double esolv, double r, const Eigen::Vector3d & o, double f)
+        : GreensFunction<DerivativeTraits, IntegratorPolicy, Sharp, SphericalSharp<DerivativeTraits, IntegratorPolicy> >(f), origin_(o)
     {
         this->profile_ = Sharp(e, esolv, r);
     }
@@ -142,6 +155,12 @@ private:
                               const Eigen::Vector3d & p1, const Eigen::Vector3d & p2) const
     {
         return (this->profile_.epsilonSolvent * this->derivativeProbe(direction, p1, p2));
+    }
+    virtual KernelS exportKernelS_impl() const __override {
+      return pcm::bind(&SphericalSharp<DerivativeTraits, IntegratorPolicy>::kernelS, *this, pcm::_1, pcm::_2);
+    }
+    virtual KernelD exportKernelD_impl() const __override {
+      return pcm::bind(&SphericalSharp<DerivativeTraits, IntegratorPolicy>::kernelD, *this, pcm::_1, pcm::_2, pcm::_3);
     }
     DerivativeTraits imagePotential_impl(DerivativeTraits * sp, DerivativeTraits * pp) const
     {

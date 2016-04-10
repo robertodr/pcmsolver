@@ -1,10 +1,20 @@
-set_property(GLOBAL APPEND PROPERTY TestSources ${CMAKE_CURRENT_LIST_DIR}/green_vacuum.cpp)
-add_test(NAME green_vacuum COMMAND unit_tests.x [green_vacuum])
-set_property(GLOBAL APPEND PROPERTY TestSources ${CMAKE_CURRENT_LIST_DIR}/green_uniform_dielectric.cpp)
-add_test(NAME green_uniform_dielectric COMMAND unit_tests.x [green_uniform_dielectric])
-set_property(GLOBAL APPEND PROPERTY TestSources ${CMAKE_CURRENT_LIST_DIR}/green_ionic_liquid.cpp)
-add_test(NAME green_ionic_liquid COMMAND unit_tests.x [green_ionic_liquid])
-set_property(GLOBAL APPEND PROPERTY TestSources ${CMAKE_CURRENT_LIST_DIR}/green_anisotropic_liquid.cpp)
-add_test(NAME green_anisotropic_liquid COMMAND unit_tests.x [green_anisotropic_liquid])
-set_property(GLOBAL APPEND PROPERTY TestSources ${CMAKE_CURRENT_LIST_DIR}/green_spherical_diffuse.cpp)
-add_test(NAME green_spherical_diffuse COMMAND unit_tests.x [green_spherical_diffuse])
+add_library(green-tests OBJECT green_anisotropic_liquid.cpp green_ionic_liquid.cpp green_spherical_diffuse.cpp green_uniform_dielectric.cpp green_vacuum.cpp)
+if(BUILD_CUSTOM_BOOST)
+  add_dependencies(green-tests custom_boost)
+endif()
+
+# green_spherical_diffuse.cpp test
+add_Catch_test(green_spherical_diffuse "green;green_spherical_diffuse")
+
+# green_vacuum.cpp test
+add_Catch_test(green_vacuum "green;green_vacuum")
+
+# green_ionic_liquid.cpp test
+add_Catch_test(green_ionic_liquid "green;green_ionic_liquid")
+
+# green_uniform_dielectric.cpp test
+add_Catch_test(green_uniform_dielectric "green;green_uniform_dielectric")
+
+# green_anisotropic_liquid.cpp test
+add_Catch_test(green_anisotropic_liquid "green;green_anisotropic_liquid")
+

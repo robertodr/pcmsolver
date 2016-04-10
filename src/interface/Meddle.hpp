@@ -19,7 +19,7 @@
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
  *
  *     For information on the complete list of contributors to the
- *     PCMSolver API, see: <http://pcmsolver.github.io/pcmsolver-doc>
+ *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
  */
 /* pcmsolver_copyright_end */
 
@@ -29,6 +29,8 @@
 #include <string>
 
 #include "Config.hpp"
+
+#include <Eigen/Core>
 
 #include <boost/container/flat_map.hpp>
 
@@ -40,8 +42,7 @@ class PCMSolver;
 class TDPCMSolver;
 
 #include "Input.hpp"
-#include "SurfaceFunction.hpp"
-#include "Symmetry.hpp"
+#include "utils/Symmetry.hpp"
 
 /*! \file Meddle.hpp
  *  \author Roberto Di Remigio
@@ -50,13 +51,17 @@ class TDPCMSolver;
 
 /*! \namespace pcm */
 namespace pcm {
-    typedef boost::container::flat_map<std::string, SurfaceFunction> SurfaceFunctionMap;
+    typedef boost::container::flat_map<std::string, Eigen::VectorXd> SurfaceFunctionMap;
+    typedef SurfaceFunctionMap::value_type SurfaceFunctionPair;
+    typedef SurfaceFunctionMap::const_iterator SurfaceFunctionMapConstIter;
 
+    void printer(const std::string & message);
+    void printer(const std::ostringstream & stream);
     void initMolecule(const Input & inp, const Symmetry & group,
             int nuclei, const Eigen::VectorXd & charges, const Eigen::Matrix3Xd & centers,
             Molecule & molecule);
     void initSpheresAtoms(const Input &, const Eigen::Matrix3Xd &, std::vector<Sphere> &);
-    unsigned int pcmsolver_get_version(void);
+    unsigned int pcmsolver_get_version(void) attribute(const);
     void print(const PCMInput &);
 
     /*! \class Meddle
@@ -82,11 +87,11 @@ namespace pcm {
             /*! \brief Getter for the number of finite elements composing the molecular cavity
              *  \return the size of the cavity
              */
-            size_t getCavitySize() const;
+            size_t getCavitySize() const attribute(pure);
             /*! \brief Getter for the number of irreducible finite elements composing the molecular cavity
              *  \return the number of irreducible finite elements
              */
-            size_t getIrreducibleCavitySize() const;
+            size_t getIrreducibleCavitySize() const attribute(pure);
             /*! \brief Getter for the centers of the finite elements composing the molecular cavity
              *  \param[out] centers array holding the coordinates of the finite elements centers
              */
@@ -96,6 +101,11 @@ namespace pcm {
              *  \param[out] center array holding the coordinates of the finite element center
              */
             void getCenter(int its, double center[]) const;
+            /*! \brief Getter for the areas/weights of the finite elements
+             *  \param[in, out] context the PCM context object
+             *  \param[out] areas array holding the weights/areas of the finite elements
+             */
+            void getAreas(double areas[]) const;
             /*! \brief Computes ASC given a MEP and the desired irreducible representation
              *  \param[in] mep_name label of the MEP surface function
              *  \param[in] asc_name label of the ASC surface function
@@ -192,8 +202,6 @@ namespace pcm {
             void initTDSolver();
             /*! Delayed propagation of ASC */
             double delayedASC(double dt, int irrep) const;
-            void printer(const std::string & message) const;
-            void printer(const std::ostringstream & stream) const;
     };
 } /* end namespace pcm */
 

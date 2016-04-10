@@ -19,7 +19,7 @@
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
  *
  *     For information on the complete list of contributors to the
- *     PCMSolver API, see: <http://pcmsolver.github.io/pcmsolver-doc>
+ *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
  */
 /* pcmsolver_copyright_end */
 
@@ -28,23 +28,21 @@
 #include <vector>
 #include <cmath>
 
-#include "Config.hpp"
 
 #include <Eigen/Core>
 
-#include "GePolCavity.hpp"
+#include "cavity/GePolCavity.hpp"
 #include "LoggerInterface.hpp"
-#include "Molecule.hpp"
-#include "PhysicalConstants.hpp"
+#include "utils/Molecule.hpp"
 #include "TestingMolecules.hpp"
-#include "Symmetry.hpp"
+#include "utils/Symmetry.hpp"
 
 TEST_CASE("GePol cavity for an ammonia molecule", "[gepol][gepol_NH3]")
 {
     Molecule molec = NH3();
-    double area = 0.3 / convertBohr2ToAngstrom2;
-    double probeRadius = 1.385 / convertBohrToAngstrom;
-    double minRadius = 0.2 / convertBohrToAngstrom;
+    double area = 0.3 / bohr2ToAngstrom2();
+    double probeRadius = 1.385 / bohrToAngstrom();
+    double minRadius = 0.2 / bohrToAngstrom();
     GePolCavity cavity = GePolCavity(molec, area, probeRadius, minRadius, "nh3");
     cavity.saveCavity("nh3.npz");
 

@@ -19,7 +19,7 @@
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
  *
  *     For information on the complete list of contributors to the
- *     PCMSolver API, see: <http://pcmsolver.github.io/pcmsolver-doc>
+ *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
  */
 /* pcmsolver_copyright_end */
 
@@ -47,6 +47,17 @@
 #  endif
 #endif
 
+// To cope with the fact that C doesn't have bool as primitive type
+#ifndef pcmsolver_bool_t_DEFINED
+#define pcmsolver_bool_t_DEFINED
+#if (defined(__STDC__) && (__STDC_VERSION__ < 199901L)) && !defined(__cplusplus)
+typedef enum { pcmsolver_false, pcmsolver_true } pcmsolver_bool_t;
+#else /* (defined(__STDC__) || (__STDC_VERSION__ < 199901L)) && !defined(__cplusplus) */
+#include <stdbool.h>
+typedef bool pcmsolver_bool_t;
+#endif /* (defined(__STDC__) || (__STDC_VERSION__ < 199901L)) && !defined(__cplusplus) */
+#endif /* pcmsolver_bool_t_DEFINED */
+
 /*! \file pcmsolver.h
  *  \brief C API to PCMSolver
  *  \author Roberto Di Remigio
@@ -57,11 +68,19 @@
 extern "C" {
 #endif
 
+/*! \struct pcmsolver_context_s
+ *  Forward-declare opaque handle to a PCM context
+ */
 struct pcmsolver_context_s;
 /*! \typedef pcmsolver_context_t
- *  Opaque handle to a PCM context
+ *  Workaround to have pcmsolver_context_s available to C
  */
 typedef struct pcmsolver_context_s pcmsolver_context_t;
+
+/*! \struct PCMInput
+ *  Forward-declare PCMInput input wrapping struct
+ */
+struct PCMInput;
 
 /*! \enum pcmsolver_reader_t
  *  \brief Input processing strategies
@@ -96,7 +115,7 @@ PCMSOLVER_API pcmsolver_context_t * pcmsolver_new(pcmsolver_reader_t input_readi
                                                   double charges[],
                                                   double coordinates[],
                                                   int symmetry_info[],
-                                                  PCMInput host_input);
+                                                  struct PCMInput * host_input);
 
 /*! \brief Deletes a PCM context object
  *  \param[in, out] context the PCM context object to be deleted
@@ -109,7 +128,7 @@ PCMSOLVER_API void pcmsolver_delete(pcmsolver_context_t * context);
  *  \warning This function should be called **before** instantiating
  *  any PCM context objects.
  */
-PCMSOLVER_API bool pcmsolver_is_compatible_library(void);
+PCMSOLVER_API pcmsolver_bool_t pcmsolver_is_compatible_library(void);
 
 /*! \brief Prints citation and set up information
  *  \param[in, out] context the PCM context object
@@ -140,6 +159,12 @@ PCMSOLVER_API void pcmsolver_get_centers(pcmsolver_context_t * context, double c
  *  \param[out] center array holding the coordinates of the finite element center
  */
 PCMSOLVER_API void pcmsolver_get_center(pcmsolver_context_t * context, int its, double center[]);
+
+/*! \brief Getter for the areas/weights of the finite elements
+ *  \param[in, out] context the PCM context object
+ *  \param[out] areas array holding the weights/areas of the finite elements
+ */
+PCMSOLVER_API void pcmsolver_get_areas(pcmsolver_context_t * context, double areas[]);
 
 /*! \brief Computes ASC given a MEP and the desired irreducible representation
  *  \param[in, out] context the PCM context object

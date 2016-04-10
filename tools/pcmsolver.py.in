@@ -23,21 +23,19 @@ routine names my_perfect_routine
 keyword names MYPERFECTKEYWORD
 """
 
-executable="@PCMSOLVER_EXECUTABLE@"
-libdir="@GETKW_PYTHON_DIR@"
 isAngstrom = False
 CODATAyear = 2010
 
 import sys
-import re
 import os
-import string
-import subprocess
-import tempfile
-from copy import deepcopy
+sys.path.append(os.path.dirname(__file__))
 
 sys.path.append('cmake/lib/docopt')
 import docopt
+from copy import deepcopy
+import getkw
+import re
+import subprocess
 
 options = """
 Usage:
@@ -49,11 +47,6 @@ Options:
   <input_file>                           PCMSolver input file.
   -h --help                              Show this screen.
 """
-
-if 'LIBGETKW_LOCATION' in os.environ.keys():
-    sys.path.append(os.environ['LIBGETKW_LOCATION'])
-else:
-    sys.path.append(libdir)
 
 import getkw
 from codata import CODATA, CODATAdict
@@ -172,6 +165,8 @@ def parse_pcm_input(inputFile):
     return parsedFile
 
 def execute(parsedFile):
+    exename = "run_pcm" + "@CMAKE_EXECUTABLE_SUFFIX@"
+    executable = os.path.join(os.path.dirname(__file__), exename)
     if (executable):
         command = executable + ' ' + parsedFile
         p = subprocess.Popen(command, shell=True,
@@ -273,7 +268,7 @@ def setup_keywords():
     # Medium section
     medium = getkw.Section('MEDIUM', callback = verify_medium)
     # Type of solver
-    # Valid values: IEFPCM, CPCM, WAVELET, LINEAR
+    # Valid values: IEFPCM, CPCM, WAVELET or LINEAR
     medium.add_kw('SOLVERTYPE',   'STR', 'IEFPCM')
     # Whether nonequilibrium response is to be used
     # Valid for: IEFPCM, CPCM, WAVELET or LINEAR
@@ -298,6 +293,18 @@ def setup_keywords():
     # Valid for: CPCM
     # Valid values: positive double greater than 0.0
     medium.add_kw('CORRECTION',   'DBL', 0.0)
+    # Type of integrator for the diagonal of the boundary integral operators
+    # Valid for: IEFPCM, CPCM
+    # Valid values: COLLOCATION
+    # Default: COLLOCATION
+    # Notes: In future releases we will add PURISIMA and NUMERICAL as additional options
+    medium.add_kw('DIAGONALINTEGRATOR', 'STR', 'COLLOCATION')
+    # Scaling factor for diagonal of collocation matrix
+    # Valid for: IEFPCM, CPCM
+    # Valid values: positive double greater than 0.0
+    # Default: 1.07
+    # Notes: values commonly used in the literature are 1.07 and 1.0694
+    medium.add_kw('DIAGONALSCALING', 'DBL', 1.07)
     # Radius of the solvent probe (in au)
     # Valid for: IEFPCM, CPCM, Wavelet and PWL
     # Valid values: double in [0.1, 100.0] au
@@ -577,6 +584,16 @@ def verify_medium(section):
     correction = section.get('CORRECTION')
     if (correction.get() < 0.0):
         print('Correction for CPCM solver must be greater than 0.0')
+        sys.exit(1)
+
+    integrator = section.get('DIAGONALINTEGRATOR')
+    if (integrator.get() is not 'COLLOCATION'):
+        print('Only the collocation integrator is available')
+        sys.exit(1)
+
+    scaling = section.get('DIAGONALSCALING')
+    if scaling.get() == 0.0:
+        print('Scaling of diagonal for collocation matrices cannot be zero')
         sys.exit(1)
 
     convert_length_scalar(section.get('PROBERADIUS'))

@@ -19,7 +19,7 @@
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
  *
  *     For information on the complete list of contributors to the
- *     PCMSolver API, see: <http://pcmsolver.github.io/pcmsolver-doc>
+ *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
  */
 /* pcmsolver_copyright_end */
 
@@ -35,12 +35,12 @@
 #include <Eigen/Core>
 
 #include "IntegratorHelperFunctions.hpp"
-#include "Element.hpp"
-#include "AnisotropicLiquid.hpp"
-#include "IonicLiquid.hpp"
-#include "SphericalDiffuse.hpp"
-#include "UniformDielectric.hpp"
-#include "Vacuum.hpp"
+#include "cavity/Element.hpp"
+#include "green/AnisotropicLiquid.hpp"
+#include "green/IonicLiquid.hpp"
+#include "green/SphericalDiffuse.hpp"
+#include "green/UniformDielectric.hpp"
+#include "green/Vacuum.hpp"
 
 /*! \file NumericalIntegrator.hpp
  *  \struct NumericalIntegrator
@@ -53,6 +53,9 @@
 
 struct NumericalIntegrator
 {
+    NumericalIntegrator() : factor(1.07) {}
+    NumericalIntegrator(double f) : factor(f) {}
+    ~NumericalIntegrator() {}
     /**@{ Single and double layer potentials for a Vacuum Green's function by collocation: numerical integration of diagonal */
     /*! \tparam DerivativeTraits how the derivatives of the Greens's function are calculated
      *  \param[in] gf Green's function
@@ -60,7 +63,7 @@ struct NumericalIntegrator
      */
     template <typename DerivativeTraits>
     Eigen::MatrixXd singleLayer(const Vacuum<DerivativeTraits, NumericalIntegrator> & gf, const std::vector<Element> & e) const {
-        integrator::KernelS kernelS = pcm::bind(&Vacuum<DerivativeTraits, NumericalIntegrator>::kernelS, gf, pcm::_1, pcm::_2);
+        integrator::KernelS kernelS = gf.exportKernelS();
         integrator::Diagonal diagS = pcm::bind(&integrator::integrateS<32, 16>, kernelS, pcm::_1);
         return integrator::singleLayer(e, diagS, kernelS);
     }
@@ -70,7 +73,7 @@ struct NumericalIntegrator
      */
     template <typename DerivativeTraits>
     Eigen::MatrixXd doubleLayer(const Vacuum<DerivativeTraits, NumericalIntegrator> & gf, const std::vector<Element> & e) const {
-        integrator::KernelD kernelD = pcm::bind(&Vacuum<DerivativeTraits, NumericalIntegrator>::kernelD, gf, pcm::_1, pcm::_2, pcm::_3);
+        integrator::KernelD kernelD = gf.exportKernelD();
         integrator::Diagonal diagD = pcm::bind(&integrator::integrateD<32, 16>, kernelD, pcm::_1);
         return integrator::doubleLayer(e, diagD, kernelD);
     }
@@ -83,7 +86,7 @@ struct NumericalIntegrator
      */
     template <typename DerivativeTraits>
     Eigen::MatrixXd singleLayer(const UniformDielectric<DerivativeTraits, NumericalIntegrator> & gf, const std::vector<Element> & e) const {
-        integrator::KernelS kernelS = pcm::bind(&UniformDielectric<DerivativeTraits, NumericalIntegrator>::kernelS, gf, pcm::_1, pcm::_2);
+        integrator::KernelS kernelS = gf.exportKernelS();
         integrator::Diagonal diagS = pcm::bind(&integrator::integrateS<32, 16>, kernelS, pcm::_1);
         return integrator::singleLayer(e, diagS, kernelS);
     }
@@ -93,7 +96,7 @@ struct NumericalIntegrator
      */
     template <typename DerivativeTraits>
     Eigen::MatrixXd doubleLayer(const UniformDielectric<DerivativeTraits, NumericalIntegrator> & gf, const std::vector<Element> & e) const {
-        integrator::KernelD kernelD = pcm::bind(&UniformDielectric<DerivativeTraits, NumericalIntegrator>::kernelD, gf, pcm::_1, pcm::_2, pcm::_3);
+        integrator::KernelD kernelD = gf.exportKernelD();
         integrator::Diagonal diagD = pcm::bind(&integrator::integrateD<32, 16>, kernelD, pcm::_1);
         return integrator::doubleLayer(e, diagD, kernelD);
     }
@@ -106,7 +109,7 @@ struct NumericalIntegrator
      */
     template <typename DerivativeTraits>
     Eigen::MatrixXd singleLayer(const IonicLiquid<DerivativeTraits, NumericalIntegrator> & gf, const std::vector<Element> & e) const {
-        integrator::KernelS kernelS = pcm::bind(&IonicLiquid<DerivativeTraits, NumericalIntegrator>::kernelS, gf, pcm::_1, pcm::_2);
+        integrator::KernelS kernelS = gf.exportKernelS();
         integrator::Diagonal diagS = pcm::bind(&integrator::integrateS<32, 16>, kernelS, pcm::_1);
         return integrator::singleLayer(e, diagS, kernelS);
     }
@@ -116,7 +119,7 @@ struct NumericalIntegrator
      */
     template <typename DerivativeTraits>
     Eigen::MatrixXd doubleLayer(const IonicLiquid<DerivativeTraits, NumericalIntegrator> & gf, const std::vector<Element> & e) const {
-        integrator::KernelD kernelD = pcm::bind(&IonicLiquid<DerivativeTraits, NumericalIntegrator>::kernelD, gf, pcm::_1, pcm::_2, pcm::_3);
+        integrator::KernelD kernelD = gf.exportKernelD();
         integrator::Diagonal diagD = pcm::bind(&integrator::integrateD<32, 16>, kernelD, pcm::_1);
         return integrator::doubleLayer(e, diagD, kernelD);
     }
@@ -129,7 +132,7 @@ struct NumericalIntegrator
      */
     template <typename DerivativeTraits>
     Eigen::MatrixXd singleLayer(const AnisotropicLiquid<DerivativeTraits, NumericalIntegrator> & gf, const std::vector<Element> & e) const {
-        integrator::KernelS kernelS = pcm::bind(&AnisotropicLiquid<DerivativeTraits, NumericalIntegrator>::kernelS, gf, pcm::_1, pcm::_2);
+        integrator::KernelS kernelS = gf.exportKernelS();
         integrator::Diagonal diagS = pcm::bind(&integrator::integrateS<32, 16>, kernelS, pcm::_1);
         return integrator::singleLayer(e, diagS, kernelS);
     }
@@ -139,7 +142,7 @@ struct NumericalIntegrator
      */
     template <typename DerivativeTraits>
     Eigen::MatrixXd doubleLayer(const AnisotropicLiquid<DerivativeTraits, NumericalIntegrator> & gf, const std::vector<Element> & e) const {
-        integrator::KernelD kernelD = pcm::bind(&AnisotropicLiquid<DerivativeTraits, NumericalIntegrator>::kernelD, gf, pcm::_1, pcm::_2, pcm::_3);
+        integrator::KernelD kernelD = gf.exportKernelD();
         integrator::Diagonal diagD = pcm::bind(&integrator::integrateD<32, 16>, kernelD, pcm::_1);
         return integrator::doubleLayer(e, diagD, kernelD);
     }
@@ -183,6 +186,8 @@ struct NumericalIntegrator
         return Eigen::MatrixXd::Zero(e.size(), e.size());
     }
     /**@}*/
+    /// Scaling factor for the collocation formulas (unused here)
+    double factor;
 };
 
 #endif // NUMERICALINTEGRATOR_HPP

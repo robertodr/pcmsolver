@@ -19,7 +19,7 @@
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
  *
  *     For information on the complete list of contributors to the
- *     PCMSolver API, see: <http://pcmsolver.github.io/pcmsolver-doc>
+ *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
  */
 /* pcmsolver_copyright_end */
 
@@ -29,7 +29,7 @@
 #include <string>
 
 #include "CavityData.hpp"
-#include "Factory.hpp"
+#include "utils/Factory.hpp"
 #include "GePolCavity.hpp"
 #include "RestartCavity.hpp"
 
@@ -49,7 +49,7 @@ namespace
     Cavity * createGePolCavity(const cavityData & data)
     {
         return new GePolCavity(data.molecule, data.area, data.probeRadius,
-                               data.minimalRadius, std::string("PEDRA.OUT"));
+                               data.minimalRadius);
     }
     const std::string GEPOL("GEPOL");
     const bool registeredGePol = Factory<Cavity, cavityData>::TheFactory().registerObject(GEPOL,

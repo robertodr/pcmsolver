@@ -19,7 +19,7 @@
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
  *
  *     For information on the complete list of contributors to the
- *     PCMSolver API, see: <http://pcmsolver.github.io/pcmsolver-doc>
+ *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
  */
 /* pcmsolver_copyright_end */
 
@@ -27,22 +27,20 @@
 
 #include <cmath>
 
-#include "Config.hpp"
 
 #include <Eigen/Core>
 
-#include "GePolCavity.hpp"
-#include "Molecule.hpp"
-#include "PhysicalConstants.hpp"
-#include "Symmetry.hpp"
+#include "cavity/GePolCavity.hpp"
+#include "utils/Molecule.hpp"
+#include "utils/Symmetry.hpp"
 #include "TestingMolecules.hpp"
 
 TEST_CASE("GePol cavity for the benzene molecule", "[gepol][gepol_C6H6]")
 {
-    double area = 0.3 / convertBohr2ToAngstrom2;
-    double probeRadius = 1.385 / convertBohrToAngstrom;
+    double area = 0.3 / bohr2ToAngstrom2();
+    double probeRadius = 1.385 / bohrToAngstrom();
     // Addition of spheres is enabled, but will not happen in this particular case
-    double minRadius = 10.0 / convertBohrToAngstrom;
+    double minRadius = 10.0 / bohrToAngstrom();
     Molecule molec = C6H6();
     GePolCavity cavity = GePolCavity(molec, area, probeRadius, minRadius, "c6h6");
     cavity.saveCavity("c6h6.npz");

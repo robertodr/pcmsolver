@@ -19,7 +19,7 @@
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
  *
  *     For information on the complete list of contributors to the
- *     PCMSolver API, see: <http://pcmsolver.github.io/pcmsolver-doc>
+ *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
  */
 /* pcmsolver_copyright_end */
 
@@ -33,10 +33,9 @@
 
 #include <Eigen/Core>
 
-#include "Element.hpp"
-#include "Molecule.hpp"
-#include "Sphere.hpp"
-#include "Symmetry.hpp"
+#include "cavity/Element.hpp"
+#include "utils/Molecule.hpp"
+#include "utils/Symmetry.hpp"
 
 /*!
  * \file Cavity.hpp
@@ -51,15 +50,15 @@
 
 class Cavity
 {
-protected:
+  protected:
     /// List of spheres
     std::vector<Sphere> spheres_;
     /// The molecule to be wrapped by the cavity
     Molecule molecule_;
     /// Number of finite elements generated
-    int nElements_;
+    size_t nElements_;
     /// Number of irreducible finite elements
-    int nIrrElements_;
+    size_t nIrrElements_;
     /// Whether the cavity has been built
     bool built;
     /// Coordinates of elements centers
@@ -82,33 +81,32 @@ protected:
     std::vector<Element> elements_;
     /// Molecular point group
     Symmetry pointGroup_;
-private:
+  private:
     /*! \brief Creates the cavity and discretizes its surface.
      *
      *  Has to be implemented by classes lower down in the inheritance hierarchy
      */
     virtual void makeCavity() = 0;
     virtual std::ostream & printCavity(std::ostream & os) = 0;
-public:
+  public:
     //! Default constructor
-    Cavity() : nElements_(0), built(false) {}
+    Cavity();
+    /*! \brief Constructor from a single sphere
+     *  \param[in] sph the sphere
+     *
+     *  Only used when we have to deal with a single sphere, i.e. in the unit tests
+     */
+    Cavity(const Sphere & sph);
     /*! \brief Constructor from list of spheres
      *  \param[in] sph the list of spheres
      *
      *  Only used when we have to deal with a single sphere, i.e. in the unit tests
      */
-    Cavity(const std::vector<Sphere> & sph) : spheres_(sph), built(false) {
-	molecule_ = Molecule(spheres_);
-        nSpheres_ = spheres_.size();
-	transfer_spheres(spheres_, sphereCenter_, sphereRadius_);
-    }
+    Cavity(const std::vector<Sphere> & sph);
     /*! \brief Constructor from Molecule
      *  \param[in] molec the molecular aggregate
      */
-    Cavity(const Molecule & molec) : spheres_(molec.spheres()), molecule_(molec), built(false) {
-        nSpheres_ = spheres_.size();
-	transfer_spheres(spheres_, sphereCenter_, sphereRadius_);
-    }
+    Cavity(const Molecule & molec);
     virtual ~Cavity() {}
     Eigen::Matrix3Xd & elementCenter() { return elementCenter_; }
     const Eigen::Matrix3Xd & elementCenter() const { return elementCenter_; }
@@ -159,10 +157,10 @@ public:
      */
     virtual void saveCavity(const std::string & fname = "cavity.npz");
     /*! \brief Load cavity specification from file.
-     */
+    */
     virtual void loadCavity(const std::string & fname = "cavity.npz");
     friend std::ostream & operator<<(std::ostream & os, Cavity & cavity) {
-        return cavity.printCavity(os);
+      return cavity.printCavity(os);
     }
 };
 

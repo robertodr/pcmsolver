@@ -2,24 +2,24 @@
 /*
  *     PCMSolver, an API for the Polarizable Continuum Model
  *     Copyright (C) 2013-2015 Roberto Di Remigio, Luca Frediani and contributors
- *     
+ *
  *     This file is part of PCMSolver.
- *     
+ *
  *     PCMSolver is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Lesser General Public License as published by
  *     the Free Software Foundation, either version 3 of the License, or
  *     (at your option) any later version.
- *     
+ *
  *     PCMSolver is distributed in the hope that it will be useful,
  *     but WITHOUT ANY WARRANTY; without even the implied warranty of
  *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *     GNU Lesser General Public License for more details.
- *     
+ *
  *     You should have received a copy of the GNU Lesser General Public License
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
- *     
+ *
  *     For information on the complete list of contributors to the
- *     PCMSolver API, see: <http://pcmsolver.github.io/pcmsolver-doc>
+ *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
  */
 /* pcmsolver_copyright_end */
 
@@ -35,12 +35,12 @@
 #include <Eigen/Core>
 
 #include "IntegratorHelperFunctions.hpp"
-#include "Element.hpp"
-#include "AnisotropicLiquid.hpp"
-#include "IonicLiquid.hpp"
-#include "SphericalDiffuse.hpp"
-#include "UniformDielectric.hpp"
-#include "Vacuum.hpp"
+#include "cavity/Element.hpp"
+#include "green/AnisotropicLiquid.hpp"
+#include "green/IonicLiquid.hpp"
+#include "green/SphericalDiffuse.hpp"
+#include "green/UniformDielectric.hpp"
+#include "green/Vacuum.hpp"
 
 /*! \file CollocationIntegrator.hpp
  *  \struct CollocationIntegrator
@@ -50,17 +50,18 @@
  *
  *  Calculates the diagonal elements of S as:
  *  \f[
- *  	S_{ii} = factor_ * \sqrt{\frac{4\pi}{a_i}}
+ *  	S_{ii} = factor * \sqrt{\frac{4\pi}{a_i}}
  *  \f]
  *  while the diagonal elements of D are:
  *  \f[
- *  	D_{ii} = -factor_ * \sqrt{\frac{\pi}{a_i}} \frac{1}{R_I}
+ *  	D_{ii} = -factor * \sqrt{\frac{\pi}{a_i}} \frac{1}{R_I}
  *  \f]
  */
 
 struct CollocationIntegrator
 {
-    CollocationIntegrator() : factor_(1.07) {}
+    CollocationIntegrator() : factor(1.07) {}
+    CollocationIntegrator(double f) : factor(f) {}
     ~CollocationIntegrator() {}
 
     /**@{ Single and double layer potentials for a Vacuum Green's function by collocation */
@@ -71,8 +72,8 @@ struct CollocationIntegrator
     template <typename DerivativeTraits>
     Eigen::MatrixXd singleLayer(const Vacuum<DerivativeTraits, CollocationIntegrator> & gf, const std::vector<Element> & e) const {
         return integrator::singleLayer(e,
-                pcm::bind(integrator::SI, this->factor_, 1.0, pcm::_1),
-                pcm::bind(&Vacuum<DerivativeTraits, CollocationIntegrator>::kernelS, gf, pcm::_1, pcm::_2));
+                pcm::bind(integrator::SI, this->factor, 1.0, pcm::_1),
+                gf.exportKernelS());
     }
     /*! \tparam DerivativeTraits how the derivatives of the Greens's function are calculated
      *  \param[in] gf Green's function
@@ -81,8 +82,8 @@ struct CollocationIntegrator
     template <typename DerivativeTraits>
     Eigen::MatrixXd doubleLayer(const Vacuum<DerivativeTraits, CollocationIntegrator> & gf, const std::vector<Element> & e) const {
         return integrator::doubleLayer(e,
-                                       pcm::bind(integrator::DI, this->factor_, pcm::_1),
-                                       pcm::bind(&Vacuum<DerivativeTraits, CollocationIntegrator>::kernelD, gf, pcm::_1, pcm::_2, pcm::_3));
+                                       pcm::bind(integrator::DI, this->factor, pcm::_1),
+                                       gf.exportKernelD());
     }
     /**@}*/
 
@@ -94,8 +95,8 @@ struct CollocationIntegrator
     template <typename DerivativeTraits>
     Eigen::MatrixXd singleLayer(const UniformDielectric<DerivativeTraits, CollocationIntegrator> & gf, const std::vector<Element> & e) const {
         return integrator::singleLayer(e,
-                pcm::bind(integrator::SI, this->factor_, gf.epsilon(), pcm::_1),
-                pcm::bind(&UniformDielectric<DerivativeTraits, CollocationIntegrator>::kernelS, gf, pcm::_1, pcm::_2));
+                pcm::bind(integrator::SI, this->factor, gf.epsilon(), pcm::_1),
+                gf.exportKernelS());
     }
     /*! \tparam DerivativeTraits how the derivatives of the Greens's function are calculated
      *  \param[in] gf Green's function
@@ -104,30 +105,34 @@ struct CollocationIntegrator
     template <typename DerivativeTraits>
     Eigen::MatrixXd doubleLayer(const UniformDielectric<DerivativeTraits, CollocationIntegrator> & gf, const std::vector<Element> & e) const {
         return integrator::doubleLayer(e,
-                                       pcm::bind(integrator::DI, this->factor_, pcm::_1),
-                                       pcm::bind(&UniformDielectric<DerivativeTraits, CollocationIntegrator>::kernelD, gf, pcm::_1, pcm::_2, pcm::_3));
+                                       pcm::bind(integrator::DI, this->factor, pcm::_1),
+                                       gf.exportKernelD());
     }
     /**@}*/
 
     /**@{ Single and double layer potentials for a IonicLiquid Green's function by collocation */
     template <typename DerivativeTraits>
-    Eigen::MatrixXd singleLayer(const IonicLiquid<DerivativeTraits, CollocationIntegrator> & /* gf */, const std::vector<Element> & /* e */) const {
-        PCMSOLVER_ERROR("CollocationIntegrator::singleLayer not implemented yet for IonicLiquid");
+    Eigen::MatrixXd singleLayer(const IonicLiquid<DerivativeTraits, CollocationIntegrator> & /* gf */, const std::vector<Element> & e) const {
+        PCMSOLVER_ERROR("CollocationIntegrator::singleLayer not implemented yet for IonicLiquid", BOOST_CURRENT_FUNCTION);
+        return Eigen::MatrixXd::Zero(e.size(), e.size());
     }
     template <typename DerivativeTraits>
-    Eigen::MatrixXd doubleLayer(const IonicLiquid<DerivativeTraits, CollocationIntegrator> & /* gf */, const std::vector<Element> & /* e */) const {
-        PCMSOLVER_ERROR("CollocationIntegrator::doubleLayer not implemented yet for IonicLiquid");
+    Eigen::MatrixXd doubleLayer(const IonicLiquid<DerivativeTraits, CollocationIntegrator> & /* gf */, const std::vector<Element> & e) const {
+        PCMSOLVER_ERROR("CollocationIntegrator::doubleLayer not implemented yet for IonicLiquid", BOOST_CURRENT_FUNCTION);
+        return Eigen::MatrixXd::Zero(e.size(), e.size());
     }
     /**@}*/
 
     /**@{ Single and double layer potentials for an AnisotropicLiquid Green's function by collocation */
     template <typename DerivativeTraits>
-    Eigen::MatrixXd singleLayer(const AnisotropicLiquid<DerivativeTraits, CollocationIntegrator> & /* gf */, const std::vector<Element> & /* e */) const {
-        PCMSOLVER_ERROR("CollocationIntegrator::singleLayer not implemented yet for AnisotropicLiquid");
+    Eigen::MatrixXd singleLayer(const AnisotropicLiquid<DerivativeTraits, CollocationIntegrator> & /* gf */, const std::vector<Element> & e) const {
+        PCMSOLVER_ERROR("CollocationIntegrator::singleLayer not implemented yet for AnisotropicLiquid", BOOST_CURRENT_FUNCTION);
+        return Eigen::MatrixXd::Zero(e.size(), e.size());
     }
     template <typename DerivativeTraits>
-    Eigen::MatrixXd doubleLayer(const AnisotropicLiquid<DerivativeTraits, CollocationIntegrator> & /* gf */, const std::vector<Element> & /* e */) const {
-        PCMSOLVER_ERROR("CollocationIntegrator::doubleLayer not implemented yet for AnisotropicLiquid");
+    Eigen::MatrixXd doubleLayer(const AnisotropicLiquid<DerivativeTraits, CollocationIntegrator> & /* gf */, const std::vector<Element> & e) const {
+        PCMSOLVER_ERROR("CollocationIntegrator::doubleLayer not implemented yet for AnisotropicLiquid", BOOST_CURRENT_FUNCTION);
+        return Eigen::MatrixXd::Zero(e.size(), e.size());
     }
     /**@}*/
 
@@ -144,7 +149,7 @@ struct CollocationIntegrator
         for (size_t i = 0; i < mat_size; ++i) {
             // Fill diagonal
             // Diagonal of S inside the cavity
-            double Sii_I = factor_ * std::sqrt(4 * M_PI / e[i].area());
+            double Sii_I = factor * std::sqrt(4 * M_PI / e[i].area());
             // "Diagonal" of Coulomb singularity separation coefficient
             double coulomb_coeff = gf.coefficientCoulomb(e[i].center(), e[i].center());
             // "Diagonal" of the image Green's function
@@ -171,11 +176,11 @@ struct CollocationIntegrator
         for (size_t i = 0; i < mat_size; ++i) {
             // Fill diagonal
             double area = e[i].area();
-            double radius = e[i].sphere().radius();
+            double radius = e[i].sphere().radius;
             // Diagonal of S inside the cavity
-            double Sii_I = factor_ * std::sqrt(4 * M_PI / area);
+            double Sii_I = factor * std::sqrt(4 * M_PI / area);
             // Diagonal of D inside the cavity
-            double Dii_I = -factor_ * std::sqrt(M_PI/ area) * (1.0 / radius);
+            double Dii_I = -factor * std::sqrt(M_PI/ area) * (1.0 / radius);
             // "Diagonal" of Coulomb singularity separation coefficient
             double coulomb_coeff = gf.coefficientCoulomb(e[i].center(), e[i].center());
             // "Diagonal" of the directional derivative of the Coulomb singularity separation coefficient
@@ -201,7 +206,7 @@ struct CollocationIntegrator
     /**@}*/
 
     /// Scaling factor for the collocation formulas
-    double factor_;
+    double factor;
 };
 
 #endif // COLLOCATIONINTEGRATOR_HPP

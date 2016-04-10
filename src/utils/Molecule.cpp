@@ -2,29 +2,30 @@
 /*
  *     PCMSolver, an API for the Polarizable Continuum Model
  *     Copyright (C) 2013-2015 Roberto Di Remigio, Luca Frediani and contributors
- *     
+ *
  *     This file is part of PCMSolver.
- *     
+ *
  *     PCMSolver is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Lesser General Public License as published by
  *     the Free Software Foundation, either version 3 of the License, or
  *     (at your option) any later version.
- *     
+ *
  *     PCMSolver is distributed in the hope that it will be useful,
  *     but WITHOUT ANY WARRANTY; without even the implied warranty of
  *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *     GNU Lesser General Public License for more details.
- *     
+ *
  *     You should have received a copy of the GNU Lesser General Public License
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
- *     
+ *
  *     For information on the complete list of contributors to the
- *     PCMSolver API, see: <http://pcmsolver.github.io/pcmsolver-doc>
+ *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
  */
 /* pcmsolver_copyright_end */
 
 #include "Molecule.hpp"
 
+#include <algorithm>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -33,11 +34,13 @@
 
 #include "Config.hpp"
 
+#include <boost/format.hpp>
+
 #include <Eigen/Core>
 #include <Eigen/Eigenvalues>
 
 #include "Atom.hpp"
-#include "Element.hpp"
+#include "cavity/Element.hpp"
 #include "MathUtils.hpp"
 #include "Symmetry.hpp"
 
@@ -57,7 +60,7 @@ Molecule::Molecule(int nat, const Eigen::VectorXd & chg, const Eigen::VectorXd &
     : nAtoms_(nat), charges_(chg), masses_(m), geometry_(geo), atoms_(at), spheres_(sph)
 {
     rotor_ = findRotorType();
-    pointGroup_ = buildGroup(nr_gen, gen[0], gen[1], gen[3]);
+    pointGroup_ = buildGroup(nr_gen, gen[0], gen[1], gen[2]);
 }
 
 Molecule::Molecule(int nat, const Eigen::VectorXd & chg, const Eigen::VectorXd & m,
@@ -77,8 +80,8 @@ Molecule::Molecule(const std::vector<Sphere> & sph)
     masses_.resize(nAtoms_);
     geometry_.resize(Eigen::NoChange, nAtoms_);
     for (size_t i = 0; i < nAtoms_; ++i) {
-        masses_(i) = spheres_[i].radius();
-        geometry_.col(i) = spheres_[i].center();
+        masses_(i) = spheres_[i].radius;
+        geometry_.col(i) = spheres_[i].center;
         double charge = charges_(i);
         double mass = masses_(i);
         atoms_.push_back( Atom("Dummy", "Du", charge, mass, mass, geometry_.col(i)) );
@@ -97,7 +100,7 @@ Eigen::Vector3d Molecule::centerOfMass()
     Eigen::Vector3d com;
     com << 0.0, 0.0, 0.0;
     for (size_t i = 0; i < nAtoms_; ++i) {
-        com += masses_(i) * atoms_[i].atomCoord();
+        com += masses_(i) * atoms_[i].position;
     }
     com *= 1.0/masses_.sum();
     return com;
@@ -185,7 +188,7 @@ void Molecule::translate(const Eigen::Vector3d &translationVector)
     for (size_t i = 0; i < nAtoms_; ++i) {
         geometry_.col(i) -= translationVector;
         Eigen::Vector3d tmp = geometry_.col(i);
-        atoms_[i].atomCoord(tmp);
+        atoms_[i].position = tmp;
     }
 }
 
@@ -202,7 +205,7 @@ void Molecule::rotate(const Eigen::Matrix3d &rotationMatrix)
         rotationMatrix; // The power of Eigen: geometry_ = geometry_ * rotationMatrix;
     for (size_t i = 0; i < nAtoms_; ++i) {
         Eigen::Vector3d tmp = geometry_.col(i);
-        atoms_[i].atomCoord(tmp);
+        atoms_[i].position = tmp;
     }
 }
 
@@ -237,23 +240,20 @@ Molecule& Molecule::operator=(const Molecule& other)
 
 std::ostream & operator<<(std::ostream &os, const Molecule &m)
 {
-    // Declare formatting of Eigen output.
-    std::string sep = "                  ";
-    Eigen::IOFormat CleanFmt(Eigen::FullPrecision, Eigen::DontAlignCols, sep, "\n", "",
-                             "");
-
-    os << "Rotor type: " << rotorTypeList[m.rotor_] << std::endl;
     if (m.nAtoms_ != 0) {
-        os << "       Center              X                  Y                   Z       " <<
-           std::endl;
-        os << "    ------------   -----------------  -----------------  -----------------" <<
-           std::endl;
-        for (size_t i = 0; i < m.nAtoms_; ++i) {
-            os << std::setw(10) << m.atoms_[i].atomSymbol() << std::setw(15) <<m.geometry_.col(
-                   i).transpose().format(CleanFmt) << std::endl;
-        }
+      os << "                 Geometry (in Angstrom)" << std::endl;
+      os << "   Center            X             Y             Z     \n";
+      os << "------------   ------------  ------------  ------------\n";
+      for (size_t i = 0; i < m.nAtoms_; ++i) {
+        os << boost::format("%|=12s|") % m.atoms_[i].symbol;
+        os << boost::format("   %10.6f  ") % (m.geometry_(0, i) * bohrToAngstrom());
+        os << boost::format("  %10.6f  ")  % (m.geometry_(1, i) * bohrToAngstrom());
+        os << boost::format("  %10.6f  ")  % (m.geometry_(2, i) * bohrToAngstrom());
+        os << std::endl;
+      }
+      os << "Rotor type: " << rotorTypeList[m.rotor_];
     } else {
-        os << "  No atoms in this molecule!" << std::endl;
+      os << "  No atoms in this molecule!" << std::endl;
     }
 
     return os;

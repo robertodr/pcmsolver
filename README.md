@@ -1,6 +1,7 @@
 [![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.11910.png)](http://dx.doi.org/10.5281/zenodo.11910)
-[![Build Status](https://travis-ci.org/PCMSolver/pcmsolver.svg?branch=master)](https://travis-ci.org/PCMSolver/pcmsolver)
+[![Travis CI Build Status](https://travis-ci.org/PCMSolver/pcmsolver.svg?branch=master)](https://travis-ci.org/PCMSolver/pcmsolver)
 [![Magnum CI build status](https://magnum-ci.com/status/9207aa29405095b0b7aef0cd809ed6c2.png?branch=master)](https://magnum-ci.com/builds)
+[![AppVeyor CI Build status](https://ci.appveyor.com/api/projects/status/qolwog8ql2gefebr?svg=true)](https://ci.appveyor.com/project/robertodr/pcmsolver)
 [![Documentation Status](https://readthedocs.org/projects/pcmsolver/badge/?version=latest)](http://pcmsolver.readthedocs.org/en/latest/?badge=latest)
 [![Coverage Status](https://coveralls.io/repos/PCMSolver/pcmsolver/badge.svg?branch=release)](https://coveralls.io/r/PCMSolver/pcmsolver?branch=release)
 [![Coverity Scan Build](https://scan.coverity.com/projects/3046/badge.svg)](https://scan.coverity.com/projects/3046)
@@ -15,7 +16,7 @@ An API for the Polarizable Continuum Model.
 - [Documentation](http://pcmsolver.readthedocs.org)
 - [Build and test history](https://travis-ci.org/PCMSolver/pcmsolver/builds)
 - [Nightly build dashboard](https://testboard.org/cdash/index.php?project=PCMSolver)
-- Version 1.0.4 available
+- Version 1.1.1 available
 - Licensed under [LGPLv3](../master/COPYING.LESSER)
 - CMake infrastructure managed *via* [Autocmake](http://autocmake.readthedocs.org/)
 
@@ -32,7 +33,7 @@ The Magnum CI builds are run on push events to any branch, while those
 on Travis CI only when pushing to the `master` branch.
 All Travis CI builds on master use ccache to speed up execution.
 
-- Ubuntu 12.04 LTS 64-bit. GCC 4.6, Python 2.7.3, CMake 2.8.7
+- Ubuntu 12.04 LTS 64-bit. GCC 4.6, Python 2.7.3, CMake 3.4.2
   This is the environment offered by [Magnum CI](https://magnum-ci.com)
 - Ubuntu 12.04 LTS 64-bit with Python 2.7.3, CMake 3.3.2 and Boost 1.55.0
   this is the environment offered by [Travis CI](https://travis-ci.org) pulling

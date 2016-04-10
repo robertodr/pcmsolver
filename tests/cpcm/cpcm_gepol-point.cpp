@@ -2,24 +2,24 @@
 /*
  *     PCMSolver, an API for the Polarizable Continuum Model
  *     Copyright (C) 2013-2015 Roberto Di Remigio, Luca Frediani and contributors
- *     
+ *
  *     This file is part of PCMSolver.
- *     
+ *
  *     PCMSolver is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Lesser General Public License as published by
  *     the Free Software Foundation, either version 3 of the License, or
  *     (at your option) any later version.
- *     
+ *
  *     PCMSolver is distributed in the hope that it will be useful,
  *     but WITHOUT ANY WARRANTY; without even the implied warranty of
  *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *     GNU Lesser General Public License for more details.
- *     
+ *
  *     You should have received a copy of the GNU Lesser General Public License
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
- *     
+ *
  *     For information on the complete list of contributors to the
- *     PCMSolver API, see: <http://pcmsolver.github.io/pcmsolver-doc>
+ *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
  */
 /* pcmsolver_copyright_end */
 
@@ -27,16 +27,15 @@
 
 #include <iostream>
 
-#include "Config.hpp"
 
 #include <Eigen/Core>
 
-#include "CollocationIntegrator.hpp"
-#include "CPCMSolver.hpp"
-#include "DerivativeTypes.hpp"
-#include "GePolCavity.hpp"
-#include "UniformDielectric.hpp"
-#include "Vacuum.hpp"
+#include "bi_operators/CollocationIntegrator.hpp"
+#include "green/DerivativeTypes.hpp"
+#include "cavity/GePolCavity.hpp"
+#include "green/Vacuum.hpp"
+#include "green/UniformDielectric.hpp"
+#include "solver/CPCMSolver.hpp"
 #include "TestingMolecules.hpp"
 
 SCENARIO("Test solver for the C-PCM for a point charge and a GePol cavity", "[solver][cpcm][cpcm_gepol-point]")
@@ -44,9 +43,8 @@ SCENARIO("Test solver for the C-PCM for a point charge and a GePol cavity", "[so
     GIVEN("An isotropic environment modelled as a perfect conductor and a point charge")
     {
         double permittivity = 78.39;
-        Vacuum<AD_directional, CollocationIntegrator> gfInside = Vacuum<AD_directional, CollocationIntegrator>();
-        UniformDielectric<AD_directional, CollocationIntegrator> gfOutside =
-            UniformDielectric<AD_directional, CollocationIntegrator>(permittivity);
+        Vacuum<> gf_i;
+        UniformDielectric<> gf_o(permittivity);
         bool symm = true;
         double correction = 0.5;
 
@@ -67,7 +65,7 @@ SCENARIO("Test solver for the C-PCM for a point charge and a GePol cavity", "[so
             cavity.saveCavity("point.npz");
 
             CPCMSolver solver(symm, correction);
-            solver.buildSystemMatrix(cavity, gfInside, gfOutside);
+            solver.buildSystemMatrix(cavity, gf_i, gf_o);
 
             size_t size = cavity.size();
             Eigen::VectorXd fake_mep = computeMEP(cavity.elements(), charge);
@@ -106,7 +104,7 @@ SCENARIO("Test solver for the C-PCM for a point charge and a GePol cavity", "[so
             GePolCavity cavity = GePolCavity(point, area, probeRadius, minRadius);
 
             CPCMSolver solver(symm, correction);
-            solver.buildSystemMatrix(cavity, gfInside, gfOutside);
+            solver.buildSystemMatrix(cavity, gf_i, gf_o);
 
             double charge = 8.0;
             size_t size = cavity.size();

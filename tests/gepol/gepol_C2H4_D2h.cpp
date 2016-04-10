@@ -19,7 +19,7 @@
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
  *
  *     For information on the complete list of contributors to the
- *     PCMSolver API, see: <http://pcmsolver.github.io/pcmsolver-doc>
+ *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
  */
 /* pcmsolver_copyright_end */
 
@@ -28,14 +28,12 @@
 #include <cmath>
 #include <vector>
 
-#include "Config.hpp"
 
 #include <Eigen/Core>
 
-#include "GePolCavity.hpp"
-#include "Molecule.hpp"
-#include "PhysicalConstants.hpp"
-#include "Symmetry.hpp"
+#include "cavity/GePolCavity.hpp"
+#include "utils/Molecule.hpp"
+#include "utils/Symmetry.hpp"
 #include "TestingMolecules.hpp"
 
 SCENARIO("GePol cavity for the C2H4 molecule in D2h symmetry", "[gepol][gepol_C2H4_D2h]")
@@ -46,9 +44,9 @@ SCENARIO("GePol cavity for the C2H4 molecule in D2h symmetry", "[gepol][gepol_C2
 
         WHEN("the addition of spheres is enabled")
         {
-            double area = 0.2 / convertBohr2ToAngstrom2;
-            double probeRadius = 1.385 / convertBohrToAngstrom;
-            double minRadius = 0.2 / convertBohrToAngstrom;
+            double area = 0.2 / bohr2ToAngstrom2();
+            double probeRadius = 1.385 / bohrToAngstrom();
+            double minRadius = 0.2 / bohrToAngstrom();
             GePolCavity cavity = GePolCavity(molec, area, probeRadius, minRadius, "d2h");
             cavity.saveCavity("c2h4_d2h.npz");
 
@@ -99,9 +97,9 @@ SCENARIO("GePol cavity for the C2H4 molecule in D2h symmetry", "[gepol][gepol_C2
 
         WHEN("the addition of spheres is disabled")
         {
-            double area = 0.2 / convertBohr2ToAngstrom2;
-            double probeRadius = 1.385 / convertBohrToAngstrom;
-            double minRadius = 100.0 / convertBohrToAngstrom;
+            double area = 0.2 / bohr2ToAngstrom2();
+            double probeRadius = 1.385 / bohrToAngstrom();
+            double minRadius = 100.0 / bohrToAngstrom();
             GePolCavity cavity = GePolCavity(molec, area, probeRadius, minRadius, "d2h_noadd");
             cavity.saveCavity("c2h4_d2h_noadd.npz");
 
