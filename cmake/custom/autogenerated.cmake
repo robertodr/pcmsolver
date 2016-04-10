@@ -14,7 +14,6 @@ if(BUILD_CUSTOM_BOOST)
   add_dependencies(generate-config-hpp custom_boost)
 endif()
 install(FILES ${PROJECT_BINARY_DIR}/include/Config.hpp DESTINATION include)
-file(REMOVE ${PROJECT_BINARY_DIR}/include/tmp-config-hpp)
 
 # Configure the input parsing script
 configure_file(${PROJECT_SOURCE_DIR}/tools/pcmsolver.py.in ${PROJECT_BINARY_DIR}/bin/tmp-pcmsolver-py @ONLY)
@@ -27,7 +26,6 @@ add_custom_command(
   )
 add_custom_target(generate-pcmsolver-py ALL DEPENDS ${PROJECT_BINARY_DIR}/bin/pcmsolver.py)
 install(FILES ${PROJECT_BINARY_DIR}/bin/pcmsolver.py DESTINATION bin)
-file(REMOVE ${PROJECT_BINARY_DIR}/include/tmp-pcmsolver-py)
 # Configure the codata Python module
 configure_file(${PROJECT_SOURCE_DIR}/tools/codata.py.in ${PROJECT_BINARY_DIR}/bin/codata.py @ONLY)
 install(FILES ${PROJECT_BINARY_DIR}/bin/codata.py DESTINATION bin)

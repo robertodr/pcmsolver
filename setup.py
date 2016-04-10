@@ -55,7 +55,7 @@ def gen_cmake_command(options, arguments):
     command.append('CXX={0}'.format(arguments['--cxx']))
     command.append('CC={0}'.format(arguments['--cc']))
     command.append('FC={0}'.format(arguments['--fc']))
-    command.append('%s' % arguments['--cmake-executable'])
+    command.append(arguments['--cmake-executable'])
     command.append('-DEXTRA_CXXFLAGS="{0}"'.format(arguments['--extra-cxx-flags']))
     command.append('-DEXTRA_CFLAGS="{0}"'.format(arguments['--extra-cc-flags']))
     command.append('-DEXTRA_FCFLAGS="{0}"'.format(arguments['--extra-fc-flags']))
@@ -72,10 +72,10 @@ def gen_cmake_command(options, arguments):
     command.append('-DBOOST_COMPONENTS_REQUIRED="''"')
     command.append('-DEIGEN3_ROOT="{0}"'.format(arguments['--eigen']))
     command.append('-DSTATIC_LIBRARY_ONLY=%s' % arguments['--static'])
-    command.append('-DCMAKE_BUILD_TYPE=%s' % arguments['--type'])
-    command.append('-G "%s"' % arguments['--generator'])
+    command.append('-DCMAKE_BUILD_TYPE={}'.format(arguments['--type']))
+    command.append('-G "{}"'.format(arguments['--generator']))
     if arguments['--cmake-options'] != "''":
-        command.append('%s' % arguments['--cmake-options'])
+        command.append(arguments['--cmake-options'])
     if arguments['--prefix']:
         command.append('-DCMAKE_INSTALL_PREFIX="{0}"'.format(arguments['--prefix']))
 
@@ -86,7 +86,7 @@ def gen_cmake_command(options, arguments):
 try:
     arguments = docopt.docopt(options, argv=None)
 except docopt.DocoptExit:
-    sys.stderr.write('ERROR: bad input to %s\n' % sys.argv[0])
+    sys.stderr.write('ERROR: bad input to {}\n'.format(sys.argv[0]))
     sys.stderr.write(options)
     sys.exit(-1)
 
@@ -104,7 +104,7 @@ build_path = arguments['<builddir>']
 
 
 # create cmake command
-cmake_command = '%s %s' % (gen_cmake_command(options, arguments), root_directory)
+cmake_command = '{0} {1}'.format(gen_cmake_command(options, arguments), root_directory)
 
 
 # run cmake
