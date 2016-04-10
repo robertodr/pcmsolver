@@ -7,5 +7,6 @@ Classes and functions reference
    cavities
    greens-functions
    solvers
+   td-solvers
    helper-classes
    namespaces

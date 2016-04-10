@@ -270,6 +270,36 @@ Medium section keywords
      * **Valid for**: all solvers
      * **Default**: 1.0
 
+   TDType
+     Type of time-dependent solver
+
+     * **Type**: string
+     * **Valid values**: TDIEF, TDCPCM, TDSINGLEIEF, TDONSAGERIEF
+     * **Valid for**: time-dependent solvers
+     * **Default**: none
+
+   Cholesky
+     Whether to use Cholesky decomposition to form the time-dependent
+     solver matrices. Currently not implemented
+
+     * **Type**: bool
+     * **Valid for**: TDIEF
+     * **Default**: False
+
+   Tau
+     Debye relaxation time for the solvent (in atomic units)
+
+     * **Type**: double
+     * **Valid for**: TDIEF, TDCPCM, TDSINGLEIEF, TDONSAGERIEF
+     * **Default**: 1.0
+
+   TauIEF
+     Single relaxation time for IEF time-dependent solver
+
+     * **Type**: double
+     * **Valid for**: TDSINGLEIEF
+     * **Default**: 1.0
+
 Green section keywords
 ----------------------
 

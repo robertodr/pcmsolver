@@ -4,7 +4,10 @@ if(BUILD_CUSTOM_BOOST)
 endif()
 
 # Copy input files to ${PROJECT_BINARY_DIR}/tests/input (aka ${CMAKE_CURRENT_BINARY_DIR})
-file(COPY diffuse.inp restart.inp tsless.inp wavelet.inp DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY diffuse.inp restart.inp
+          tsless.inp wavelet.inp
+          tdsolver.inp explicit_td.inp
+     DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 add_test(NAME parser_script-diffuse COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_BINARY_DIR}/bin/pcmsolver.py diffuse.inp
                                     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})

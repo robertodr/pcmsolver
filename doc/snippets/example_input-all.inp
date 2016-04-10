@@ -13,10 +13,17 @@ Cavity {
        Spheres = [Array of Doubles]
 }
 Medium {
+       Nonequilibrium = [Bool]
        Solvent = [String]
        SolverType = [String]
+       TDType = [String]
+       Cholesky = [Bool]
+       Tau = [Double]
+       TauIEF = [Double]
        MatrixSymm = [Bool]
        Correction = [Double]
+       DiagonalIntegrator = [String]
+       DiagonalScaling = [Double]
        ProbeRadius = [Double]
        Green<GreenTag> {
              Type = [String]
