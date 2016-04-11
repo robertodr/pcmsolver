@@ -69,7 +69,7 @@ allowedSolvents = {'Water'                : ('WATER',                'H2O'),
                    'Tetrahydrofurane'     : ('TETRAHYDROFURANE',     'THF'),
                    'Dimethylsulfoxide'    : ('DIMETHYLSULFOXIDE',    'DMSO'),
                    'Acetonitrile'         : ('ACETONITRILE',         'CH3CN'),
-                   'Explicit'             : ('EXPLICIT')}
+                   'Explicit'             : ('EXPLICIT',             'DUMMY')}
 
 def iequal(a, b):
     """
@@ -328,6 +328,11 @@ def setup_keywords():
     # Type of time-dependent solver
     # Valid values: TDIEF, TDCPCM, TDSINGLEIEF, TDONSAGERIEF
     medium.add_kw('TDTYPE', 'STR', '')
+    # Initial value for the ASC time-evolution
+    # Valid for: TDIEF, TDCPCM, TDSINGLEIEF, TDONSAGERIEF
+    # Valid values: STATIC, DYNAMIC
+    # Default: STATIC
+    medium.add_kw('INITIALVALUE', 'STR', 'STATIC')
     # Use of Cholesky decomposition
     # Valid for: TDIEF
     # Valid values: boolean

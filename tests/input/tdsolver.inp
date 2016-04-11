@@ -7,6 +7,7 @@ medium
     tauief = 150 # femtoseconds
     solvent = acetonitrile
     tau = 48.38 # femtoseconds
+    initialvalue = static
 }
 
 cavity

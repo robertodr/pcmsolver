@@ -33,14 +33,13 @@
 
 #include <Eigen/Core>
 
-#include "Input.hpp"
-#include "PhysicalConstants.hpp"
-#include "Sphere.hpp"
+#include "interface/Input.hpp"
+#include "utils/Sphere.hpp"
 
 /*! \class Input
  *  \test \b InputTDSolverTest_TDSolver tests input reading on an input file parsed by pcmsolver.py
  */
-TEST_CASE("Input reading using GetKw for an input file for a TD solver with solvent chosen by name", "[input][tdsolver]")
+TEST_CASE("Input reading using GetKw for an input file for a TD solver with solvent chosen by name", "[input][tdsolver][input_tdsolver]")
 {
   std::string filename = "@tdsolver.inp";
   Input parsedInput(filename);
@@ -53,9 +52,10 @@ TEST_CASE("Input reading using GetKw for an input file for a TD solver with solv
   std::string TDsolverType = "TDSINGLEIEF";
   std::string greenInsideType = "VACUUM";
   std::string greenOutsideType = "UNIFORMDIELECTRIC";
+  bool initWithDynamic = false;
   int derivativeInsideType = 1;
   int derivativeOutsideType = 1;
-  double area = 10.0 * angstrom2ToBohr2(CODATAyear);
+  double area = 10.0 * angstrom2ToBohr2();
   std::string solvent = "Acetonitrile"; // Name in the Solvent object
   double tauIEF = 150 / 2.418884326505e-02; // in au
   double tau = 48.38 / 2.418884326505e-02; // in au
@@ -69,10 +69,11 @@ TEST_CASE("Input reading using GetKw for an input file for a TD solver with solv
   REQUIRE(TDsolverType          == parsedInput.TDsolverType());
   REQUIRE(greenInsideType       == parsedInput.greenInsideType());
   REQUIRE(greenOutsideType      == parsedInput.greenOutsideType());
+  REQUIRE(initWithDynamic       == parsedInput.TDSolverParams().initWithDynamic);
   REQUIRE(derivativeInsideType  == parsedInput.insideGreenParams().howDerivative);
   REQUIRE(derivativeOutsideType == parsedInput.outsideStaticGreenParams().howDerivative);
   REQUIRE(area                  == Approx(parsedInput.cavityParams().area));
-  REQUIRE(solvent               == parsedInput.solvent().name());
+  REQUIRE(solvent               == parsedInput.solvent().name);
   REQUIRE(tauIEF                == Approx(parsedInput.TDSolverParams().tauIEF));
   REQUIRE(tau                   == Approx(parsedInput.TDSolverParams().tau));
   REQUIRE(isTD                  == parsedInput.isTD());
@@ -81,7 +82,7 @@ TEST_CASE("Input reading using GetKw for an input file for a TD solver with solv
 /*! \class Input
  *  \test \b InputExplicitTDSolverTest_TDSolver tests input reading on an input file parsed by pcmsolver.py
  */
-TEST_CASE("Input reading using GetKw for an input file for a TD solver with solvent explicitly given", "[input][tdsolver][explicit]")
+TEST_CASE("Input reading using GetKw for an input file for a TD solver with solvent explicitly given", "[input][tdsolver][explicit][input_tdsolver]")
 {
   std::string filename = "@explicit_td.inp";
   Input parsedInput(filename);
@@ -94,9 +95,10 @@ TEST_CASE("Input reading using GetKw for an input file for a TD solver with solv
   std::string TDsolverType = "TDSINGLEIEF";
   std::string greenInsideType = "VACUUM";
   std::string greenOutsideType = "UNIFORMDIELECTRIC";
+  bool initWithDynamic = true;
   int derivativeInsideType = 1;
   int derivativeOutsideType = 1;
-  double area = 10.0 * angstrom2ToBohr2(CODATAyear);
+  double area = 10.0 * angstrom2ToBohr2();
   std::string solvent = "Acetonitrile"; // Name in the Solvent object
   double tauIEF = 150 / 2.418884326505e-02; // in au
   double tau = 48.38 / 2.418884326505e-02; // in au
@@ -113,6 +115,7 @@ TEST_CASE("Input reading using GetKw for an input file for a TD solver with solv
   REQUIRE(TDsolverType          == parsedInput.TDsolverType());
   REQUIRE(greenInsideType       == parsedInput.greenInsideType());
   REQUIRE(greenOutsideType      == parsedInput.greenOutsideType());
+  REQUIRE(initWithDynamic       == parsedInput.TDSolverParams().initWithDynamic);
   REQUIRE(derivativeInsideType  == parsedInput.insideGreenParams().howDerivative);
   REQUIRE(derivativeOutsideType == parsedInput.outsideStaticGreenParams().howDerivative);
   REQUIRE(area                  == Approx(parsedInput.cavityParams().area));

@@ -2,22 +2,22 @@
 /*
  *     PCMSolver, an API for the Polarizable Continuum Model
  *     Copyright (C) 2013-2016 Roberto Di Remigio, Luca Frediani and contributors
- *     
+ *
  *     This file is part of PCMSolver.
- *     
+ *
  *     PCMSolver is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Lesser General Public License as published by
  *     the Free Software Foundation, either version 3 of the License, or
  *     (at your option) any later version.
- *     
+ *
  *     PCMSolver is distributed in the hope that it will be useful,
  *     but WITHOUT ANY WARRANTY; without even the implied warranty of
  *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *     GNU Lesser General Public License for more details.
- *     
+ *
  *     You should have received a copy of the GNU Lesser General Public License
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
- *     
+ *
  *     For information on the complete list of contributors to the
  *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
  */
@@ -119,7 +119,7 @@ public:
     greenData outsideStaticGreenParams();
     greenData outsideDynamicGreenParams();
     solverData solverParams();
-    TDSolverData TDSolverParams();
+    TDSolverData TDSolverParams() const;
     /// @}
 
     /// Operators
@@ -245,6 +245,8 @@ private:
     std::vector<double> geometry_;
     /// The TD solver type
     std::string TDsolverType_;
+    /// Whether to initialize time-evolution with the static or dynamic ASC
+    bool initWithDynamic_;
     /// Whether this is a TD run
     bool isTD_;
     /// Solvent relaxation time
@@ -266,7 +268,7 @@ private:
     /// Input wrapping struct for the solver
     solverData solverData_;
     /// Input wrapping struct for the TD solver
-    TDSolverData tdSolverData_;
+    mutable TDSolverData tdSolverData_;
 };
 
 /*! A useful map to convert the Der string to an integer which will be passed to the Green's function CTOR. */

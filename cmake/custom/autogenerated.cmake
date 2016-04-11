@@ -2,6 +2,7 @@
 configure_file(${PROJECT_SOURCE_DIR}/include/Config.hpp.in
                ${PROJECT_BINARY_DIR}/include/tmp-config-hpp @ONLY)
 add_custom_command(
+  DEPENDS ${PROJECT_SOURCE_DIR}/include/Config.hpp.in
   OUTPUT
     ${PROJECT_BINARY_DIR}/include/Config.hpp
   COMMAND
@@ -18,6 +19,7 @@ install(FILES ${PROJECT_BINARY_DIR}/include/Config.hpp DESTINATION include)
 # Configure the input parsing script
 configure_file(${PROJECT_SOURCE_DIR}/tools/pcmsolver.py.in ${PROJECT_BINARY_DIR}/bin/tmp-pcmsolver-py @ONLY)
 add_custom_command(
+  DEPENDS ${PROJECT_SOURCE_DIR}/tools/pcmsolver.py.in
   OUTPUT
     ${PROJECT_BINARY_DIR}/bin/pcmsolver.py
   COMMAND

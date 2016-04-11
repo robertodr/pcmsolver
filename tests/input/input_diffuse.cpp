@@ -37,7 +37,7 @@
 /*! \class Input
  *  \test \b InputDiffuseTest_Diffuse tests input reading on an input file parsed by pcmsolver.py
  */
-TEST_CASE("Input reading using GetKw for an input file for a diffuse environment", "[input][diffuse]")
+TEST_CASE("Input reading using GetKw for an input file for a diffuse environment", "[input][diffuse][input_diffuse]")
 {
   std::string filename = "@diffuse.inp";
   Input parsedInput(filename);

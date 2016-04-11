@@ -17,6 +17,7 @@ Medium {
        Solvent = [String]
        SolverType = [String]
        TDType = [String]
+       InitialValue = [String]
        Cholesky = [Bool]
        Tau = [Double]
        TauIEF = [Double]

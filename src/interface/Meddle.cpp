@@ -296,24 +296,22 @@ namespace pcm {
     Eigen::VectorXd mep_tdt = functions_["TotMEP"];
     functions_.insert(std::make_pair(MEP_current, mep_tdt));
 
-    // FIXME should be set from input!
     std::string ASC_current("ASC_t+dt");
     std::string ASC_previous("ASC_t");
-    bool init_with_dynamic = false;
 
-    if (!init_with_dynamic) {
-      // Set previous and current ASC to the static values from converged SCF
-      Eigen::VectorXd asc_t = functions_["TotASC"];
-      functions_.insert(std::make_pair(ASC_previous, asc_t));
-      Eigen::VectorXd asc_tdt = functions_["TotASC"];
-      functions_.insert(std::make_pair(ASC_current, asc_tdt));
-    } else {
+    if (input_.TDSolverParams().initWithDynamic) {
       // Set previous and current ASC to the dynamic values from converged SCF
       // The initialValueASC function uses the dynamic matrix to calculate charges
       Eigen::VectorXd dyn_asc = TD_K_->initialValueASC(functions_["TotMEP"]);
       Eigen::VectorXd asc_t = dyn_asc;
       functions_.insert(std::make_pair(ASC_previous, asc_t));
       Eigen::VectorXd asc_tdt = dyn_asc;
+      functions_.insert(std::make_pair(ASC_current, asc_tdt));
+    } else {
+      // Set previous and current ASC to the static values from converged SCF
+      Eigen::VectorXd asc_t = functions_["TotASC"];
+      functions_.insert(std::make_pair(ASC_previous, asc_t));
+      Eigen::VectorXd asc_tdt = functions_["TotASC"];
       functions_.insert(std::make_pair(ASC_current, asc_tdt));
     }
   }

@@ -7,6 +7,7 @@ medium
     tauief = 150 # femtoseconds
     tau = 48.38 # femtoseconds
     solvent = explicit
+    initialvalue = dynamic
     proberadius = 1.345
     green<inside>
     {

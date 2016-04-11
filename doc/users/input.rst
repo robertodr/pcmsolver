@@ -278,6 +278,14 @@ Medium section keywords
      * **Valid for**: time-dependent solvers
      * **Default**: none
 
+   InitialValue
+     Initial value for the ASC time-evolution
+
+     * **Type**: string
+     * **Valid values**: STATIC, DYNAMIC
+     * **Valid for**: time-dependent solvers
+     * **Default**: STATIC
+
    Cholesky
      Whether to use Cholesky decomposition to form the time-dependent
      solver matrices. Currently not implemented

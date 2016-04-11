@@ -37,7 +37,7 @@
 /*! \class Input
  *  \test \b InputRestartTest_Restart tests input reading on an input file parsed by pcmsolver.py
  */
-TEST_CASE("Input reading using GetKw for an input file for a restart cavity", "[input][restart]")
+TEST_CASE("Input reading using GetKw for an input file for a restart cavity", "[input][restart][input_restart]")
 {
   std::string filename = "@restart.inp";
   Input parsedInput(filename);
