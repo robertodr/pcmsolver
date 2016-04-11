@@ -706,9 +706,9 @@ def verify_geometry(keyword):
     # Convert only geometry to AU. Leave charges untouched
     j = 0
     for i in range(length/4):
-        data[j] /= CODATAdict[CODATAyear]
-        data[j+1] /= CODATAdict[CODATAyear]
-        data[j+2] /= CODATAdict[CODATAyear]
+        data[j] /= CODATAdict[CODATAyear].ToAngstrom
+        data[j+1] /= CODATAdict[CODATAyear].ToAngstrom
+        data[j+2] /= CODATAdict[CODATAyear].ToAngstrom
         j += 4
 
 def verify_spheres(keyword):
