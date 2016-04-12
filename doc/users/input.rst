@@ -270,44 +270,6 @@ Medium section keywords
      * **Valid for**: all solvers
      * **Default**: 1.0
 
-   TDType
-     Type of time-dependent solver
-
-     * **Type**: string
-     * **Valid values**: TDIEF, TDCPCM, TDSINGLEIEF, TDONSAGERIEF
-     * **Valid for**: time-dependent solvers
-     * **Default**: none
-
-   InitialValue
-     Initial value for the ASC time-evolution
-
-     * **Type**: string
-     * **Valid values**: STATIC, DYNAMIC
-     * **Valid for**: time-dependent solvers
-     * **Default**: STATIC
-
-   Cholesky
-     Whether to use Cholesky decomposition to form the time-dependent
-     solver matrices. Currently not implemented
-
-     * **Type**: bool
-     * **Valid for**: TDIEF
-     * **Default**: False
-
-   Tau
-     Debye relaxation time for the solvent (in atomic units)
-
-     * **Type**: double
-     * **Valid for**: TDIEF, TDCPCM, TDSINGLEIEF, TDONSAGERIEF
-     * **Default**: 1.0
-
-   TauIEF
-     Single relaxation time for IEF time-dependent solver
-
-     * **Type**: double
-     * **Valid for**: TDSINGLEIEF
-     * **Default**: 1.0
-
 Green section keywords
 ----------------------
 
@@ -426,6 +388,66 @@ while the Green's function outside might vary.
      * **Type**: integer
      * **Valid for**: SphericalDiffuse
      * **Default**: 30
+
+Real-time section keywords
+--------------------------
+
+.. glossary::
+
+   TDType
+     Type of time-dependent solver
+
+     * **Type**: string
+     * **Valid values**: TDIEF, TDCPCM, TDSINGLEIEF, TDONSAGERIEF, EQUILIBRIUM
+     * **Valid for**: time-dependent solvers
+     * **Default**: EQUILIBRIUM
+     * **Notes**: when EQUILIBRIUM is chosen, time-evolution will be carried
+       out in the instantaneous solvent equilibrium regime. The permittivity
+       used will be static or dynamic based on the setting for the
+       Nonequilibrium keyword in the Solver section. All other options will
+       calculate a delayed ASC
+
+   InitialValue
+     Initial value for the ASC time-evolution
+
+     * **Type**: string
+     * **Valid values**: STATIC, DYNAMIC
+     * **Valid for**: time-dependent solvers
+     * **Default**: STATIC
+
+   Cholesky
+     Whether to use Cholesky decomposition to form the time-dependent
+     solver matrices. Currently not implemented
+
+     * **Type**: bool
+     * **Valid for**: TDIEF
+     * **Default**: False
+
+   Tau
+     Debye relaxation time for the solvent (in atomic units)
+
+     * **Type**: double
+     * **Valid for**: TDIEF, TDCPCM, TDSINGLEIEF, TDONSAGERIEF
+     * **Default**: 1.0 a.u.
+
+   TauIEF
+     Single relaxation time for IEF time-dependent solver
+
+     * **Type**: double
+     * **Valid for**: TDSINGLEIEF
+     * **Default**: 1.0 a.u.
+
+  TimeStep
+    Time step for the integration of the equation of motion for the ASC
+
+    * **Type**: double
+    * **Default**: 0.1 a.u.
+
+  TotalTime
+    Total length of the time-evolution
+
+    * **Type**: double
+    * **Default**: 100 a.u.
 
 Molecule section keywords
 -------------------------

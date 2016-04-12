@@ -170,13 +170,18 @@ void Input::reader(const std::string & filename)
   correction_ = medium.getDbl("CORRECTION");
   hermitivitize_ = medium.getBool("MATRIXSYMM");
   isDynamic_ = medium.getBool("NONEQUILIBRIUM");
-  isTD_ = medium.getKey<std::string>("TDTYPE").isDefined();
-  if (isTD_) {
-    TDsolverType_ = medium.getStr("TDTYPE");
-    initWithDynamic_ = (medium.getStr("INITIALVALUE") == "STATIC") ? false : true;
-    tau_ = medium.getDbl("TAU");
-    tauIEF_ = medium.getDbl("TAUIEF");
-    cholesky_ = medium.getBool("CHOLESKY");
+
+  // Get the contents of the RealTime section
+  const Section & realtime = input_.getSect("REALTIME");
+  if (realtime.isDefined()) {
+    TDsolverType_ = realtime.getStr("TDTYPE");
+    isTD_ = (TDsolverType_ == "EQUILIBRIUM") ? false : true;
+    initWithDynamic_ = (realtime.getStr("INITIALVALUE") == "STATIC") ? false : true;
+    tau_ = realtime.getDbl("TAU");
+    tauIEF_ = realtime.getDbl("TAUIEF");
+    cholesky_ = realtime.getBool("CHOLESKY");
+    timeStep_ = realtime.getDbl("TIMESTEP");
+    totalTime_ = realtime.getDbl("TOTALTIME");
   }
 
   providedBy_ = std::string("API-side");

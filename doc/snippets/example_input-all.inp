@@ -16,11 +16,6 @@ Medium {
        Nonequilibrium = [Bool]
        Solvent = [String]
        SolverType = [String]
-       TDType = [String]
-       InitialValue = [String]
-       Cholesky = [Bool]
-       Tau = [Double]
-       TauIEF = [Double]
        MatrixSymm = [Bool]
        Correction = [Double]
        DiagonalIntegrator = [String]
@@ -40,4 +35,13 @@ Medium {
              InterfaceOrigin = [Array of Doubles]
              MaxL = [Integer]
        }
+}
+RealTime {
+       TDType = [String]
+       InitialValue = [String]
+       Cholesky = [Bool]
+       Tau = [Double]
+       TauIEF = [Double]
+       TimeStep = [Double]
+       TotalTime = [Double]
 }

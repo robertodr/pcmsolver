@@ -247,14 +247,18 @@ private:
     std::string TDsolverType_;
     /// Whether to initialize time-evolution with the static or dynamic ASC
     bool initWithDynamic_;
-    /// Whether this is a TD run
+    /// Whether this is a real-time time-evolution run in the delayed formulation
     bool isTD_;
-    /// Solvent relaxation time
+    /// Solvent relaxation time (in a.u.)
     double tau_;
-    /// Solver relaxation time
+    /// Solver relaxation time (in a.u.)
     double tauIEF_;
     /// Whether to use Cholesky decomposition in TDIEF solver
     bool cholesky_;
+    /// Time step for the real-time time-evolution (in a.u.)
+    double timeStep_;
+    /// Total time for the real-time time-evolution (in a.u.)
+    double totalTime_;
     /// Who performed the syntactic input parsing
     std::string providedBy_;
     /// Input wrapping struct for the cavity

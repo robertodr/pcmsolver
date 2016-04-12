@@ -3,11 +3,7 @@ codata = 2002
 medium
 {
     solvertype = iefpcm
-    tdtype = tdsingleief
-    tauief = 150 # femtoseconds
     solvent = acetonitrile
-    tau = 48.38 # femtoseconds
-    initialvalue = static
 }
 
 cavity
@@ -15,4 +11,12 @@ cavity
     type = gepol
     area = 10.0
     mode = implicit
+}
+
+realtime 
+{
+    tdtype = tdsingleief
+    tauief = 150 # femtoseconds
+    tau = 48.38 # femtoseconds
+    initialvalue = static
 }

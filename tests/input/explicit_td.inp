@@ -3,11 +3,7 @@ codata = 2002
 medium
 {
     solvertype = iefpcm
-    tdtype = tdsingleief
-    tauief = 150 # femtoseconds
-    tau = 48.38 # femtoseconds
     solvent = explicit
-    initialvalue = dynamic
     proberadius = 1.345
     green<inside>
     {
@@ -26,4 +22,12 @@ cavity
     type = gepol
     area = 10.0
     mode = implicit
+}
+
+realtime
+{
+    tdtype = tdsingleief
+    tauief = 150 # femtoseconds
+    tau = 48.38 # femtoseconds
+    initialvalue = dynamic
 }
