@@ -47,8 +47,6 @@
 #include "utils/cnpy.hpp"
 #include "utils/MathUtils.hpp"
 
-const double secondsToAU = 2.418884326509e-17;
-
 extern "C"
 void host_writer(const char * message, size_t message_length);
 
@@ -73,7 +71,7 @@ int main()
     double e_d = 1.807;
     double tau = 2000; // 48.38 fs
     double dt = 0.2; // 4.838 as
-    double total_time = 100e-15 / secondsToAU; // Total simulation time: 100 fs
+    double total_time = 100e-15 / secondsToAU(); // Total simulation time: 100 fs
 
     save_tdief_lowdin_collocation(cavity, e_0, e_d, tau, dt, total_time);
     save_tdcpcm_collocation(cavity, e_0, e_d, tau, dt, total_time);
@@ -95,7 +93,6 @@ void save_tdief_lowdin_collocation(const GePolCavity & cavity, double e_0, doubl
     // Save diagonal matrix entries
     int size = cavity.size();
     unsigned int dim = static_cast<unsigned int>(size);
-    const unsigned int shape[] = {dim};
     cnpy::custom::npy_save("tdief_lowdin_collocation_Lambda.npy", solver.Lambda());
     cnpy::custom::npy_save("tdief_lowdin_collocation_K_0.npy", solver.K_0());
     cnpy::custom::npy_save("tdief_lowdin_collocation_K_d.npy", solver.K_d());
@@ -112,11 +109,9 @@ void save_tdief_lowdin_collocation(const GePolCavity & cavity, double e_0, doubl
     // Time-dependent IEF reaction field
     std::vector<double> TDIEF;
     TDIEF.reserve(steps);
-    double t_0 = 0.0, t = 0.0;
     Eigen::VectorXd asc = Eigen::VectorXd::Zero(size);
     Eigen::VectorXd ASC_previous = solver.initialValueASC(fake_mep);
     for (int i = 0; i < steps; ++i) {
-        t = t_0 + i * dt;
         TDIEF.push_back(-fake_mep.dot(ASC_previous));
         asc = solver.propagateASC(dt, fake_mep, fake_mep, ASC_previous);
         ASC_previous = asc;
@@ -146,11 +141,9 @@ void save_tdcpcm_collocation(const GePolCavity & cavity, double e_0, double e_d,
     // Propagate
     std::vector<double> TDCPCM;
     TDCPCM.reserve(steps);
-    double t_0 = 0.0, t = 0.0;
     Eigen::VectorXd asc = Eigen::VectorXd::Zero(size);
     Eigen::VectorXd ASC_previous = solver.initialValueASC(fake_mep);
     for (int i = 0; i < steps; ++i) {
-        t = t_0 + i * dt;
         TDCPCM.push_back(-fake_mep.dot(ASC_previous));
         asc = solver.propagateASC(dt, fake_mep, fake_mep, ASC_previous);
         ASC_previous = asc;
@@ -181,11 +174,9 @@ void save_tdsingleief_collocation(const GePolCavity & cavity, double e_0, double
     // Propagate
     std::vector<double> TDIEF;
     TDIEF.reserve(steps);
-    double t_0 = 0.0, t = 0.0;
     Eigen::VectorXd asc = Eigen::VectorXd::Zero(size);
     Eigen::VectorXd ASC_previous = solver.initialValueASC(fake_mep);
     for (int i = 0; i < steps; ++i) {
-        t = t_0 + i * dt;
         TDIEF.push_back(-fake_mep.dot(ASC_previous));
         asc = solver.propagateASC(dt, fake_mep, fake_mep, ASC_previous);
         ASC_previous = asc;
@@ -214,11 +205,9 @@ void save_tdonsagerief_collocation(const GePolCavity & cavity, double e_0, doubl
     // Propagate
     std::vector<double> TDIEF;
     TDIEF.reserve(steps);
-    double t_0 = 0.0, t = 0.0;
     Eigen::VectorXd asc = Eigen::VectorXd::Zero(size);
     Eigen::VectorXd ASC_previous = solver.initialValueASC(fake_mep);
     for (int i = 0; i < steps; ++i) {
-        t = t_0 + i * dt;
         TDIEF.push_back(-fake_mep.dot(ASC_previous));
         asc = solver.propagateASC(dt, fake_mep, fake_mep, ASC_previous);
         ASC_previous = asc;
@@ -251,11 +240,9 @@ void save_tdcpcmiterative_collocation(const GePolCavity & cavity, double e_0, do
     // Propagate
     std::vector<double> TDCPCM;
     TDCPCM.reserve(steps);
-    double t_0 = 0.0, t = 0.0;
     Eigen::VectorXd asc = Eigen::VectorXd::Zero(size);
     Eigen::VectorXd ASC_previous = solver.initialValueASC(fake_mep);
     for (int i = 0; i < steps; ++i) {
-        t = t_0 + i * dt;
         TDCPCM.push_back(-fake_mep.dot(ASC_previous));
         asc = solver.propagateASC(dt, fake_mep, fake_mep, ASC_previous);
         ASC_previous = asc;

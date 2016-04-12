@@ -36,6 +36,32 @@
  *  \param[in] t time step
  *  \note In \cite Corni2014 there's a typo in Eq. (50)
  */
+double reactionField(double radius, double eps_0, double eps_d, double tau, double t);
+
+/**@{ Analytic expressions for a spherical cavity as in \cite Corni2014 */
+/*! \brief Analytic Lambda matrix for spherical cavity
+ *  \param[in] l angular momentum
+ *  \note Eq. (15) in \cite Corni2014
+ */
+double Lambda_lm(int l);
+
+/*! \brief Analytic K matrix for spherical cavity
+ *  \param[in] eps solvent permittivity
+ *  \param[in] l angular momentum
+ *  \note Eq. (16) in \cite Corni2014. It is related to the field factors in the multipolar models.
+ */
+double K_lm(double eps, int l);
+
+/*! \brief Analytic form of the relaxation times matrix
+ *  \param[in] eps_0 static solvent permittivity
+ *  \param[in] eps_d dynamic solvent permittivity
+ *  \param[in] tau Debye relaxation time
+ *  \param[in] l angular momentum
+ *  \note Eq. (33) in \cite Corni2014
+ */
+double tau_lm(double eps_0, double eps_d, double tau, int l);
+/**@}*/
+
 double reactionField(double radius, double eps_0, double eps_d, double tau, double t)
 {
     double tauOns = tau * (2 * eps_d + 1) / (2 * eps_0 + 1);
@@ -46,37 +72,19 @@ double reactionField(double radius, double eps_0, double eps_d, double tau, doub
     return tmp_a * (1 - tmp_b * tmp_c);
 }
 
-/**@{ Analytic expressions for a spherical cavity as in \cite Corni2014 */
-/*! \brief Analytic Lambda matrix for spherical cavity
- *  \param[in] l angular momentum
- *  \note Eq. (15) in \cite Corni2014
- */
 double Lambda_lm(int l)
 {
     return -(2 * M_PI) / (2 * l + 1);
 }
 
-/*! \brief Analytic K matrix for spherical cavity
- *  \param[in] eps solvent permittivity
- *  \param[in] l angular momentum
- *  \note Eq. (16) in \cite Corni2014. It is related to the field factors in the multipolar models.
- */
 double K_lm(double eps, int l)
 {
     return (eps - 1) / (eps + l /(l + 1));
 }
 
-/*! \brief Analytic form of the relaxation times matrix
- *  \param[in] eps_0 static solvent permittivity
- *  \param[in] eps_d dynamic solvent permittivity
- *  \param[in] tau Debye relaxation time
- *  \param[in] l angular momentum
- *  \note Eq. (33) in \cite Corni2014
- */
 double tau_lm(double eps_0, double eps_d, double tau, int l)
 {
     return tau * ((l + 1) * eps_d + l) / ((l + 1) * eps_0 + l);
 }
-/**@}*/
 
 #endif // ONSAGERREACTIONFIELD_HPP
