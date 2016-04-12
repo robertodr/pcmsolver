@@ -9,6 +9,9 @@
   Pipolo and Cammi is available with a Debye profile (single transverse
   relaxation time). The real-time time-evolution can also be used in an
   equilibrium framework for the solvent response.
+- A new section in the input for the real-time time-evolution parameters.
+  It is now possible to perform real-time time-evolution for systems of point
+  charges _via_ the standalone executable.
 
 ## [v1.1.1] (2016-03-10)
 
