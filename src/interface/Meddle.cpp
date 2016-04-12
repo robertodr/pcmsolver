@@ -135,6 +135,28 @@ double pcmsolver_compute_polarization_energy(pcmsolver_context_t * context,
   return (AS_TYPE(pcm::Meddle, context)->computePolarizationEnergy(mep_name, asc_name));
 }
 
+void pcmsolver_initialize_propagation(pcmsolver_context_t * context,
+    const char * mep_0, const char * asc_0,
+    const char * mep_t, const char * asc_t,
+    const char * mep_tdt, const char * asc_tdt,
+    int irrep)
+{
+  TIMER_ON("pcmsolver_initialize_propagation");
+  AS_TYPE(pcm::Meddle, context)->initializePropagation(mep_0, asc_0, mep_t,
+      asc_t, mep_tdt, asc_tdt, irrep);
+  TIMER_OFF("pcmsolver_initialize_propagation");
+}
+
+double pcmsolver_propagate_asc(pcmsolver_context_t * context,
+    const char * mep_t, const char * asc_t,
+    const char * mep_tdt, const char * asc_tdt,
+    double dt, int irrep)
+{
+  TIMER_ON("pcmsolver_propagate_asc");
+  return (AS_TYPE(pcm::Meddle, context)->propagateASC(mep_t, asc_t, mep_tdt, asc_tdt, dt, irrep));
+  TIMER_OFF("pcmsolver_propagate_asc");
+}
+
 void pcmsolver_get_surface_function(pcmsolver_context_t * context,
     size_t size, double values[], const char * name)
 {
@@ -286,44 +308,53 @@ namespace pcm {
     }
   }
 
-  void Meddle::initializePropagation() const
+  void Meddle::initializePropagation(const char * mep_0, const char * asc_0,
+      const char * mep_t, const char * asc_t,
+      const char * mep_tdt, const char * asc_tdt,
+      int irrep) const
   {
-    std::string MEP_current("MEP_t+dt");
-    std::string MEP_previous("MEP_t");
-    // Set previous and current MEP to the static values from converged SCF
-    Eigen::VectorXd mep_t = functions_["TotMEP"];
-    functions_.insert(std::make_pair(MEP_previous, mep_t));
-    Eigen::VectorXd mep_tdt = functions_["TotMEP"];
-    functions_.insert(std::make_pair(MEP_current, mep_tdt));
+    std::string MEP_0(mep_0);
+    std::string MEP_current(mep_tdt);
+    std::string MEP_previous(mep_t);
+    // Set previous and current MEP to the values at time t = 0
+    Eigen::VectorXd MEP_t = functions_[MEP_0];
+    functions_.insert(std::make_pair(MEP_previous, MEP_t));
+    functions_.insert(std::make_pair(MEP_current, MEP_t));
 
-    std::string ASC_current("ASC_t+dt");
-    std::string ASC_previous("ASC_t");
+    std::string ASC_0(asc_0);
+    std::string ASC_current(asc_tdt);
+    std::string ASC_previous(asc_t);
 
     if (input_.TDSolverParams().initWithDynamic) {
       // Set previous and current ASC to the dynamic values from converged SCF
       // The initialValueASC function uses the dynamic matrix to calculate charges
-      Eigen::VectorXd dyn_asc = TD_K_->initialValueASC(functions_["TotMEP"]);
-      Eigen::VectorXd asc_t = dyn_asc;
-      functions_.insert(std::make_pair(ASC_previous, asc_t));
-      Eigen::VectorXd asc_tdt = dyn_asc;
-      functions_.insert(std::make_pair(ASC_current, asc_tdt));
+      Eigen::VectorXd dyn_asc = TD_K_->initialValueASC(functions_[MEP_0]);
+      functions_.insert(std::make_pair(ASC_previous, dyn_asc));
+      functions_.insert(std::make_pair(ASC_current, dyn_asc));
     } else {
       // Set previous and current ASC to the static values from converged SCF
-      Eigen::VectorXd asc_t = functions_["TotASC"];
-      functions_.insert(std::make_pair(ASC_previous, asc_t));
-      Eigen::VectorXd asc_tdt = functions_["TotASC"];
-      functions_.insert(std::make_pair(ASC_current, asc_tdt));
+      if (functions_.count(ASC_0) == 1) { // Key in map already
+        Eigen::VectorXd ASC_t = functions_[ASC_0];
+        functions_.insert(std::make_pair(ASC_previous, ASC_t));
+        functions_.insert(std::make_pair(ASC_current, ASC_t));
+      } else { // Create key-value pair
+        Eigen::VectorXd ASC_t = K_0_->computeCharge(MEP_t, irrep);
+        functions_.insert(std::make_pair(ASC_previous, ASC_t));
+        functions_.insert(std::make_pair(ASC_current, ASC_t));
+      }
     }
   }
 
-  double Meddle::propagateASC(double dt, int irrep) const
+  double Meddle::propagateASC(const char * mep_t, const char * asc_t,
+                              const char * mep_tdt, const char * asc_tdt,
+                              double dt, int irrep) const
   {
     double energy = 0.0;
     if (input_.isTD()) {
-      energy = delayedASC(dt, irrep);
+      energy = delayedASC(mep_t, asc_t, mep_tdt, asc_tdt, dt, irrep);
     } else {
-      computeASC("MEP_t+dt", "ASC_t+dt", irrep);
-      energy = computePolarizationEnergy("MEP_t+dt", "ASC_t+dt");
+      computeResponseASC(mep_tdt, asc_tdt, irrep);
+      energy = computePolarizationEnergy(mep_tdt, asc_tdt);
     }
     return energy;
   }
@@ -395,32 +426,34 @@ namespace pcm {
     }
   }
 
-  double Meddle::delayedASC(double dt, int /* irrep */) const
+  double Meddle::delayedASC(const char * mep_t, const char * asc_t,
+                            const char * mep_tdt, const char * asc_tdt,
+                            double dt, int /* irrep */) const
   {
-    std::string MEP_current("MEP_t+dt");
-    std::string MEP_previous("MEP_t");
-    std::string ASC_current("ASC_t+dt");
-    std::string ASC_previous("ASC_t");
+    std::string MEP_current(mep_tdt);
+    std::string MEP_previous(mep_t);
+    std::string ASC_current(asc_tdt);
+    std::string ASC_previous(asc_t);
 
     // Get the proper iterators
-    SurfaceFunctionMap::const_iterator iter_mep_tdt = functions_.find(MEP_current);
+    SurfaceFunctionMapConstIter iter_mep_tdt = functions_.find(MEP_current);
     // Iterators to MEP and ASC at time t
     // They are non-const as we will overwrite their contents with those of MEP_current and ASC_current
     // after propagation
-    SurfaceFunctionMap::iterator iter_mep_t = functions_.find(MEP_previous);
-    SurfaceFunctionMap::iterator iter_asc_t = functions_.find(ASC_previous);
-    SurfaceFunctionMap::iterator iter_asc_tdt = functions_.find(ASC_current);
-    Eigen::VectorXd asc_tdt = TD_K_->propagateASC(dt, iter_mep_tdt->second,
+    SurfaceFunctionMapIter iter_mep_t = functions_.find(MEP_previous);
+    SurfaceFunctionMapIter iter_asc_t = functions_.find(ASC_previous);
+    SurfaceFunctionMapIter iter_asc_tdt = functions_.find(ASC_current);
+    Eigen::VectorXd ASC_tdt = TD_K_->propagateASC(dt, iter_mep_tdt->second,
         iter_mep_t->second,
         iter_asc_t->second);
 
     // Renormalization of charges: divide by the number of symmetry operations in the group
-    asc_tdt /= double(cavity_->pointGroup().nrIrrep());
+    ASC_tdt /= double(cavity_->pointGroup().nrIrrep());
     // Insert it into the map
     if (functions_.count(ASC_current) == 1) { // Key in map already
-      functions_[ASC_current] = asc_tdt;
+      functions_[ASC_current] = ASC_tdt;
     } else { // Create key-value pair
-      functions_.insert(std::make_pair(ASC_current, asc_tdt));
+      functions_.insert(std::make_pair(ASC_current, ASC_tdt));
     }
     // Update contents of MEP_previous and ASC_previous surface functions
     (iter_mep_t->second) = (iter_mep_tdt->second);

@@ -207,18 +207,38 @@ PCMSOLVER_API double pcmsolver_compute_polarization_energy(pcmsolver_context_t *
 
 /*! \brief Initializes the time propagation of the ASC.
  *  \param[in, out] context the PCM context object
+ *  \param[in] mep_0    label of the MEP surface function at time 0
+ *  \param[in] asc_0    label of the ASC surface function at time 0
+ *  \param[in] mep_t    label of the MEP surface function at time t
+ *  \param[in] asc_t    label of the ASC surface function at time t
+ *  \param[in] mep_tdt label of the MEP surface function at time t+dt
+ *  \param[in] asc_tdt label of the ASC surface function at time t+dt
+ *  \param[in] irrep index of the desired irreducible representation
+ *  This function initializes the time-evolution algorithm described in
+ *  \cite Corni2014
+ *  Labels are set in the internal surface function map. The surface function
+ *  are initialized to values at time 0, chosen by the mep_0 and asc_0 labels
  */
-PCMSOLVER_API void pcmsolver_initialize_propagation(pcmsolver_context_t * context);
+PCMSOLVER_API void pcmsolver_initialize_propagation(pcmsolver_context_t * context,
+    const char * mep_0, const char * asc_0,
+    const char * mep_t, const char * asc_t,
+    const char * mep_tdt, const char * asc_tdt, int irrep);
 
 /*! \brief Time propagation of the ASC
  *  \param[in, out] context the PCM context object
+ *  \param[in] mep_t    label of the MEP surface function at time t
+ *  \param[in] asc_t    label of the ASC surface function at time t
+ *  \param[in] mep_tdt label of the MEP surface function at time t+dt
+ *  \param[in] asc_tdt label of the ASC surface function at time t+dt
  *  \param[in] dt   propagation time-step
  *  \param[in] irrep index of the desired irreducible representation
  *  \return the polarization energy at time t+dt
  *  Based on user input, switches between the delayed or equilibrium ASC formalisms.
  */
 PCMSOLVER_API double pcmsolver_propagate_asc(pcmsolver_context_t * context,
-                                 double dt, int irrep);
+    const char * mep_t, const char * asc_t,
+    const char * mep_tdt, const char * asc_tdt,
+    double dt, int irrep);
 
 /*! \brief Retrieves data wrapped in a given surface function
  *  \param[in, out] context the PCM context object

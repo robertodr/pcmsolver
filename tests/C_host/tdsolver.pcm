@@ -1,0 +1,29 @@
+units = au
+medium
+{
+    solvertype = iefpcm
+    tdtype = tdief
+    proberadius = 1.385
+    solvent = explicit
+    green<inside> 
+    {
+      type = vacuum
+    }
+    green<outside> 
+    {
+      type = uniformdielectric
+      eps = 35.69
+      epsdyn = 1.807
+    }
+    tau = 2000 # 48.38 femtoseconds
+    initialvalue = dynamic
+}
+
+cavity
+{
+    type = gepol
+    area = 0.4
+    mode = explicit
+    # R = 1.181 * 1.10 Angstrom
+    spheres = [0.0, 0.0, 0.0, 2.45494320842247]
+}

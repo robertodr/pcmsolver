@@ -54,4 +54,8 @@ double bohr3ToAngstrom3();
 
 double angstrom3ToBohr3();
 
+double secondsToAU();
+
+double AUToFemtoseconds();
+
 #endif // PHYSICALCONSTANTS_HPP

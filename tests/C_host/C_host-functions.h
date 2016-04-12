@@ -26,6 +26,8 @@ typedef enum { false, true } bool;
 #  define UNUSED_FUNCTION(x) UNUSED_ ## x
 #endif
 
+#define M_PI 3.14159265358979323846
+
 struct PCMInput pcmsolver_input();
 
 /*! \brief calculates nuclear molecular electrostatic potential (MEP) at cavity points
@@ -41,6 +43,39 @@ struct PCMInput pcmsolver_input();
  */
 double * nuclear_mep(int nr_nuclei, double charges[nr_nuclei],
     double coordinates[3*nr_nuclei], size_t grid_size, double grid[3*grid_size]);
+
+/*! \brief Onsager reaction field for a point-like dipole in a spherical cavity
+ *  \param[in] radius radius of the cavity
+ *  \param[in] eps_0 static solvent permittivity
+ *  \param[in] eps_d dynamic solvent permittivity
+ *  \param[in] tau solvent relaxation time
+ *  \param[in] t time step
+ *  \note In \cite Corni2014 there's a typo in Eq. (50)
+ */
+double reactionField(double radius, double eps_0, double eps_d, double tau, double t);
+
+/**@{ Analytic expressions for a spherical cavity as in \cite Corni2014 */
+/*! \brief Analytic Lambda matrix for spherical cavity
+ *  \param[in] l angular momentum
+ *  \note Eq. (15) in \cite Corni2014
+ */
+double Lambda_lm(int l);
+
+/*! \brief Analytic K matrix for spherical cavity
+ *  \param[in] eps solvent permittivity
+ *  \param[in] l angular momentum
+ *  \note Eq. (16) in \cite Corni2014. It is related to the field factors in the multipolar models.
+ */
+double K_lm(double eps, int l);
+
+/*! \brief Analytic form of the relaxation times matrix
+ *  \param[in] eps_0 static solvent permittivity
+ *  \param[in] eps_d dynamic solvent permittivity
+ *  \param[in] tau Debye relaxation time
+ *  \param[in] l angular momentum
+ *  \note Eq. (33) in \cite Corni2014
+ */
+double tau_lm(double eps_0, double eps_d, double tau, int l);
 
 /*! \brief Compares calculated and reference values within a threshold
  *  \author Roberto Di Remigio
@@ -60,6 +95,40 @@ double asc_Ag_reference(int i);
 double asc_B3g_reference(int i);
 double asc_neq_B3g_reference(int i);
 double areas_reference(int i);
+
+/*! \brief Onsager reaction field for a point-like dipole in a spherical cavity
+ *  \param[in] radius radius of the cavity
+ *  \param[in] eps_0 static solvent permittivity
+ *  \param[in] eps_d dynamic solvent permittivity
+ *  \param[in] tau solvent relaxation time
+ *  \param[in] t time step
+ *  \note In \cite Corni2014 there's a typo in Eq. (50)
+ */
+double reactionField(double radius, double eps_0, double eps_d, double tau, double t);
+
+/**@{ Analytic expressions for a spherical cavity as in \cite Corni2014 */
+/*! \brief Analytic Lambda matrix for spherical cavity
+ *  \param[in] l angular momentum
+ *  \note Eq. (15) in \cite Corni2014
+ */
+double Lambda_lm(int l);
+
+/*! \brief Analytic K matrix for spherical cavity
+ *  \param[in] eps solvent permittivity
+ *  \param[in] l angular momentum
+ *  \note Eq. (16) in \cite Corni2014. It is related to the field factors in the multipolar models.
+ */
+double K_lm(double eps, int l);
+
+/*! \brief Analytic form of the relaxation times matrix
+ *  \param[in] eps_0 static solvent permittivity
+ *  \param[in] eps_d dynamic solvent permittivity
+ *  \param[in] tau Debye relaxation time
+ *  \param[in] l angular momentum
+ *  \note Eq. (33) in \cite Corni2014
+ */
+double tau_lm(double eps_0, double eps_d, double tau, int l);
+/**@}*/
 
 struct PCMInput pcmsolver_input()
 {
@@ -106,6 +175,31 @@ double * nuclear_mep(int nr_nuclei, double charges[nr_nuclei],
     }
   }
   return mep;
+}
+
+double reactionField(double radius, double eps_0, double eps_d, double tau, double t)
+{
+  double tauOns = tau * (2 * eps_d + 1) / (2 * eps_0 + 1);
+  double tmp_a = (2 * eps_d - 2) / (pow(radius, 3) * (2 * eps_d + 1));
+  double tmp_b = (6 * (eps_0 - eps_d)) / ((2 * eps_d - 2) * (2 * eps_0 + 1));
+  double tmp_c = exp(-t/tauOns) - 1;
+
+  return tmp_a * (1 - tmp_b * tmp_c);
+}
+
+double Lambda_lm(int l)
+{
+  return -(2 * M_PI) / (2 * l + 1);
+}
+
+double K_lm(double eps, int l)
+{
+  return (eps - 1) / (eps + l /(l + 1));
+}
+
+double tau_lm(double eps_0, double eps_d, double tau, int l)
+{
+  return tau * ((l + 1) * eps_d + l) / ((l + 1) * eps_0 + l);
 }
 
 bool check_unsigned_error(double calculated, double reference, double threshold)
