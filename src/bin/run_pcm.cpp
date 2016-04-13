@@ -42,11 +42,12 @@
 
 #include "interface/Meddle.hpp"
 
-// Open output file pcmsolver.out
-std::ofstream out_stream("pcmsolver.out");
+std::ofstream pcmsolver_out;
 
 extern "C"
 void host_writer(const char * message, size_t message_length);
+
+std::string remove_extension(const std::string& filename);
 
 int main(int argc, char * argv[])
 {
@@ -54,6 +55,8 @@ int main(int argc, char * argv[])
   using namespace pcm;
 
   Meddle context_(argv[1]);
+  pcmsolver_out.open(remove_extension(argv[1]).erase(0) + ".out");
+  context_.printInfo();
 
   size_t size = context_.getCavitySize();
 
@@ -73,12 +76,12 @@ int main(int argc, char * argv[])
   context_.getSurfaceFunction(rsp_asc.size(), rsp_asc.data(), "RspASC");
   TIMER_OFF("Computing ASC");
   // Compute energy and print it out
-  out_stream << "Solvation energy = "
+  pcmsolver_out << "Solvation energy = "
              << context_.computePolarizationEnergy("MEP", "ASC")
              << std::endl;
-  out_stream << "DONE!" << std::endl;
+  pcmsolver_out << "DONE!" << std::endl;
 
-  out_stream.close();
+  pcmsolver_out.close();
   // Write timings out
   context_.writeTimings();
   TIMER_DONE("pcmsolver.timer.dat");
@@ -88,6 +91,12 @@ int main(int argc, char * argv[])
 
 void host_writer(const char * message, size_t /* message_length */)
 {
-  out_stream << std::string(message) << std::endl;
+  pcmsolver_out << std::string(message) << std::endl;
 }
 
+std::string remove_extension(const std::string& filename)
+{
+  size_t lastdot = filename.find_last_of(".");
+  if (lastdot == std::string::npos) return filename;
+  return filename.substr(0, lastdot);
+}
