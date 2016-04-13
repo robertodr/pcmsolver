@@ -2,22 +2,22 @@
 /*
  *     PCMSolver, an API for the Polarizable Continuum Model
  *     Copyright (C) 2013-2016 Roberto Di Remigio, Luca Frediani and contributors
- *     
+ *
  *     This file is part of PCMSolver.
- *     
+ *
  *     PCMSolver is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Lesser General Public License as published by
  *     the Free Software Foundation, either version 3 of the License, or
  *     (at your option) any later version.
- *     
+ *
  *     PCMSolver is distributed in the hope that it will be useful,
  *     but WITHOUT ANY WARRANTY; without even the implied warranty of
  *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *     GNU Lesser General Public License for more details.
- *     
+ *
  *     You should have received a copy of the GNU Lesser General Public License
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
- *     
+ *
  *     For information on the complete list of contributors to the
  *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
  */
@@ -185,8 +185,24 @@ public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW /* See http://eigen.tuxfamily.org/dox/group__TopicStructHavingEigenMembers.html */
 };
 
+/*! \brief Compute MEP from molecule object and list of finite elements
+ *  \param[in] mol molecule object
+ *  \param[in] el  list of finite elements
+ *  \return MEP at finite elements center
+ */
 Eigen::VectorXd computeMEP(const Molecule & mol, const std::vector<Element> & el);
-/*! \brief Compute MEP for a single point charge */
+/*! \brief Compute MEP from molecule object and a grid of points
+ *  \param[in] mol  molecule object
+ *  \param[in] grid grid points coordinates
+ *  \return MEP at grid points
+ */
+Eigen::VectorXd computeMEP(const Molecule & mol, const Eigen::Matrix3Xd & grid);
+/*! \brief Compute MEP for a single point charge
+ *  \param[in] el  list of finite elements
+ *  \param[in] charge value of the charge
+ *  \param[in] origin location of the point charge
+ *  \return MEP at finite elements center
+ */
 Eigen::VectorXd computeMEP(const std::vector<Element> & el, double charge = 1.0, const Eigen::Vector3d & origin = Eigen::Vector3d::Zero());
 
 #endif // MOLECULE_HPP

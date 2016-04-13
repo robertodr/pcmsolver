@@ -173,6 +173,11 @@ void pcmsolver_set_surface_function(pcmsolver_context_t * context,
   TIMER_OFF("pcmsolver_set_surface_function");
 }
 
+void pcmsolver_print_surface_function(pcmsolver_context_t * context, const char * name)
+{
+  AS_TYPE(pcm::Meddle, context)->printSurfaceFunction(name);
+}
+
 void pcmsolver_save_surface_functions(pcmsolver_context_t * context)
 {
   AS_TYPE(pcm::Meddle, context)->saveSurfaceFunctions();
@@ -194,9 +199,44 @@ void pcmsolver_write_timings(pcmsolver_context_t * context)
 }
 
 namespace pcm {
+  Meddle::Meddle(const std::string & fname) : hasDynamic_(false), hasTD_(false)
+  {
+    TIMER_ON("Meddle input parsing");
+    input_ = Input(fname);
+    input_.initMolecule();
+    TIMER_OFF("Meddle input parsing");
+    infoStream_ << std::endl;
+    infoStream_ << "~~~~~~~~~~ PCMSolver ~~~~~~~~~~" << std::endl;
+    infoStream_ << "Using CODATA " << input_.CODATAyear() << " set of constants." << std::endl;
+    infoStream_ << "Input parsing done " << input_.providedBy() << std::endl;
+
+    TIMER_ON("Meddle::initCavity");
+    initCavity();
+    TIMER_OFF("Meddle::initCavity");
+
+    TIMER_ON("Meddle::initStaticSolver");
+    initStaticSolver();
+    TIMER_OFF("Meddle::initStaticSolver");
+
+    if (input_.isDynamic()) {
+      TIMER_ON("Meddle::initDynamicSolver");
+      initDynamicSolver();
+      TIMER_OFF("Meddle::initDynamicSolver");
+    }
+
+    if (input_.isTD()) {
+      TIMER_ON("Meddle::initTDSolver");
+      initTDSolver();
+      TIMER_OFF("Meddle::initTDolver");
+    }
+
+    // Reserve space for Tot-MEP/ASC, Nuc-MEP/ASC and Ele-MEP/ASC
+    functions_.reserve(12);
+  }
+
   Meddle::Meddle(pcmsolver_reader_t input_reading, int nr_nuclei, double
       charges[], double coordinates[], int symmetry_info[], const PCMInput & host_input)
-    : hasDynamic_(false)
+    : hasDynamic_(false), hasTD_(false)
   {
     TIMER_ON("Meddle::initInput");
     initInput(input_reading, nr_nuclei, charges, coordinates, symmetry_info, host_input);
@@ -234,6 +274,11 @@ namespace pcm {
     if (hasTD_) delete TD_K_;
   }
 
+  Molecule Meddle::molecule() const
+  {
+     return input_.molecule();
+  }
+
   size_t Meddle::getCavitySize() const
   {
     return cavity_->size();
@@ -249,6 +294,11 @@ namespace pcm {
     TIMER_ON("Meddle::getCenters");
     Eigen::Map<Eigen::Matrix3Xd>(centers, 3, cavity_->size()) = cavity_->elementCenter();
     TIMER_OFF("Meddle::getCenters");
+  }
+
+  Eigen::Matrix3Xd Meddle::getCenters() const
+  {
+    return cavity_->elementCenter();
   }
 
   void Meddle::getCenter(int its, double center[]) const
@@ -387,6 +437,19 @@ namespace pcm {
     }
   }
 
+  void Meddle::printSurfaceFunction(const char * name) const
+  {
+    std::string functionName(name);
+    if (functions_.count(functionName) == 1) { // Key in map already
+      std::ostringstream print_sf;
+      Eigen::IOFormat fmt(Eigen::FullPrecision);
+      print_sf << functions_[functionName].format(fmt) << std::endl;
+      printer(print_sf);
+    } else {
+      PCMSOLVER_ERROR("You are trying to print a nonexistent SurfaceFunction!", BOOST_CURRENT_FUNCTION);
+    }
+  }
+
   void Meddle::saveSurfaceFunctions() const
   {
     printer("\nDumping surface functions to .npy files");
@@ -468,7 +531,9 @@ namespace pcm {
     TIMER_DONE("pcmsolver.timer.dat");
   }
 
-  void Meddle::initInput(pcmsolver_reader_t input_reading, int nr_nuclei, double charges[], double coordinates[], int symmetry_info[], const PCMInput & host_input)
+  void Meddle::initInput(pcmsolver_reader_t input_reading, int nr_nuclei,
+      double charges[], double coordinates[], int symmetry_info[],
+      const PCMInput & host_input)
   {
     if (input_reading) {
       input_ = Input(host_input);
@@ -476,7 +541,6 @@ namespace pcm {
       input_ = Input("@pcmsolver.inp");
     }
 
-    // 2. position and charges of atomic centers
     Eigen::VectorXd chg  = Eigen::Map<Eigen::VectorXd>(charges, nr_nuclei, 1);
     Eigen::Matrix3Xd centers = Eigen::Map<Eigen::Matrix3Xd>(coordinates, 3, nr_nuclei);
 

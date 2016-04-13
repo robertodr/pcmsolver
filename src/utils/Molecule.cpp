@@ -2,22 +2,22 @@
 /*
  *     PCMSolver, an API for the Polarizable Continuum Model
  *     Copyright (C) 2013-2016 Roberto Di Remigio, Luca Frediani and contributors
- *     
+ *
  *     This file is part of PCMSolver.
- *     
+ *
  *     PCMSolver is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Lesser General Public License as published by
  *     the Free Software Foundation, either version 3 of the License, or
  *     (at your option) any later version.
- *     
+ *
  *     PCMSolver is distributed in the hope that it will be useful,
  *     but WITHOUT ANY WARRANTY; without even the implied warranty of
  *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *     GNU Lesser General Public License for more details.
- *     
+ *
  *     You should have received a copy of the GNU Lesser General Public License
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
- *     
+ *
  *     For information on the complete list of contributors to the
  *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
  */
@@ -266,6 +266,18 @@ Eigen::VectorXd computeMEP(const Molecule & mol, const std::vector<Element> & el
     for (size_t i = 0; i < mol.nAtoms(); ++i) {
         for (size_t j = 0; j < el.size(); ++j) {
             double dist = (mol.geometry().col(i) - el[j].center()).norm();
+            mep(j) += mol.charges(i) / dist;
+        }
+    }
+    return mep;
+}
+
+Eigen::VectorXd computeMEP(const Molecule & mol, const Eigen::Matrix3Xd & grid)
+{
+    Eigen::VectorXd mep = Eigen::VectorXd::Zero(grid.cols());
+    for (size_t i = 0; i < mol.nAtoms(); ++i) {
+        for (int j = 0; j < grid.cols(); ++j) {
+            double dist = (mol.geometry().col(i) - grid.col(j)).norm();
             mep(j) += mol.charges(i) / dist;
         }
     }

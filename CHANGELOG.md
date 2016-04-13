@@ -12,6 +12,8 @@
 - A new section in the input for the real-time time-evolution parameters.
   It is now possible to perform real-time time-evolution for systems of point
   charges _via_ the standalone executable.
+- An API function to print the contents of a surface function to the host
+  program output.
 
 ## [v1.1.1] (2016-03-10)
 

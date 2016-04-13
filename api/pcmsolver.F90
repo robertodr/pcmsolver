@@ -45,6 +45,7 @@ module pcmsolver
     public pcmsolver_propagate_asc
     public pcmsolver_get_surface_function
     public pcmsolver_set_surface_function
+    public pcmsolver_print_surface_function
     public pcmsolver_save_surface_functions
     public pcmsolver_save_surface_function
     public pcmsolver_load_surface_function
@@ -221,6 +222,14 @@ module pcmsolver
             character(c_char), intent(in) :: name
         end subroutine pcmsolver_set_surface_function
     end interface pcmsolver_set_surface_function
+
+    interface pcmsolver_print_surface_function
+        subroutine pcmsolver_print_surface_function(context, name) bind(C)
+            import
+            type(c_ptr), value :: context
+            character(c_char), intent(in) :: name
+        end subroutine pcmsolver_print_surface_function
+    end interface pcmsolver_print_surface_function
 
     interface pcmsolver_save_surface_functions
         subroutine pcmsolver_save_surface_functions(context) bind(C)

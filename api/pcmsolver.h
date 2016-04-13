@@ -262,6 +262,13 @@ PCMSOLVER_API void pcmsolver_set_surface_function(pcmsolver_context_t * context,
                                                  double values[],
                                                  const char * name);
 
+/*! \brief Prints surface function contents to host output
+ *  \param[in, out] context the PCM context object
+ *  \param[in] name label of the surface function
+ */
+PCMSOLVER_API void pcmsolver_print_surface_function(pcmsolver_context_t * context,
+                                                    const char * name);
+
 /*! \brief Dumps all currently saved surface functions to NumPy arrays in .npy files
  *  \param[in, out] context the PCM context object
  */
