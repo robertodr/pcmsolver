@@ -59,8 +59,8 @@ SCENARIO("Test a point charge and a GePol cavity in flipped environment (uniform
          */
         WHEN("the point charge is located at the origin")
         {
-            Molecule point = dummy<0>(2.929075493);
-            double area = 10.0;
+            Molecule point = dummy<0>(2.0);
+            double area = 0.4;
             double probeRadius = 0.0;
             double minRadius = 100.0;
             GePolCavity cavity = GePolCavity(point, area, probeRadius, minRadius);
@@ -77,11 +77,13 @@ SCENARIO("Test a point charge and a GePol cavity in flipped environment (uniform
                 cavity.elementCenter(), nuclearChargeDistribution(point));
             for (size_t i = 0; i < size; ++i) {
                 INFO("newton(" << i << ") = " << newton(i));
+                std::cout << "newton(" << i << ") = " << newton(i) << std::endl;
             }
             // Newton potential for vacuum
             Eigen::VectorXd fake_mep = computeMEP(cavity.elements(), charge);
             for (size_t i = 0; i < size; ++i) {
                 INFO("fake_mep(" << i << ") = " << fake_mep(i));
+                std::cout << "fake_mep(" << i << ") = " << fake_mep(i) << std::endl;
             }
 
             THEN("the apparent surface charge is")
@@ -97,6 +99,7 @@ SCENARIO("Test a point charge and a GePol cavity in flipped environment (uniform
               }
               for (size_t i = 0; i < size; ++i) {
                 INFO("iso_fake_asc(" << i << ") = " << iso_fake_asc(i));
+                std::cout << "iso_fake_asc(" << i << ") = " << iso_fake_asc(i) << std::endl;
               }
               print_eigen_matrix(aniso_fake_asc, "aniso.log");
               print_eigen_matrix(iso_fake_asc, "iso.log");
