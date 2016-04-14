@@ -10,6 +10,7 @@ add_subdirectory(bi_operators)
 add_subdirectory(cpcm)
 add_subdirectory(iefpcm)
 add_subdirectory(td_solver)
+add_subdirectory(utils)
 
 link_directories(${PROJECT_BINARY_DIR}/lib)
 add_executable(unit_tests unit_tests.cpp
@@ -22,6 +23,7 @@ add_executable(unit_tests unit_tests.cpp
                           $<TARGET_OBJECTS:input-tests>
                           $<TARGET_OBJECTS:numerical_quadrature-tests>
                           $<TARGET_OBJECTS:td_solver-tests>
+                          $<TARGET_OBJECTS:utils-tests>
                           )
 if(BUILD_CUSTOM_BOOST)
   add_dependencies(unit_tests custom_boost)

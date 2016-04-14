@@ -458,9 +458,23 @@ def setup_keywords():
     molecule = getkw.Section('MOLECULE')
     # List of geometry and classical point charges
     # Valid values: array of doubles in format [x, y, z, Q]
-    # charges are in always in atomic units
+    # Notes: charges are always in atomic units
     molecule.add_kw('GEOMETRY',     'DBL_ARRAY', callback = verify_geometry)
     top.add_sect(molecule)
+
+    # ChargeDistribution section
+    # Set a classical charge distribution, inside or outside the cavity
+    # Notes: if inside the cavity, no additional spheres will be generated.
+    charge_distribution = getkw.Section('CHARGEDISTRIBUTION', callback = verify_charge_distribution)
+    # Monopoles
+    # Valid values: array of doubles in format [x, y, z, Q]
+    # Notes: charges are always in atomic units
+    charge_distribution.add_kw('MONOPOLES', 'DBL_ARRAY')
+    # Dipoles
+    # Valid values: array of doubles in format [x, y, z, mu_x, mu_y, mu_z]
+    # Notes: dipole moment components are always in atomic units
+    charge_distribution.add_kw('DIPOLES', 'DBL_ARRAY')
+    top.add_sect(charge_distribution)
 
     return top
 
@@ -725,19 +739,29 @@ def verify_realtime(section):
     convert_time_scalar(section.get('TAU'))
     convert_time_scalar(section.get('TAUIEF'))
 
+def check_array(name, array, offset):
+    dim = len(array)
+    if (dim % offset != 0):
+        print('Empty or incoherent {0} array'.format(name))
+        sys.exit(1)
+    # Convert only geometry to AU. Leave the rest untouched
+    if (isAngstrom):
+        j = 0
+        for i in range(dim/offset):
+            data[j] /= CODATAdict[CODATAyear].ToAngstrom
+            data[j+1] /= CODATAdict[CODATAyear].ToAngstrom
+            data[j+2] /= CODATAdict[CODATAyear].ToAngstrom
+            j += offset
+
 def verify_geometry(keyword):
     data = keyword.get()
-    length=len(data)
-    if (length % 4 != 0):
-        print('Empty or incoherent geometry')
-        sys.exit(1)
-    # Convert only geometry to AU. Leave charges untouched
-    j = 0
-    for i in range(length/4):
-        data[j] /= CODATAdict[CODATAyear].ToAngstrom
-        data[j+1] /= CODATAdict[CODATAyear].ToAngstrom
-        data[j+2] /= CODATAdict[CODATAyear].ToAngstrom
-        j += 4
+    check_array('GEOMETRY', data, 4)
+
+def verify_charge_distribution(section):
+    mono = section.get('MONOPOLES').get()
+    check_array('MONOPOLES', mono, 4)
+    dipole = section.get('DIPOLES').get()
+    check_array('DIPOLES', dipole, 6)
 
 def verify_spheres(keyword):
     length=len(keyword.get())
