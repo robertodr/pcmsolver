@@ -148,10 +148,10 @@ namespace pcm {
        */
       double computePolarizationEnergy(const char * mep_name, const char * asc_name) const;
       /*! \brief Initializes the time propagation of the ASC.
-       *  \param[in] mep_0    label of the MEP surface function at time 0
-       *  \param[in] asc_0    label of the ASC surface function at time 0
-       *  \param[in] mep_t    label of the MEP surface function at time t
-       *  \param[in] asc_t    label of the ASC surface function at time t
+       *  \param[in] mep_0   label of the MEP surface function at time 0
+       *  \param[in] asc_0   label of the ASC surface function at time 0
+       *  \param[in] mep_t   label of the MEP surface function at time t
+       *  \param[in] asc_t   label of the ASC surface function at time t
        *  \param[in] mep_tdt label of the MEP surface function at time t+dt
        *  \param[in] asc_tdt label of the ASC surface function at time t+dt
        *  \param[in] irrep index of the desired irreducible representation

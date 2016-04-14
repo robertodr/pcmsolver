@@ -1,0 +1,42 @@
+# Data for acetonitrile as taken from Corni2014
+units = au
+medium
+{
+  solvertype = iefpcm
+  proberadius = 1.385
+  solvent = explicit
+  green<inside>
+  {
+    type = vacuum
+  }
+  green<outside>
+  {
+    type = uniformdielectric
+    eps = 35.69
+    epsdyn = 1.807
+  }
+}
+
+cavity
+{
+  type = gepol
+  area = 0.4
+  mode = explicit
+  # R = 1.181 * 1.10 Angstrom
+  spheres = [0.0, 0.0, 0.0, 2.45494320842247]
+}
+
+realtime
+{
+    tdtype = tdief
+    tau = 2000 # 48.38 femtoseconds
+    initialvalue = dynamic
+    timestep = 0.2 # 4.838 femtoseconds
+    totaltime= 1000
+}
+
+molecule
+{
+  # x, y, z, q
+  geometry = [0.0, 0.0, 0.0, 1.0]
+}

@@ -102,6 +102,8 @@ public:
     bool isDynamic() const { return isDynamic_; }
     std::string TDsolverType() const { return TDsolverType_; }
     bool isTD() const { return isTD_; }
+    double timeStep() const { return timeStep_; }
+    double totalTime() const { return totalTime_; }
     double integratorScaling() const { return integratorScaling_; }
     /// @}
 
