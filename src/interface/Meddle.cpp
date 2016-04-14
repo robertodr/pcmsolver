@@ -199,12 +199,8 @@ void pcmsolver_write_timings(pcmsolver_context_t * context)
 }
 
 namespace pcm {
-  Meddle::Meddle(const std::string & fname) : hasDynamic_(false), hasTD_(false)
+  Meddle::Meddle(const Input & parsed) : input_(parsed), hasDynamic_(false), hasTD_(false)
   {
-    TIMER_ON("Meddle input parsing");
-    input_ = Input(fname);
-    input_.initMolecule();
-    TIMER_OFF("Meddle input parsing");
     infoStream_ << std::endl;
     infoStream_ << "~~~~~~~~~~ PCMSolver ~~~~~~~~~~" << std::endl;
     infoStream_ << "Using CODATA " << input_.CODATAyear() << " set of constants." << std::endl;

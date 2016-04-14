@@ -173,6 +173,7 @@ void Input::reader(const std::string & filename)
 
   // Get the contents of the RealTime section
   const Section & realtime = input_.getSect("REALTIME");
+  isTD_ = false;
   if (realtime.isDefined()) {
     TDsolverType_ = realtime.getStr("TDTYPE");
     isTD_ = (TDsolverType_ == "EQUILIBRIUM") ? false : true;

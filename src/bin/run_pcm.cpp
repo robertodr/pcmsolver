@@ -54,8 +54,14 @@ int main(int argc, char * argv[])
   if (argc > 2) PCMSOLVER_ERROR("Too many arguments supplied", "run_pcm");
   using namespace pcm;
 
-  Meddle context_(argv[1]);
-  pcmsolver_out.open(remove_extension(argv[1]).erase(0) + ".out");
+  TIMER_ON("Input parsing");
+  Input input(argv[1]);
+  input.initMolecule();
+  TIMER_OFF("Input parsing");
+  Meddle context_(input);
+
+  // Prepare output filename
+  pcmsolver_out.open(remove_extension(argv[1]).erase(0, 1) + ".out");
   context_.printInfo();
 
   size_t size = context_.getCavitySize();
@@ -86,7 +92,7 @@ int main(int argc, char * argv[])
   context_.writeTimings();
   TIMER_DONE("pcmsolver.timer.dat");
 
-    return EXIT_SUCCESS;
+  return EXIT_SUCCESS;
 }
 
 void host_writer(const char * message, size_t /* message_length */)

@@ -165,14 +165,13 @@ def parse_pcm_input(inputFile):
     return parsedFile
 
 def execute(parsedFile):
-    exename = "run_pcm" + "@CMAKE_EXECUTABLE_SUFFIX@"
-    executable = os.path.join(os.path.dirname(__file__), exename)
+    executable = os.path.join(os.path.dirname(__file__), "run_pcm" + "@CMAKE_EXECUTABLE_SUFFIX@")
     if (executable):
-        command = executable + ' ' + parsedFile
-        p = subprocess.Popen(command, shell=True,
-                             stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-        s = p.communicate()[0]
-        print(s)
+        try:
+            subprocess.check_output([executable, parsedFile])
+        except subprocess.CalledProcessError as e:
+            print(e.output)
+            sys.exit(1)
     else:
         print('No executable available for standalone run')
         sys.exit(1)

@@ -74,11 +74,11 @@ namespace pcm {
   {
     public:
       /*! \brief CTOR from own input reader
-       *  \param[in] fname name of the parsed input file
+       *  \param[in] parsed parsed input object
        *  \warning This CTOR is meant to be used with the standalone
        *  executable only
        */
-      Meddle(const std::string & fname);
+      Meddle(const Input & parsed);
       /*! \brief Constructor
        *  \param[in] input_reading input processing strategy
        *  \param[in] nr_nuclei     number of atoms in the molecule
