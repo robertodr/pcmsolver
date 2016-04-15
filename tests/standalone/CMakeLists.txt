@@ -1,5 +1,7 @@
 # Copy input files to ${PROJECT_BINARY_DIR}/tests/standalone (aka ${CMAKE_CURRENT_BINARY_DIR})
-file(COPY standalone.pcm standalone_atoms.pcm standalone_explicit.pcm standalone_tdsolver.pcm DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY standalone.pcm standalone_atoms.pcm standalone_explicit.pcm standalone_tdsolver.pcm
+          onsager_tdsolver.pcm
+     DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 # Add test using the standalone executable
 add_test(NAME pcmsolver_standalone
@@ -27,5 +29,12 @@ add_test(NAME pcmsolver_standalone-tdsolver
   COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_BINARY_DIR}/bin/pcmsolver.py -x standalone_tdsolver.pcm
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 set_tests_properties(pcmsolver_standalone-tdsolver PROPERTIES LABELS "pcmsolver;standalone;tdsolver"
+                                                     DEPENDS generate-pcmsolver-py
+                                                     DEPENDS run_pcm)
+
+add_test(NAME pcmsolver_standalone-onsager_tdsolver
+  COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_BINARY_DIR}/bin/pcmsolver.py -x onsager_tdsolver.pcm
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+set_tests_properties(pcmsolver_standalone-onsager_tdsolver PROPERTIES LABELS "pcmsolver;standalone;onsager_tdsolver"
                                                      DEPENDS generate-pcmsolver-py
                                                      DEPENDS run_pcm)

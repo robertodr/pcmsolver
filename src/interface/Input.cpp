@@ -68,7 +68,11 @@ void Input::reader(const std::string & filename)
   initBohrToAngstrom(bohrToAngstrom, CODATAyear_);
 
   const Section & mol = input_.getSect("MOLECULE");
-  if (mol.isDefined()) geometry_ = mol.getDblVec("GEOMETRY");
+  MEPfromMolecule_ = true;
+  if (mol.isDefined()) {
+    geometry_ = mol.getDblVec("GEOMETRY");
+    MEPfromMolecule_ = mol.getBool("MEP");
+  }
 
   const Section & cavity = input_.getSect("CAVITY");
 
@@ -183,6 +187,36 @@ void Input::reader(const std::string & filename)
     cholesky_ = realtime.getBool("CHOLESKY");
     timeStep_ = realtime.getDbl("TIMESTEP");
     totalTime_ = realtime.getDbl("TOTALTIME");
+  }
+
+  const Section & chgdist = input_.getSect("CHARGEDISTRIBUTION");
+  if (chgdist.isDefined()) {
+    // Set monopoles
+    if (chgdist.getKey<std::vector<double> >("MONOPOLES").isDefined()) {
+      std::vector<double> mono = chgdist.getDblVec("MONOPOLES");
+      int j = 0;
+      int n = int(mono.size() / 4);
+      multipoles_.monopoles = Eigen::VectorXd::Zero(n);
+      multipoles_.monopolesSites = Eigen::Matrix3Xd::Zero(3, n);
+      for (int i = 0; i < n; ++i) {
+        multipoles_.monopolesSites.col(i) = (Eigen::Vector3d() << mono[j], mono[j+1], mono[j+2]).finished();
+        multipoles_.monopoles(i) = mono[j+3];
+        j += 4;
+      }
+    }
+    // Set dipoles
+    if (chgdist.getKey<std::vector<double> >("DIPOLES").isDefined()) {
+      std::vector<double> dipo = chgdist.getDblVec("DIPOLES");
+      int j = 0;
+      int n = int(dipo.size() / 6);
+      multipoles_.dipoles = Eigen::Matrix3Xd::Zero(3, n);
+      multipoles_.dipolesSites = Eigen::Matrix3Xd::Zero(3, n);
+      for (int i = 0; i < n; ++i) {
+        multipoles_.dipolesSites.col(i) = (Eigen::Vector3d() << dipo[j], dipo[j+1], dipo[j+2]).finished();
+        multipoles_.dipoles.col(i)      = (Eigen::Vector3d() << dipo[j+3], dipo[j+4], dipo[j+5]).finished();
+        j += 6;
+      }
+    }
   }
 
   providedBy_ = std::string("API-side");

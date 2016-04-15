@@ -460,11 +460,15 @@ def setup_keywords():
     # Valid values: array of doubles in format [x, y, z, Q]
     # Notes: charges are always in atomic units
     molecule.add_kw('GEOMETRY',     'DBL_ARRAY', callback = verify_geometry)
+    # Calculate the molecular electrostatic potential (MEP) at the cavity for the given molecule
+    # Valid values: boolean
+    # Default: True
+    molecule.add_kw('MEP', 'BOOL', True)
     top.add_sect(molecule)
 
     # ChargeDistribution section
     # Set a classical charge distribution, inside or outside the cavity
-    # Notes: if inside the cavity, no additional spheres will be generated.
+    # No additional spheres will be generated.
     charge_distribution = getkw.Section('CHARGEDISTRIBUTION', callback = verify_charge_distribution)
     # Monopoles
     # Valid values: array of doubles in format [x, y, z, Q]
@@ -748,9 +752,9 @@ def check_array(name, array, offset):
     if (isAngstrom):
         j = 0
         for i in range(dim/offset):
-            data[j] /= CODATAdict[CODATAyear].ToAngstrom
-            data[j+1] /= CODATAdict[CODATAyear].ToAngstrom
-            data[j+2] /= CODATAdict[CODATAyear].ToAngstrom
+            array[j] /= CODATAdict[CODATAyear].ToAngstrom
+            array[j+1] /= CODATAdict[CODATAyear].ToAngstrom
+            array[j+2] /= CODATAdict[CODATAyear].ToAngstrom
             j += offset
 
 def verify_geometry(keyword):

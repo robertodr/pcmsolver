@@ -45,3 +45,11 @@ RealTime {
        TimeStep = [Double]
        TotalTime = [Double]
 }
+Molecule {
+   MEP = [Bool]
+   Geometry = [Double]
+}
+ChargeDistribution {
+  Monopoles = [Double]
+  Dipoles = [Double]
+}

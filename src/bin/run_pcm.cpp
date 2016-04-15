@@ -41,6 +41,7 @@
 #include <boost/format.hpp>
 
 #include "interface/Meddle.hpp"
+#include "utils/ChargeDistribution.hpp"
 
 std::ofstream pcmsolver_out;
 
@@ -67,8 +68,12 @@ int main(int argc, char * argv[])
   size_t size = context_.getCavitySize();
 
   // Form vector with electrostatic potential
+  // First compute the potential from the classical point multipoles distribution
+  // then add the one from the molecule
   TIMER_ON("Computing MEP");
-  Eigen::VectorXd mep = computeMEP(context_.molecule(), context_.getCenters());
+  // FIXME currently hardcoded to the dipole-dipole interaction potential in vacuum
+  Eigen::VectorXd mep = computeDipolarPotential(context_.getCenters(), input.multipoles());
+  if (input.MEPfromMolecule()) mep += computeMEP(context_.molecule(), context_.getCenters());
   TIMER_OFF("Computing MEP");
   context_.setSurfaceFunction(mep.size(), mep.data(), "MEP");
   // Compute apparent surface charge

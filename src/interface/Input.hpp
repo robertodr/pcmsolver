@@ -39,6 +39,7 @@ struct PCMInput;
 #include "green/GreenData.hpp"
 #include "solver/SolverData.hpp"
 #include "td_solver/TDSolverData.hpp"
+#include "utils/ChargeDistribution.hpp"
 #include "utils/Molecule.hpp"
 #include "utils/Solvent.hpp"
 #include "utils/Sphere.hpp"
@@ -123,6 +124,9 @@ public:
     solverData solverParams();
     TDSolverData TDSolverParams() const;
     /// @}
+
+    ChargeDistribution multipoles() const { return multipoles_; }
+    bool MEPfromMolecule() { return MEPfromMolecule_; }
 
     /// Operators
     /// operator<<
@@ -261,6 +265,10 @@ private:
     double timeStep_;
     /// Total time for the real-time time-evolution (in a.u.)
     double totalTime_;
+    /// Whether to calculate the MEP from the molecular geometry
+    bool MEPfromMolecule_;
+    /// Classical charge distribution of point multipoles
+    ChargeDistribution multipoles_;
     /// Who performed the syntactic input parsing
     std::string providedBy_;
     /// Input wrapping struct for the cavity

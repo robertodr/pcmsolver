@@ -54,6 +54,18 @@ Eigen::VectorXd computeDipolarPotential(const GFDerivative & gf, const Eigen::Ma
   return retval;
 }
 
+Eigen::VectorXd computeDipolarPotential(const Eigen::Matrix3Xd & grid, const ChargeDistribution & dist)
+{
+  Eigen::VectorXd retval = Eigen::VectorXd::Zero(grid.cols());
+  for (int i = 0; i < dist.dipoles.cols(); ++i) {
+    for (int j = 0; j < grid.cols(); ++j) {
+      Eigen::Vector3d distance = grid.col(j) - dist.dipolesSites.col(i);
+      retval(j) += (distance.dot(dist.dipoles.col(i))) / std::pow(distance.norm(), 3);
+    }
+  }
+  return retval;
+}
+
 ChargeDistribution nuclearChargeDistribution(const Molecule & mol)
 {
   ChargeDistribution chg;

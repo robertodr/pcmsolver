@@ -9,9 +9,13 @@
   Pipolo and Cammi is available with a Debye profile (single transverse
   relaxation time). The real-time time-evolution can also be used in an
   equilibrium framework for the solvent response.
-- A new section in the input for the real-time time-evolution parameters.
+- The input learnt to parse a `RealTime` section for the real-time time-evolution parameters.
   It is now possible to perform real-time time-evolution for systems of point
   charges _via_ the standalone executable.
+- The input learnt to parse the additional `ChargeDistribution` section.
+  It is possible to specify a classical charge distribution of point multipoles.
+  This can be an additional source of electrostatic potential for the calculation
+  of the ASC.
 - An API function to print the contents of a surface function to the host
   program output.
 

@@ -15,6 +15,21 @@ core parameters.
 In this page, input style and input parameters available in Method 1 will be
 documented.
 
+Note that it is also possible to run the module standalone and use a classical charge
+distribution.
+The classical charge distribution can be specified by giving a molecular geometry
+in the molecule section and an additional point multipoles distribution
+in the charge distribution section.
+The ``run_pcm.x`` executable has to be compiled for a standalone run with:
+
+.. code-block:: bash
+
+   python pcmsolver.py -x molecule.inp
+
+where the ``molecule.inp`` input file looks like:
+
+.. literalinclude:: ../snippets/molecule.inp
+
 Input style
 -----------
 
@@ -452,26 +467,46 @@ Real-time section keywords
 Molecule section keywords
 -------------------------
 
-It is possible to run the module standalone and use a classical charge
-distribution as specified in this section of the input.
-The ``run_pcm.x`` executable has to be compiled for a standalone run with:
-
-.. code-block:: bash
-
-   python pcmsolver.py -x molecule.inp
-
-where the ``molecule.inp`` input file looks like:
-
-.. literalinclude:: ../snippets/molecule.inp
-
 .. glossary::
 
    Geometry
      Coordinates and charges of the molecular aggregate.
-     Format is :math:`[\ldots, x_i, y_i, z_i, Q_i, \ldots]`
-     Charges are always assumed to be in atomic units
 
-     * **Type**: array of doubles
+     * **Type**: array of doubles. Format is :math:`[\ldots, x_i, y_i, z_i, Q_i, \ldots]`
+     * **Notes**: charges are always in atomic units
+
+   MEP
+     Calculate the molecular electrostatic potential (MEP) at the cavity
+     for the given molecule
+
+     * **Type**: bool
+     * **Default**: True
+
+Charge distribution section keywords
+------------------------------------
+
+.. warning::
+
+   **Work in progress**
+
+Set a classical charge distribution, inside or outside the cavity.
+No additional spheres will be generated for the positions specified in
+this section.
+
+.. glossary::
+
+   Monopoles
+     Point charges
+
+     * **Type**: array of doubles. Format is :math:`[\ldots, x_i, y_i, z_i, Q_i, \ldots]`
+     * **Notes**: charges are always in atomic units
+
+   Dipoles
+     Point dipoles
+
+     * **Type**: array of doubles.
+                 Format is :math:`[\ldots, x_i, y_i, z_i, \mu_x, \mu_u, \mu_z \ldots]`
+     * **Notes**: dipole moment components are always in atomic units
 
 .. _available-radii:
 

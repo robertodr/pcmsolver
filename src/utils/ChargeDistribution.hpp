@@ -70,6 +70,13 @@ typedef pcm::function<double(const Eigen::Vector3d &, const Eigen::Vector3d &, c
  */
 Eigen::VectorXd computeNewtonPotential(const GFValue & gf, const Eigen::Matrix3Xd & grid, const ChargeDistribution & dist);
 
+/*! \brief Computes dipolar potential in vacuum in a set of points and classical charge distribution
+ *  \param[in] grid where to evaluate the Newton potential
+ *  \param[in] dist classical charge distribution
+ *  \return the Newton potential on the grid
+ */
+Eigen::VectorXd computeDipolarPotential(const Eigen::Matrix3Xd & grid, const ChargeDistribution & dist);
+
 /*! \brief Computes dipolar potential in a set of points for given Green's function and classical charge distribution
  *  \param[in] gf   the Green's function derivative (dipolar interaction tensor)
  *  \param[in] grid where to evaluate the Newton potential

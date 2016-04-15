@@ -65,11 +65,13 @@ SCENARIO("Calculation of the dipolar potential", "[utils][dipolar_potential][uti
       Vacuum<> gf;
       Eigen::VectorXd pot = computeDipolarPotential(gf.exportDerivativeProbe(),
           cavity.elementCenter(), dist);
+      Eigen::VectorXd alt = computeDipolarPotential(cavity.elementCenter(), dist);
       THEN("comparison with the analytical results in")
       {
         REQUIRE(pot.size() == dipolar.size());
         for (int i = 0; i < dipolar.size(); ++i) {
           REQUIRE(pot(i) == Approx(dipolar(i)));
+          REQUIRE(alt(i) == Approx(dipolar(i)));
         }
       }
     }
