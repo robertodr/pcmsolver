@@ -30,7 +30,7 @@
 
 #include <Eigen/Core>
 
-#include "bi_operators/CollocationIntegrator.hpp"
+#include "bi_operators/PurisimaIntegrator.hpp"
 #include "green/DerivativeTypes.hpp"
 #include "cavity/GePolCavity.hpp"
 #include "green/Vacuum.hpp"
@@ -43,9 +43,9 @@ SCENARIO("Test a point charge and a GePol cavity in flipped environment (uniform
 {
     GIVEN("An isotropic environment inside the cavity and a point charge")
     {
-        double permittivity = 2.00;
-        UniformDielectric<> gf_i(permittivity);
-        Vacuum<> gf_o;
+        double permittivity = 80.00;
+        UniformDielectric<AD_directional, PurisimaIntegrator> gf_i(permittivity);
+        Vacuum<AD_directional, PurisimaIntegrator> gf_o;
         bool symm = true;
 
         double charge = 1.0;
