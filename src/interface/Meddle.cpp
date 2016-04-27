@@ -371,22 +371,44 @@ namespace pcm {
     std::string ASC_current(asc_tdt);
     std::string ASC_previous(asc_t);
 
-    if (input_.TDSolverParams().initWithDynamic) {
-      // Set previous and current ASC to the dynamic values from converged SCF
-      // The initialValueASC function uses the dynamic matrix to calculate charges
-      Eigen::VectorXd dyn_asc = TD_K_->initialValueASC(functions_[MEP_0]);
-      functions_.insert(std::make_pair(ASC_previous, dyn_asc));
-      functions_.insert(std::make_pair(ASC_current, dyn_asc));
+    if (hasTD_) {
+      // Initialize delayed propagation of the ASC
+      if (input_.TDSolverParams().initWithDynamic) {
+        // Set previous and current ASC to the dynamic values from converged SCF
+        // The initialValueASC function uses the dynamic matrix to calculate charges
+        Eigen::VectorXd dyn_asc = TD_K_->initialValueASC(functions_[MEP_0]);
+        functions_.insert(std::make_pair(ASC_previous, dyn_asc));
+        functions_.insert(std::make_pair(ASC_current, dyn_asc));
+      } else {
+        // Set previous and current ASC to the static values from converged SCF
+        if (functions_.count(ASC_0) == 1) { // Key in map already
+          Eigen::VectorXd ASC_t = functions_[ASC_0];
+          functions_.insert(std::make_pair(ASC_previous, ASC_t));
+          functions_.insert(std::make_pair(ASC_current, ASC_t));
+        } else { // Create key-value pair
+          Eigen::VectorXd ASC_t = K_0_->computeCharge(MEP_t, irrep);
+          functions_.insert(std::make_pair(ASC_previous, ASC_t));
+          functions_.insert(std::make_pair(ASC_current, ASC_t));
+        }
+      }
     } else {
-      // Set previous and current ASC to the static values from converged SCF
-      if (functions_.count(ASC_0) == 1) { // Key in map already
-        Eigen::VectorXd ASC_t = functions_[ASC_0];
-        functions_.insert(std::make_pair(ASC_previous, ASC_t));
-        functions_.insert(std::make_pair(ASC_current, ASC_t));
-      } else { // Create key-value pair
-        Eigen::VectorXd ASC_t = K_0_->computeCharge(MEP_t, irrep);
-        functions_.insert(std::make_pair(ASC_previous, ASC_t));
-        functions_.insert(std::make_pair(ASC_current, ASC_t));
+      // Initialize instantaneous equilibrium propagation of the ASC
+      if (hasDynamic_) {
+        // Set previous and current ASC to the dynamic values from converged SCF
+        Eigen::VectorXd dyn_asc = K_d_->computeCharge(functions_[MEP_0], irrep);
+        functions_.insert(std::make_pair(ASC_previous, dyn_asc));
+        functions_.insert(std::make_pair(ASC_current, dyn_asc));
+      } else {
+        // Set previous and current ASC to the static values from converged SCF
+        if (functions_.count(ASC_0) == 1) { // Key in map already
+          Eigen::VectorXd ASC_t = functions_[ASC_0];
+          functions_.insert(std::make_pair(ASC_previous, ASC_t));
+          functions_.insert(std::make_pair(ASC_current, ASC_t));
+        } else { // Create key-value pair
+          Eigen::VectorXd ASC_t = K_0_->computeCharge(MEP_t, irrep);
+          functions_.insert(std::make_pair(ASC_previous, ASC_t));
+          functions_.insert(std::make_pair(ASC_current, ASC_t));
+        }
       }
     }
   }
