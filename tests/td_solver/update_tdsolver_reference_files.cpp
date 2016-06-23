@@ -48,7 +48,7 @@
 #include "utils/MathUtils.hpp"
 
 extern "C"
-void host_writer(const char * message, size_t message_length);
+void host_writer(const char * message, int message_length);
 
 void save_tdief_lowdin_collocation(const GePolCavity &, double, double, double, double, double);
 void save_tdcpcm_collocation(const GePolCavity &, double, double, double, double, double);
@@ -254,4 +254,4 @@ void save_tdcpcmiterative_collocation(const GePolCavity & cavity, double e_0, do
 }
 
 extern "C"
-void host_writer(const char * /* message */, size_t /* message_length */) {}
+void host_writer(const char * /* message */, int /* message_length */) {}

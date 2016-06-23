@@ -117,7 +117,7 @@ module pcmsolver
         function pcmsolver_get_cavity_size(context) result(nr_points) bind(C)
             import
             type(c_ptr), value :: context
-            integer(c_size_t)  :: nr_points
+            integer(c_int)  :: nr_points
         end function pcmsolver_get_cavity_size
     end interface pcmsolver_get_cavity_size
 
@@ -125,7 +125,7 @@ module pcmsolver
         function pcmsolver_get_irreducible_cavity_size(context) result(nr_points_irr) bind(C)
             import
             type(c_ptr), value :: context
-            integer(c_size_t)  :: nr_points_irr
+            integer(c_int)  :: nr_points_irr
         end function pcmsolver_get_irreducible_cavity_size
     end interface pcmsolver_get_irreducible_cavity_size
 
@@ -158,7 +158,7 @@ module pcmsolver
         subroutine pcmsolver_compute_asc(context, mep_name, asc_name, irrep) bind(C)
             import
             type(c_ptr), value :: context
-            character(c_char), intent(in) :: mep_name, asc_name
+            character(kind=c_char, len=1), intent(in) :: mep_name(*), asc_name(*)
             integer(c_int), value, intent(in) :: irrep
         end subroutine pcmsolver_compute_asc
     end interface pcmsolver_compute_asc
@@ -167,7 +167,7 @@ module pcmsolver
         subroutine pcmsolver_compute_response_asc(context, mep_name, asc_name, irrep) bind(C)
             import
             type(c_ptr), value :: context
-            character(c_char), intent(in) :: mep_name, asc_name
+            character(kind=c_char, len=1), intent(in) :: mep_name(*), asc_name(*)
             integer(c_int), value, intent(in) :: irrep
         end subroutine pcmsolver_compute_response_asc
     end interface pcmsolver_compute_response_asc
@@ -176,7 +176,7 @@ module pcmsolver
         function pcmsolver_compute_polarization_energy(context, mep_name, asc_name) result(energy) bind(C)
             import
             type(c_ptr), value :: context
-            character(c_char), intent(in) :: mep_name, asc_name
+            character(kind=c_char, len=1), intent(in) :: mep_name(*), asc_name(*)
             real(c_double) :: energy
         end function pcmsolver_compute_polarization_energy
     end interface pcmsolver_compute_polarization_energy
@@ -207,9 +207,9 @@ module pcmsolver
         subroutine pcmsolver_get_surface_function(context, f_size, values, name) bind(C)
             import
             type(c_ptr), value :: context
-            integer(c_size_t), value, intent(in) :: f_size
+            integer(c_int), value, intent(in) :: f_size
             real(c_double), intent(inout) :: values(*)
-            character(c_char), intent(in) :: name
+            character(kind=c_char, len=1), intent(in) :: name(*)
         end subroutine pcmsolver_get_surface_function
     end interface pcmsolver_get_surface_function
 
@@ -217,9 +217,9 @@ module pcmsolver
         subroutine pcmsolver_set_surface_function(context, f_size, values, name) bind(C)
             import
             type(c_ptr), value :: context
-            integer(c_size_t), value, intent(in) :: f_size
+            integer(c_int), value, intent(in) :: f_size
             real(c_double), intent(in) :: values(*)
-            character(c_char), intent(in) :: name
+            character(kind=c_char, len=1), intent(in) :: name(*)
         end subroutine pcmsolver_set_surface_function
     end interface pcmsolver_set_surface_function
 
@@ -242,7 +242,7 @@ module pcmsolver
         subroutine pcmsolver_save_surface_function(context, name) bind(C)
             import
             type(c_ptr), value :: context
-            character(c_char), intent(in) :: name
+            character(kind=c_char, len=1), intent(in) :: name
         end subroutine pcmsolver_save_surface_function
     end interface pcmsolver_save_surface_function
 
@@ -250,7 +250,7 @@ module pcmsolver
         subroutine pcmsolver_load_surface_function(context, name) bind(C)
             import
             type(c_ptr), value :: context
-            character(c_char), intent(in) :: name
+            character(kind=c_char, len=1), intent(in) :: name
         end subroutine pcmsolver_load_surface_function
     end interface pcmsolver_load_surface_function
 

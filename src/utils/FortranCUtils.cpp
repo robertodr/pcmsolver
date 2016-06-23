@@ -25,8 +25,6 @@
 
 #include "FortranCUtils.hpp"
 
-#include "Config.hpp"
-
 #include <cctype>
 #include <cstring>
 

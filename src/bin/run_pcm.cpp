@@ -46,7 +46,7 @@
 std::ofstream pcmsolver_out;
 
 extern "C"
-void host_writer(const char * message, size_t message_length);
+void host_writer(const char * message, int message_length);
 
 std::string remove_extension(const std::string& filename);
 
@@ -120,7 +120,7 @@ int main(int argc, char * argv[])
   return EXIT_SUCCESS;
 }
 
-void host_writer(const char * message, size_t /* message_length */)
+void host_writer(const char * message, int /* message_length */)
 {
   pcmsolver_out << std::string(message) << std::endl;
 }

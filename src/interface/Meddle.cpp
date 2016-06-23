@@ -83,19 +83,21 @@ void pcmsolver_print(pcmsolver_context_t * context)
   AS_TYPE(pcm::Meddle, context)->printInfo();
 }
 
-size_t pcmsolver_get_cavity_size(pcmsolver_context_t * context)
+PCMSolverIndex pcmsolver_get_cavity_size(pcmsolver_context_t * context)
 {
   return (AS_TYPE(pcm::Meddle, context)->getCavitySize());
 }
 
-size_t pcmsolver_get_irreducible_cavity_size(pcmsolver_context_t * context)
+PCMSolverIndex pcmsolver_get_irreducible_cavity_size(pcmsolver_context_t * context)
 {
   return (AS_TYPE(pcm::Meddle, context)->getIrreducibleCavitySize());
 }
 
 void pcmsolver_get_centers(pcmsolver_context_t * context, double centers[])
 {
+  TIMER_ON("pcmsolver_get_centers");
   AS_TYPE(pcm::Meddle, context)->getCenters(centers);
+  TIMER_OFF("pcmsolver_get_centers");
 }
 
 void pcmsolver_get_center(pcmsolver_context_t * context, int its, double center[])
@@ -158,7 +160,7 @@ double pcmsolver_propagate_asc(pcmsolver_context_t * context,
 }
 
 void pcmsolver_get_surface_function(pcmsolver_context_t * context,
-    size_t size, double values[], const char * name)
+    PCMSolverIndex size, double values[], const char * name)
 {
   TIMER_ON("pcmsolver_get_surface_function");
   AS_TYPE(pcm::Meddle, context)->getSurfaceFunction(size, values, name);
@@ -166,7 +168,7 @@ void pcmsolver_get_surface_function(pcmsolver_context_t * context,
 }
 
 void pcmsolver_set_surface_function(pcmsolver_context_t * context,
-    size_t size, double values[], const char * name)
+    PCMSolverIndex size, double values[], const char * name)
 {
   TIMER_ON("pcmsolver_set_surface_function");
   AS_TYPE(pcm::Meddle, context)->setSurfaceFunction(size, values, name);
@@ -275,12 +277,12 @@ namespace pcm {
      return input_.molecule();
   }
 
-  size_t Meddle::getCavitySize() const
+  PCMSolverIndex Meddle::getCavitySize() const
   {
     return cavity_->size();
   }
 
-  size_t Meddle::getIrreducibleCavitySize() const
+  PCMSolverIndex Meddle::getIrreducibleCavitySize() const
   {
     return cavity_->irreducible_size();
   }
@@ -427,26 +429,25 @@ namespace pcm {
     return energy;
   }
 
-  void Meddle::getSurfaceFunction(size_t size, double values[], const char * name) const
+  void Meddle::getSurfaceFunction(PCMSolverIndex size, double values[], const char * name) const
   {
-    if (cavity_->size() != size)
-      PCMSOLVER_ERROR("You are trying to access a SurfaceFunction bigger than the cavity!", BOOST_CURRENT_FUNCTION);
-
     std::string functionName(name);
+    if (cavity_->size() != size)
+      PCMSOLVER_ERROR("The " + functionName + " SurfaceFunction is bigger than the cavity!", BOOST_CURRENT_FUNCTION);
 
     SurfaceFunctionMapConstIter iter = functions_.find(functionName);
     if (iter == functions_.end())
-      PCMSOLVER_ERROR("You are trying to access a non-existing SurfaceFunction.", BOOST_CURRENT_FUNCTION);
+      PCMSOLVER_ERROR("The " + functionName + " SurfaceFunction does not exist.", BOOST_CURRENT_FUNCTION);
 
     Eigen::Map<Eigen::VectorXd>(values, size, 1) = iter->second;
   }
 
-  void Meddle::setSurfaceFunction(size_t size, double values[], const char * name) const
+  void Meddle::setSurfaceFunction(PCMSolverIndex size, double values[], const char * name) const
   {
-    if (cavity_->size() != size)
-      PCMSOLVER_ERROR("You are trying to allocate a SurfaceFunction bigger than the cavity!", BOOST_CURRENT_FUNCTION);
-
     std::string functionName(name);
+    if (cavity_->size() != size)
+      PCMSOLVER_ERROR("The " + functionName + " SurfaceFunction is bigger than the cavity!", BOOST_CURRENT_FUNCTION);
+
     Eigen::VectorXd func = Eigen::Map<Eigen::VectorXd>(values, size, 1);
     if (functions_.count(functionName) == 1) { // Key in map already
       functions_[functionName] = func;
@@ -496,9 +497,7 @@ namespace pcm {
     printer("\nLoading surface function " + functionName + " from .npy file");
     std::string fname = functionName + ".npy";
     Eigen::VectorXd values = cnpy::custom::npy_load<double>(fname);
-    // This is to avoid a -Wsign-compare warning
-    typedef EIGEN_DEFAULT_DENSE_INDEX_TYPE Index;
-    if (values.size() != Index(cavity_->size())) PCMSOLVER_ERROR("Inconsistent dimension of loaded surface function!", BOOST_CURRENT_FUNCTION);
+    if (values.size() != cavity_->size()) PCMSOLVER_ERROR("The loaded " + functionName + " surface function is bigger than the cavity!", BOOST_CURRENT_FUNCTION);
     // Append to global map
     if (functions_.count(functionName) == 1) { // Key in map already
       functions_[functionName] = values;

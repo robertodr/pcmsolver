@@ -99,11 +99,11 @@ namespace pcm {
       /*! \brief Getter for the number of finite elements composing the molecular cavity
        *  \return the size of the cavity
        */
-      size_t getCavitySize() const attribute(pure);
+      PCMSolverIndex getCavitySize() const attribute(pure);
       /*! \brief Getter for the number of irreducible finite elements composing the molecular cavity
        *  \return the number of irreducible finite elements
        */
-      size_t getIrreducibleCavitySize() const attribute(pure);
+      PCMSolverIndex getIrreducibleCavitySize() const attribute(pure);
       /*! \brief Getter for the centers of the finite elements composing the molecular cavity
        *  \param[out] centers array holding the coordinates of the finite elements centers
        */
@@ -182,13 +182,13 @@ namespace pcm {
        *  \param[in] values the values wrapped in the surface function
        *  \param[in] name label of the surface function
        */
-      void getSurfaceFunction(size_t size, double values[], const char * name) const;
+      void getSurfaceFunction(PCMSolverIndex size, double values[], const char * name) const;
       /*! \brief Sets a surface function given data and label
        *  \param[in] size the size of the surface function
        *  \param[in] values the values to be wrapped in the surface function
        *  \param[in] name label of the surface function
        */
-      void setSurfaceFunction(size_t size, double values[], const char * name) const;
+      void setSurfaceFunction(PCMSolverIndex size, double values[], const char * name) const;
       /*! \brief Prints surface function contents to host output
        *  \param[in] name label of the surface function
        */

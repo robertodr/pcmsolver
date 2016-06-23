@@ -19,6 +19,22 @@
 - An API function to print the contents of a surface function to the host
   program output.
 
+## [v1.1.2] (2016-05-31)
+
+### Fixed
+
+- Signatures for strings in Fortran90 bindings. They have now the proper
+  C interoperable type `character(kind=c_char, len=1) :: label(lbl_size)`.
+  For the host this means that surface function labels will have to be declared
+  as character arrays, for example: `character :: label(7) = (/'T', 'o', 't', 'M', 'E', 'P', char(0)/)`
+
+### Changed
+
+- More informative error messages for runtime crashes caused by access to
+  surface functions.
+- The signatures for the interface functions now accept and/or return `int` (`c_int`)
+  instead of `size_t` (`c_size_t`). This simplifies interfacing with Fortran hosts.
+
 ## [v1.1.1] (2016-03-10)
 
 ### Added
