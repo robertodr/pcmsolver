@@ -182,12 +182,13 @@ module pcmsolver
     end interface pcmsolver_compute_polarization_energy
 
     interface pcmsolver_initialize_propagation
-        subroutine pcmsolver_initialize_propagation(context, mep_0, asc_0, mep_t, asc_t, mep_tdt, asc_tdt) bind(C)
-            use, intrinsic :: iso_c_binding, only: c_ptr, c_char
+        subroutine pcmsolver_initialize_propagation(context, mep_0, asc_0, mep_t, asc_t, mep_tdt, asc_tdt, irrep) bind(C)
+            use, intrinsic :: iso_c_binding, only: c_ptr, c_char, c_int
             type(c_ptr), value :: context
-            character(c_char), intent(in) :: mep_0, asc_0
-            character(c_char), intent(in) :: mep_t, asc_t
-            character(c_char), intent(in) :: mep_tdt, asc_tdt
+            character(kind=c_char, len=1), intent(in) :: mep_0(*), asc_0(*)
+            character(kind=c_char, len=1), intent(in) :: mep_t(*), asc_t(*)
+            character(kind=c_char, len=1), intent(in) :: mep_tdt(*), asc_tdt(*)
+            integer(c_int), value, intent(in) :: irrep
         end subroutine pcmsolver_initialize_propagation
     end interface pcmsolver_initialize_propagation
 
@@ -195,8 +196,8 @@ module pcmsolver
         function pcmsolver_propagate_asc(context, mep_t, asc_t, mep_tdt, asc_tdt, dt, irrep) result(energy) bind (C)
             use, intrinsic :: iso_c_binding, only: c_ptr, c_double, c_int, c_char
             type(c_ptr), value :: context
-            character(c_char), intent(in) :: mep_t, asc_t
-            character(c_char), intent(in) :: mep_tdt, asc_tdt
+            character(kind=c_char, len=1), intent(in) :: mep_t(*), asc_t(*)
+            character(kind=c_char, len=1), intent(in) :: mep_tdt(*), asc_tdt(*)
             real(c_double), value, intent(in) :: dt
             integer(c_int), value, intent(in) :: irrep
             real(c_double)  :: energy
