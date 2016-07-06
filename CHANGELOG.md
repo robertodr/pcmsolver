@@ -19,6 +19,59 @@
 - An API function to print the contents of a surface function to the host
   program output.
 
+## [v1.1.4] (2016-07-05)
+
+### Changed
+
+- The `CPCMSolver` object now stores the scaled, Hermitian, symmetry-adapted S matrix.
+  Polarization weights are then directly computed from the incoming MEP.
+- The `IEFSolver` object now stores the non-Hermitian, symmetry-adapted T and R matrices.
+  The explicit calculation of the inverse of T is thus avoided.
+  However, two square matrices of size equal to the cavity size are stored instead
+  of just one. To obtain the polarization weights _two_ linear systems of equations are solved.
+  A [partially pivoted LU decomposition](http://eigen.tuxfamily.org/dox/classEigen_1_1PartialPivLU.html)
+  is used to solve the linear system(s).
+  The strategy used in v1.1.3 suffered from a reduced numerical accuracy, due to the fact that
+  the polarization weights were not correctly defined.
+
+### Removed
+
+- The `hermitivitize` function will only work correctly on matrices. This
+  reverts modifications in the previous release.
+
+## [v1.1.3] (2016-07-03)
+
+### Changed
+
+- The `PEDRA.OUT` cavity generator log now reports the initial _and_ final
+  lists of spheres. The final list only contains those spheres that were
+  actually tesselated and, possibly, the added spheres.
+- For all solvers, the symmetrization needed to obtain the polarization weights
+  happens directly on the computed charges, instead of symmetrizing the system
+  matrices.
+- The `IEFSolver` object stores the unsymmetrized T^-1R matrices.
+  A [partially pivoted LU decomposition](http://eigen.tuxfamily.org/dox/classEigen_1_1PartialPivLU.html)
+  is used to compute T^-1R.
+  A [robust Cholesky decomposition](http://eigen.tuxfamily.org/dox/classEigen_1_1LDLT.html) is
+  used to form the R matrix in the anisotropic IEF case.
+- The `CPCMSolver` object now stores the scaled, unsymmetrized S matrix. The
+  explicit calculation and storage of its inverse is thus avoided.
+  A [robust Cholesky decomposition](http://eigen.tuxfamily.org/dox/classEigen_1_1LDLT.html) is
+  used to solve the linear equation system.
+- The `hermitivitize` function can now correctly symmetrize vectors.
+
+### Fixed
+
+- A fix for the initialization of the explicit list of spheres when running the
+  standalone executable. The bug prevented the generation of the correct
+  `Molecule` object, with subsequent failure in the cavity generator.
+- A memory leak occuring in the cavity generator PEDRA was fixed. This was uncovered by @shoefener
+  and manifested only with considerably large cavities (> 200 input spheres)
+
+### Removed
+
+- The function `CPCMMatrix` in the `SolverImpl.hpp` header file is no longer available.
+
 ## [v1.1.2] (2016-05-31)
 
 ### Fixed

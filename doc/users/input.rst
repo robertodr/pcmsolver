@@ -189,7 +189,7 @@ Medium section keywords
 
 .. glossary::
 
-   Solver
+   SolverType
      Type of solver to be used. All solvers are based on the Integral Equation Formulation of
      the Polarizable Continuum Model :cite:`Cances1998`
 

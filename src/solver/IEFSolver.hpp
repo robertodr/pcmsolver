@@ -43,7 +43,25 @@ class IGreensFunction;
  *  \class IEFSolver
  *  \brief IEFPCM, collocation-based solver
  *  \author Luca Frediani, Roberto Di Remigio
- *  \date 2011, 2015
+ *  \date 2011, 2015, 2016
+ *
+ *  \note We store the non-Hermitian, symmetry-blocked T(epsilon) and Rinfinity matrices.
+ *  The ASC is obtained by multiplying the MEP by Rinfinity and then using a partially
+ *  pivoted LU decomposition of T(epsilon) on the resulting vector.
+ *  In case the polarization weights are requested, we use the approach suggested in
+ *  \cite Barone2004-ae.
+ *  First, the adjoint problem is solved:
+ *  \f[
+ *      \mathbf{T}_\varepsilon^\dagger \tilde{v} = v
+ *  \f]
+ *  Also in this case a partially pivoted LU decomposition is used.
+ *  The "transposed" ASC is obtained by the matrix-vector multiplication:
+ *  \f[
+ *      q^* = \mathbf{R}_\infty^\dagger \tilde{v}
+ *  \f]
+ *  Eventually, the two sets of charges are summed and divided by 2
+ *  This avoids computing and storing the inverse explicitly, at the expense of storing
+ *  both T(epsilon) and Rinfinity.
  */
 
 class IEFSolver : public PCMSolver
@@ -73,10 +91,14 @@ public:
 private:
     /*! Whether the system matrix has to be symmetrized */
     bool hermitivitize_;
-    /*! PCM matrix, not symmetry blocked */
-    Eigen::MatrixXd fullPCMMatrix_;
-    /*! PCM matrix, symmetry blocked form */
-    std::vector<Eigen::MatrixXd> blockPCMMatrix_;
+    /*! T(epsilon) matrix, not symmetry blocked */
+    Eigen::MatrixXd Tepsilon_;
+    /*! T(epsilon) matrix, symmetry blocked form */
+    std::vector<Eigen::MatrixXd> blockTepsilon_;
+    /*! R_infinity matrix, not symmetry blocked */
+    Eigen::MatrixXd Rinfinity_;
+    /*! R_infinity matrix, symmetry blocked form */
+    std::vector<Eigen::MatrixXd> blockRinfinity_;
 
     /*! \brief Calculation of the PCM matrix
      *  \param[in] cavity the cavity to be used

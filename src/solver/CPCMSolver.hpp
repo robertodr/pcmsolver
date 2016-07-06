@@ -43,7 +43,13 @@ class IGreensFunction;
  *  \class CPCMSolver
  *  \brief Solver for conductor-like approximation: C-PCM (COSMO)
  *  \author Roberto Di Remigio
- *  \date 2013
+ *  \date 2013, 2016
+ *
+ *  \note We store the scaled, Hermitian, symmetrized S matrix and use a robust
+ *  Cholesky decomposition to solve for the ASC.
+ *  This avoids computing and storing the inverse explicitly.
+ *  The S matrix is already scaled by the dielectric factor entering the
+ *  definition of the conductor model!
  */
 
 class CPCMSolver : public PCMSolver
@@ -65,10 +71,10 @@ private:
     bool hermitivitize_;
     /*! Correction for the conductor results */
     double correction_;
-    /*! PCM matrix, not symmetry blocked */
-    Eigen::MatrixXd fullPCMMatrix_;
-    /*! PCM matrix, symmetry blocked form */
-    std::vector<Eigen::MatrixXd> blockPCMMatrix_;
+    /*! S matrix, not symmetry blocked */
+    Eigen::MatrixXd S_;
+    /*! S matrix, symmetry blocked form */
+    std::vector<Eigen::MatrixXd> blockS_;
 
     /*! \brief Calculation of the PCM matrix
      *  \param[in] cavity the cavity to be used

@@ -50,36 +50,34 @@ void IEFSolver::buildSystemMatrix_impl(const Cavity & cavity, const IGreensFunct
 
 void IEFSolver::buildAnisotropicMatrix(const Cavity & cav, const IGreensFunction & gf_i, const IGreensFunction & gf_o)
 {
-  fullPCMMatrix_ = anisotropicIEFMatrix(cav, gf_i, gf_o);
-  // Symmetrize K := (K + K+)/2
-  if (hermitivitize_) {
-    hermitivitize(fullPCMMatrix_);
-  }
+  Tepsilon_  = anisotropicTEpsilon(cav, gf_i, gf_o);
   // Pack into a block diagonal matrix
   // The number of irreps in the group
   int nrBlocks = cav.pointGroup().nrIrrep();
   // The size of the irreducible portion of the cavity
   int dimBlock = cav.irreducible_size();
   // For the moment just packs into a std::vector<Eigen::MatrixXd>
-  symmetryPacking(blockPCMMatrix_, fullPCMMatrix_, dimBlock, nrBlocks);
+  symmetryPacking(blockTepsilon_, Tepsilon_, dimBlock, nrBlocks);
+
+  Rinfinity_ = anisotropicRinfinity(cav, gf_i, gf_o);
+  symmetryPacking(blockRinfinity_, Rinfinity_, dimBlock, nrBlocks);
 
   built_ = true;
 }
 
 void IEFSolver::buildIsotropicMatrix(const Cavity & cav, const IGreensFunction & gf_i, const IGreensFunction & gf_o)
 {
-  fullPCMMatrix_ = isotropicIEFMatrix(cav, gf_i, profiles::epsilon(gf_o.permittivity()));
-  // Symmetrize K := (K + K+)/2
-  if (hermitivitize_) {
-    hermitivitize(fullPCMMatrix_);
-  }
+  Tepsilon_  = isotropicTEpsilon(cav, gf_i, profiles::epsilon(gf_o.permittivity()));
   // Pack into a block diagonal matrix
   // The number of irreps in the group
   int nrBlocks = cav.pointGroup().nrIrrep();
   // The size of the irreducible portion of the cavity
   int dimBlock = cav.irreducible_size();
   // For the moment just packs into a std::vector<Eigen::MatrixXd>
-  symmetryPacking(blockPCMMatrix_, fullPCMMatrix_, dimBlock, nrBlocks);
+  symmetryPacking(blockTepsilon_, Tepsilon_, dimBlock, nrBlocks);
+
+  Rinfinity_ = isotropicRinfinity(cav, gf_i);
+  symmetryPacking(blockRinfinity_, Rinfinity_, dimBlock, nrBlocks);
 
   built_ = true;
 }
@@ -89,12 +87,24 @@ Eigen::VectorXd IEFSolver::computeCharge_impl(const Eigen::VectorXd & potential,
   // The potential and charge vector are of dimension equal to the
   // full dimension of the cavity. We have to select just the part
   // relative to the irrep needed.
-  int fullDim = fullPCMMatrix_.rows();
+  int fullDim = Rinfinity_.rows();
   Eigen::VectorXd charge = Eigen::VectorXd::Zero(fullDim);
-  int nrBlocks = blockPCMMatrix_.size();
+  int nrBlocks = blockRinfinity_.size();
   int irrDim = fullDim/nrBlocks;
   charge.segment(irrep*irrDim, irrDim) =
-    - blockPCMMatrix_[irrep] * potential.segment(irrep*irrDim, irrDim);
+    - blockTepsilon_[irrep].partialPivLu().solve(blockRinfinity_[irrep] * potential.segment(irrep*irrDim, irrDim));
+
+  // Obtain polarization weights
+  if (hermitivitize_) {
+    Eigen::VectorXd adj_asc = Eigen::VectorXd::Zero(fullDim);
+    // Form T^\dagger * v = c
+    adj_asc.segment(irrep*irrDim, irrDim) = blockTepsilon_[irrep].adjoint().partialPivLu().solve(potential.segment(irrep*irrDim, irrDim));
+    // Form R^\dagger * c = q^* ("transposed" polarization charges)
+    adj_asc.segment(irrep*irrDim, irrDim) = - blockRinfinity_[irrep].adjoint() * (adj_asc.segment(irrep*irrDim, irrDim).eval());
+    // Get polarization weights
+    charge = 0.5 * (adj_asc + charge.eval());
+  }
+
   return charge;
 }
 

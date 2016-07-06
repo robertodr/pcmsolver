@@ -57,8 +57,10 @@ int main(int argc, char * argv[])
 
   TIMER_ON("Input parsing");
   Input input(argv[1]);
-  input.initMolecule();
   TIMER_OFF("Input parsing");
+  TIMER_ON("Initializing molecule");
+  input.initMolecule();
+  TIMER_OFF("Initializing molecule");
   Meddle context_(input);
 
   // Prepare output filename

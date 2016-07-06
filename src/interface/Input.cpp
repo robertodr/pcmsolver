@@ -1,7 +1,7 @@
 /* pcmsolver_copyright_start */
 /*
  *     PCMSolver, an API for the Polarizable Continuum Model
- *     Copyright (C) 2013-2016 Roberto Di Remigio, Luca Frediani and contributors
+ *     Copyright (C) 2013-2015 Roberto Di Remigio, Luca Frediani and contributors
  *
  *     This file is part of PCMSolver.
  *
@@ -231,7 +231,7 @@ std::string trim(const char * src)
 
 std::string trim_and_upper(const char * src)
 {
-  return to_upper_copy(trim(src));
+    return to_upper_copy(trim(src));
 }
 
 void Input::reader(const PCMInput & host_input)

@@ -99,22 +99,16 @@ inline Eigen::MatrixXd anisotropicIEFMatrix(const Cavity & cav, const IGreensFun
   Eigen::MatrixXd a = cav.elementArea().asDiagonal();
   Eigen::MatrixXd Id = Eigen::MatrixXd::Identity(cavitySize, cavitySize);
 
-  // 1. Form T
   TIMER_ON("Assemble T matrix");
-  Eigen::MatrixXd fullPCMMatrix = ((2 * M_PI * Id - DE * a) * SI + SE * (2 * M_PI * Id + a * DI.adjoint().eval()));
+  Eigen::MatrixXd T = ((2 * M_PI * Id - DE * a) * SI + SE * (2 * M_PI * Id + a * DI.adjoint().eval()));
   TIMER_OFF("Assemble T matrix");
-  // 2. Invert T using LU decomposition with full pivoting
-  //    This is a rank-revealing LU decomposition, this allows us
-  //    to test if T is invertible before attempting to invert it.
-  TIMER_ON("Invert T matrix");
-  Eigen::FullPivLU<Eigen::MatrixXd> T_LU(fullPCMMatrix);
-  if (!(T_LU.isInvertible())) PCMSOLVER_ERROR("T matrix is not invertible!", BOOST_CURRENT_FUNCTION);
-  fullPCMMatrix = T_LU.inverse();
-  TIMER_OFF("Invert T matrix");
-  Eigen::FullPivLU<Eigen::MatrixXd> SI_LU(SI);
-  if (!(SI_LU.isInvertible())) PCMSOLVER_ERROR("SI matrix is not invertible!", BOOST_CURRENT_FUNCTION);
+
+  TIMER_ON("Assemble R matrix");
+  Eigen::MatrixXd R = ((2 * M_PI * Id - DE * a) - SE * SI.ldlt().solve((2 * M_PI * Id - DI * a)));
+  TIMER_OFF("Assemble R matrix");
+
   TIMER_ON("Assemble T^-1R matrix");
-  fullPCMMatrix *= ((2 * M_PI * Id - DE * a) - SE * SI_LU.inverse() * (2 * M_PI * Id - DI * a));
+  Eigen::MatrixXd fullPCMMatrix = T.partialPivLu().solve(R);
   TIMER_OFF("Assemble T^-1R matrix");
 
   return fullPCMMatrix;
@@ -173,66 +167,18 @@ inline Eigen::MatrixXd isotropicIEFMatrix(const Cavity & cav, const IGreensFunct
   // 1. Form T
   double fact = (epsilon + 1.0)/(epsilon - 1.0);
   TIMER_ON("Assemble T matrix");
-  Eigen::MatrixXd fullPCMMatrix = (2 * M_PI * fact * Id - DI * a) * SI;
+  Eigen::MatrixXd T = (2 * M_PI * fact * Id - DI * a) * SI;
   TIMER_OFF("Assemble T matrix");
-  // 2. Invert T using LU decomposition with full pivoting
-  //    This is a rank-revealing LU decomposition, this allows us
-  //    to test if T is invertible before attempting to invert it.
-  TIMER_ON("Invert T matrix");
-  Eigen::FullPivLU<Eigen::MatrixXd> T_LU(fullPCMMatrix);
-  if (!(T_LU.isInvertible()))
-    PCMSOLVER_ERROR("T matrix is not invertible!", BOOST_CURRENT_FUNCTION);
-  fullPCMMatrix = T_LU.inverse();
-  TIMER_OFF("Invert T matrix");
-  // 3. Multiply T^-1 and R
+
+  TIMER_ON("Assemble R matrix");
+  Eigen::MatrixXd R = (2 * M_PI * Id - DI * a);
+  TIMER_OFF("Assemble R matrix");
+
   TIMER_ON("Assemble T^-1R matrix");
-  fullPCMMatrix *= (2 * M_PI * Id - DI * a);
+  Eigen::MatrixXd fullPCMMatrix = T.partialPivLu().solve(R);
   TIMER_OFF("Assemble T^-1R matrix");
 
   return fullPCMMatrix;
-}
-
-/*! \brief Builds the CPCM matrix
- *  \param[in] cav the discretized cavity
- *  \param[in] gf_i Green's function inside the cavity
- *  \param[in] epsilon permittivity outside the cavity
- *  \param[in] correction CPCM correction factor
- *  \return the \f$ \mathbf{K} = f(\varepsilon)\mathbf{S}^{-1} \f$ matrix
- *
- *  This function calculates the PCM matrix.
- *  The matrix is not symmetrized and is not symmetry packed.
- */
-inline Eigen::MatrixXd CPCMMatrix(const Cavity & cav, const IGreensFunction & gf_i, double epsilon, double correction)
-{
-  // The total size of the cavity
-  PCMSolverIndex cavitySize = cav.size();
-  // The number of irreps in the group
-  int nrBlocks = cav.pointGroup().nrIrrep();
-  // The size of the irreducible portion of the cavity
-  int dimBlock = cav.irreducible_size();
-
-  // Compute SI and DI on the whole cavity, regardless of symmetry
-  TIMER_ON("Computing SI");
-  Eigen::MatrixXd SI = gf_i.singleLayer(cav.elements());
-  TIMER_OFF("Computing SI");
-
-  // Perform symmetry blocking
-  // If the group is C1 avoid symmetry blocking, we will just pack the fullPCMMatrix
-  // into "block diagonal" when all other manipulations are done.
-  if (cav.pointGroup().nrGenerators() != 0) {
-    TIMER_ON("Symmetry blocking");
-    symmetryBlocking(SI, cavitySize, dimBlock, nrBlocks);
-    TIMER_OFF("Symmetry blocking");
-  }
-
-  double fact = (epsilon - 1.0)/(epsilon + correction);
-  // Invert SI  using LU decomposition with full pivoting
-  // This is a rank-revealing LU decomposition, this allows us
-  // to test if SI is invertible before attempting to invert it.
-  Eigen::FullPivLU<Eigen::MatrixXd> SI_LU(SI);
-  if (!(SI_LU.isInvertible()))
-    PCMSOLVER_ERROR("SI matrix is not invertible!", BOOST_CURRENT_FUNCTION);
-  return fact * SI_LU.inverse();
 }
 
 /*! \brief Builds the **anisotropic** \f$ \mathbf{T}_\varepsilon \f$ matrix
@@ -365,10 +311,8 @@ inline Eigen::MatrixXd anisotropicRinfinity(const Cavity & cav, const IGreensFun
   Eigen::MatrixXd a = cav.elementArea().asDiagonal();
   Eigen::MatrixXd Id = Eigen::MatrixXd::Identity(cavitySize, cavitySize);
 
-  // Form T
-  Eigen::FullPivLU<Eigen::MatrixXd> SI_LU(SI);
-  if (!(SI_LU.isInvertible())) PCMSOLVER_ERROR("SI matrix is not invertible!", BOOST_CURRENT_FUNCTION);
-  return ((2 * M_PI * Id - DE * a) - SE * SI_LU.inverse() * (2 * M_PI * Id - DI * a));
+  // Form R
+  return ((2 * M_PI * Id - DE * a) - SE * SI.ldlt().solve((2 * M_PI * Id - DI * a)));
 }
 
 /*! \brief Builds the **isotropic** \f$ \mathbf{R}_\infty \f$ matrix
