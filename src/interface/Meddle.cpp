@@ -137,6 +137,12 @@ double pcmsolver_compute_polarization_energy(pcmsolver_context_t * context,
   return (AS_TYPE(pcm::Meddle, context)->computePolarizationEnergy(mep_name, asc_name));
 }
 
+double pcmsolver_get_asc_dipole(pcmsolver_context_t * context,
+    const char * asc_name, double dipole[])
+{
+  return (AS_TYPE(pcm::Meddle, context)->getASCDipole(asc_name, dipole));
+}
+
 void pcmsolver_initialize_propagation(pcmsolver_context_t * context,
     const char * mep_0, const char * asc_0,
     const char * mep_t, const char * asc_t,
@@ -314,6 +320,14 @@ namespace pcm {
     // Dot product of MEP and ASC surface function
     double energy = functions_[std::string(mep_name)].dot(functions_[std::string(asc_name)]);
     return (energy / 2.0);
+  }
+
+  double Meddle::getASCDipole(const char * asc_name, double dipole[]) const
+  {
+    Eigen::Vector3d asc_dipole = cavity_->elementCenter() * functions_[std::string(asc_name)];
+    // Bind to host-allocated array
+    Eigen::Map<Eigen::Vector3d>(dipole, 3, 1) = asc_dipole;
+    return asc_dipole.norm();
   }
 
   void Meddle::computeASC(const char * mep_name, const char * asc_name, int irrep) const

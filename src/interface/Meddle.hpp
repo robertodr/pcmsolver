@@ -118,7 +118,6 @@ namespace pcm {
        */
       void getCenter(int its, double center[]) const;
       /*! \brief Getter for the areas/weights of the finite elements
-       *  \param[in, out] context the PCM context object
        *  \param[out] areas array holding the weights/areas of the finite elements
        */
       void getAreas(double areas[]) const;
@@ -147,6 +146,12 @@ namespace pcm {
        *  This function calculates the dot product of the given MEP and ASC vectors.
        */
       double computePolarizationEnergy(const char * mep_name, const char * asc_name) const;
+      /*! \brief Getter for the ASC dipole
+       *  \param[in] asc_name label of the ASC surface function
+       *  \param[out] dipole  the Cartesian components of the ASC dipole moment
+       *  \return the ASC dipole, i.e. \sqrt{\sum_i \mu_i^2}
+       */
+      double getASCDipole(const char * asc_name, double dipole[]) const;
       /*! \brief Initializes the time propagation of the ASC.
        *  \param[in] mep_0   label of the MEP surface function at time 0
        *  \param[in] asc_0   label of the ASC surface function at time 0

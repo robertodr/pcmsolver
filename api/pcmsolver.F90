@@ -41,6 +41,7 @@ module pcmsolver
     public pcmsolver_compute_asc
     public pcmsolver_compute_response_asc
     public pcmsolver_compute_polarization_energy
+    public pcmsolver_get_asc_dipole
     public pcmsolver_initialize_propagation
     public pcmsolver_propagate_asc
     public pcmsolver_get_surface_function
@@ -180,6 +181,16 @@ module pcmsolver
             real(c_double) :: energy
         end function pcmsolver_compute_polarization_energy
     end interface pcmsolver_compute_polarization_energy
+
+    interface pcmsolver_get_asc_dipole
+        function pcmsolver_get_asc_dipole(context, asc_name, dipole) result(mu) bind(C)
+            import
+            type(c_ptr), value :: context
+            character(kind=c_char, len=1), intent(in) :: asc_name(*)
+            real(c_double), intent(inout) :: dipole(*)
+            real(c_double) :: mu
+        end function pcmsolver_get_asc_dipole
+    end interface pcmsolver_get_asc_dipole
 
     interface pcmsolver_initialize_propagation
         subroutine pcmsolver_initialize_propagation(context, mep_0, asc_0, mep_t, asc_t, mep_tdt, asc_tdt, irrep) bind(C)

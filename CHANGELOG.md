@@ -18,6 +18,8 @@
   of the ASC.
 - An API function to print the contents of a surface function to the host
   program output.
+- An API function to get the dipole moment, relative to the origin, due to the ASC
+  on the cavity. Both the norm and the components can be obtained.
 
 ## [v1.1.4] (2016-07-05)
 

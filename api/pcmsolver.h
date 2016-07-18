@@ -205,6 +205,16 @@ PCMSOLVER_API double pcmsolver_compute_polarization_energy(pcmsolver_context_t *
                                              const char * mep_name,
                                              const char * asc_name);
 
+/*! \brief Getter for the ASC dipole
+ *  \param[in, out] context the PCM context object
+ *  \param[in] asc_name label of the ASC surface function
+ *  \param[out] dipole  the Cartesian components of the ASC dipole moment
+ *  \return the ASC dipole, i.e. \sqrt{\sum_i \mu_i^2}
+ */
+PCMSOLVER_API double pcmsolver_get_asc_dipole(pcmsolver_context_t * context,
+                                            const char * asc_name,
+                                            double dipole[]);
+
 /*! \brief Initializes the time propagation of the ASC.
  *  \param[in, out] context the PCM context object
  *  \param[in] mep_0    label of the MEP surface function at time 0
