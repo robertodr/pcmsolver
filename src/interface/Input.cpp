@@ -2,22 +2,22 @@
 /*
  *     PCMSolver, an API for the Polarizable Continuum Model
  *     Copyright (C) 2013-2016 Roberto Di Remigio, Luca Frediani and contributors
- *     
+ *
  *     This file is part of PCMSolver.
- *     
+ *
  *     PCMSolver is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Lesser General Public License as published by
  *     the Free Software Foundation, either version 3 of the License, or
  *     (at your option) any later version.
- *     
+ *
  *     PCMSolver is distributed in the hope that it will be useful,
  *     but WITHOUT ANY WARRANTY; without even the implied warranty of
  *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *     GNU Lesser General Public License for more details.
- *     
+ *
  *     You should have received a copy of the GNU Lesser General Public License
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
- *     
+ *
  *     For information on the complete list of contributors to the
  *     PCMSolver API, see: <http://pcmsolver.readthedocs.io/>
  */
@@ -249,10 +249,17 @@ void Input::reader(const PCMInput & host_input)
     cavFilename_ = trim(host_input.restart_name); // No case conversion here!
   }
 
-  scaling_ = host_input.scaling;
-  radiiSet_ = trim_and_upper(host_input.radii_set);
-  minimalRadius_ = host_input.min_radius * angstromToBohr();
-  mode_ = std::string("IMPLICIT");
+    scaling_ = host_input.scaling;
+    radiiSet_ = trim_and_upper(host_input.radii_set);
+    if ( radiiSet_ == "UFF" ) {
+      radiiSetName_ = "UFF";
+    } else if ( radiiSet_ == "BONDI" ) {
+      radiiSetName_ = "Bondi-Mantina";
+    } else {
+      radiiSetName_ = "Allinger's MM3";
+    }
+    minimalRadius_ = host_input.min_radius * angstromToBohr();
+    mode_ = std::string("IMPLICIT");
 
   std::string name = trim_and_upper(host_input.solvent);
   if (name.empty()) {
