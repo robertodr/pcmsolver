@@ -25,6 +25,8 @@ keyword names MYPERFECTKEYWORD
 
 isAngstrom = False
 CODATAyear = 2010
+# Dictionary with the au-to-Angstrom conversion factors for various CODATA sets of constants
+CODATAdict = dict([(2010, 0.52917721092), (2006, 0.52917720859), (2002, 0.5291772108), (1998, 0.5291772083)])
 
 import sys
 import os
@@ -52,23 +54,25 @@ import getkw
 from codata import CODATA, CODATAdict
 
 allowedSolvents = {'Water'                : ('WATER',                'H2O'),
+                   'Propylene Carbonate'  : ('PROPYLENE CARBONATE',  'C4H6O3'),
+                   'Dimethylsulfoxide'    : ('DIMETHYLSULFOXIDE',    'DMSO'),
+                   'Nitromethane'         : ('NITROMETHANE',         'CH3NO2'),
+                   'Acetonitrile'         : ('ACETONITRILE',         'CH3CN'),
                    'Methanol'             : ('METHANOL',             'CH3OH'),
                    'Ethanol'              : ('ETHANOL',              'CH3CH2OH'),
-                   'Chloroform'           : ('CHLOROFORM',           'CHCL3'),
-                   'Methylenechloride'    : ('METHYLENECHLORIDE',    'CH2CL2'),
-                   '1,2-Dichloroethane'   : ('1,2-DICHLOROETHANE',   'C2H4CL2'),
-                   'Carbon Tetrachloride' : ('CARBON TETRACHLORIDE', 'CCL4'),
-                   'Benzene'              : ('BENZENE',              'C6H6'),
-                   'Toluene'              : ('TOLUENE',              'C6H5CH3'),
-                   'Chlorobenzene'        : ('CHLOROBENZENE',        'C6H5CL'),
-                   'Nitromethane'         : ('NITROMETHANE',         'CH3NO2'),
-                   'N-heptane'            : ('N-HEPTANE',            'C7H16'),
-                   'Cyclohexane'          : ('CYCLOHEXANE',          'C6H12'),
-                   'Aniline'              : ('ANILINE',              'C6H5NH2'),
                    'Acetone'              : ('ACETONE',              'C2H6CO'),
+                   '1,2-Dichloroethane'   : ('1,2-DICHLOROETHANE',   'C2H4CL2'),
+                   'Methylenechloride'    : ('METHYLENECHLORIDE',    'CH2CL2'),
                    'Tetrahydrofurane'     : ('TETRAHYDROFURANE',     'THF'),
-                   'Dimethylsulfoxide'    : ('DIMETHYLSULFOXIDE',    'DMSO'),
-                   'Acetonitrile'         : ('ACETONITRILE',         'CH3CN'),
+                   'Aniline'              : ('ANILINE',              'C6H5NH2'),
+                   'Chlorobenzene'        : ('CHLOROBENZENE',        'C6H5CL'),
+                   'Chloroform'           : ('CHLOROFORM',           'CHCL3'),
+                   'Toluene'              : ('TOLUENE',              'C6H5CH3'),
+                   '1,4-Dioxane'          : ('1,4-DIOXANE',          'C4H8O2'),
+                   'Benzene'              : ('BENZENE',              'C6H6'),
+                   'Carbon Tetrachloride' : ('CARBON TETRACHLORIDE', 'CCL4'),
+                   'Cyclohexane'          : ('CYCLOHEXANE',          'C6H12'),
+                   'N-heptane'            : ('N-HEPTANE',            'C7H16'),
                    'Explicit'             : ('EXPLICIT',             'DUMMY')}
 
 def iequal(a, b):
@@ -237,7 +241,7 @@ def setup_keywords():
     cavity.add_kw('SCALING',     'BOOL', True)
     # Built-in radii set
     # Valid for: GePol, Wavelet and TsLess
-    # Valid values: BONDI or UFF
+    # Valid values: BONDI, UFF or ALLINGER
     # Default: BONDI
     cavity.add_kw('RADIISET',    'STR', 'BONDI')
     # Minimal radius of added spheres (in au)
@@ -563,7 +567,7 @@ def verify_cavity(section):
             sys.exit(1)
 
     radiiSet = section.get('RADIISET')
-    allowed_sets = ('BONDI', 'UFF')
+    allowed_sets = ('BONDI', 'UFF', 'ALLINGER')
     if (radiiSet.get() not in allowed_sets):
         print('Radii set requested {} is not among the allowed sets: {}'.format(radiiSet.get(), allowed_sets))
         sys.exit(1)

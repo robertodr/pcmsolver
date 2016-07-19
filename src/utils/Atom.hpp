@@ -19,7 +19,7 @@
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
  *     
  *     For information on the complete list of contributors to the
- *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
+ *     PCMSolver API, see: <http://pcmsolver.readthedocs.io/>
  */
 /* pcmsolver_copyright_end */
 
@@ -87,5 +87,17 @@ std::vector<Atom> & initBondi();
  * We are here using Angstrom as in the paper.
  */
 std::vector<Atom> & initUFF();
+
+/*! \brief Returns a reference to a vector<Atom> containing Allinger's MM3 radii.
+ *
+ * The MM3 set of radii is taken from:
+ * --- N. L. Allinger, X. Zhou, J. Bergsma,
+ *     J. Mol. Struct. (THEOCHEM), 312, 69-83 (1994)
+ * We are here using Angstrom as in the paper.
+ *
+ * \note We *divide* the values reported in the paper by 1.2, as done in
+ * the ADF program package.
+ */
+std::vector<Atom> & initAllinger();
 
 #endif // ATOM_HPP

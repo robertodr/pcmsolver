@@ -19,7 +19,7 @@
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
  *
  *     For information on the complete list of contributors to the
- *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
+ *     PCMSolver API, see: <http://pcmsolver.readthedocs.io/>
  */
 /* pcmsolver_copyright_end */
 
@@ -244,6 +244,7 @@ namespace pcm {
   {
     TIMER_ON("Meddle::initInput");
     initInput(input_reading, nr_nuclei, charges, coordinates, symmetry_info, host_input);
+    radiiSetName_ = input_.radiiSetName();
     TIMER_OFF("Meddle::initInput");
 
     TIMER_ON("Meddle::initCavity");
@@ -594,6 +595,7 @@ namespace pcm {
     cavity_->saveCavity();
 
     infoStream_ << "========== Cavity " << std::endl;
+    infoStream_ << "Atomic radii set: " << radiiSetName_ << std::endl;
     infoStream_ << *cavity_;
   }
 
@@ -683,20 +685,22 @@ namespace pcm {
     bool scaling = inp.scaling();
     std::string set = inp.radiiSet();
     double factor = angstromToBohr();
-    std::vector<Atom> radiiSet, atoms;
+    std::vector<Atom> radiiSet;
+    std::vector<Atom> atoms;
     if ( set == "UFF" ) {
       radiiSet = initUFF();
-    } else {
+    } else if ( set == "BONDI" ) {
       radiiSet = initBondi();
+    } else {
+      radiiSet = initAllinger();
     }
     std::vector<Sphere> spheres;
     for (int i = 0; i < charges.size(); ++i) {
       int index = int(charges(i)) - 1;
       atoms.push_back(radiiSet[index]);
+      if (scaling) atoms[index].radiusScaling = 1.2;
       double radius = radiiSet[index].radius * factor;
-      if (scaling) {
-        radius *= radiiSet[index].radiusScaling;
-      }
+      if (scaling) radius *= 1.2;
       spheres.push_back(Sphere(centers.col(i), radius));
     }
     Eigen::VectorXd masses = Eigen::VectorXd::Zero(nuclei);

@@ -21,7 +21,28 @@
 - An API function to get the dipole moment, relative to the origin, due to the ASC
   on the cavity. Both the norm and the components can be obtained.
 
-## [v1.1.4] (2016-07-05)
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [Version 1.1.5] - 2016-07-19
+
+### Added
+
+- A radii set derived from [Allinger's MM3 model](http://dx.doi.org/10.1016/S0166-1280(09)80008-0)
+  can now be chosen to build the van der Waals cavity surface.
+  Notice that the values reported in the original paper are **divided by** 1.2, to match the
+  default radii set used in [ADF](https://www.scm.com/doc/ADF/Input/COSMO.html)
+  The closest match to ADF can be obtained by using CPCM as solver, Allinger's radii and setting
+  the scaling of radii to false.
+
+## [Version 1.1.4] - 2016-07-05
 
 ### Changed
 
@@ -98,7 +119,7 @@
   program execution if this is the case.
 - An API function to retrieve the areas/weights of the cavity finite elements.
   The values in the returned array are in Bohr^2. Addresses a feature request
-  from @shofener (Issue #13)
+  from @shoefener (Issue #13)
 - The standalone executable `run_pcm` is now tested within the unit tests
   suite. The tests cover the cases where the cavity is given implicitly,
   explicitly or by substitution of radii on chosen atoms.
@@ -108,12 +129,12 @@
 - Boundary integral operators classes learnt to accept a scaling factor for the
   diagonal elements of the approximate collocation matrices. The change is
   reflected in the Green's funtion classes and in the input parsing. Addresses
-  a feature request from @shofener (Issue #16)
-- GePolCavity learnt to print also the list of spheres used to generate the
+  a feature request from @shoefener (Issue #16)
+- `GePolCavity` learnt to print also the list of spheres used to generate the
   cavity.
 - Different internal handling of conversion factors from Bohr to Angstrom.
 - CMake minimum required version is 2.8.10
-- Atom, Solvent and Sphere are now PODs. The radii and solvent lists are free
+- `Atom`, `Solvent` and `Sphere` are now PODs. The radii and solvent lists are free
   functions.
 - `PCMSOLVER_ERROR` kills program execution when an error arises but does not
   use C++ exceptions.
@@ -125,7 +146,7 @@
 
 ### Known Issues
 
-- The new printer in GePolCavity might not work properly when an explicit list
+- The new printer in `GePolCavity` might not work properly when an explicit list
   of spheres is provided in the input.
 - On Ubuntu 12.10, 32 bit the Intel compiler version 2013.1 produces a faulty
   library. It is possibly a bug in the implementation of `iso_c_binding`, see
@@ -133,7 +154,7 @@
 
 ### Removed
 
-- SurfaceFunction as a class is no longer available. We keep track of surface
+- `SurfaceFunction` as a class is no longer available. We keep track of surface
   functions at the interface level _via_ a label-vector map.
 
 ## [v1.1.0] (2016-02-07)

@@ -19,7 +19,7 @@
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
  *
  *     For information on the complete list of contributors to the
- *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
+ *     PCMSolver API, see: <http://pcmsolver.readthedocs.io/>
  */
 /* pcmsolver_copyright_end */
 
@@ -80,6 +80,7 @@ public:
     std::string cavityType() const { return type_; }
     bool scaling() const { return scaling_; }
     std::string radiiSet() const { return radiiSet_; }
+    std::string radiiSetName() const { return radiiSetName_; }
     std::string mode() const { return mode_; }
     std::vector<int> atoms() const { return atoms_; }
     int atoms(size_t i) const { return atoms_[i]; }
@@ -175,6 +176,8 @@ private:
     bool scaling_;
     /// The set of radii to be used
     std::string radiiSet_;
+    /// Collects info on atomic radii set
+    std::string radiiSetName_;
     /// Minimal radius of an added sphere
     double minimalRadius_;
     /// How the API should get the coordinates of the sphere centers

@@ -1,7 +1,7 @@
 /* pcmsolver_copyright_start */
 /*
  *     PCMSolver, an API for the Polarizable Continuum Model
- *     Copyright (C) 2013-2015 Roberto Di Remigio, Luca Frediani and contributors
+ *     Copyright (C) 2013-2016 Roberto Di Remigio, Luca Frediani and contributors
  *
  *     This file is part of PCMSolver.
  *
@@ -19,7 +19,7 @@
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
  *
  *     For information on the complete list of contributors to the
- *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
+ *     PCMSolver API, see: <http://pcmsolver.readthedocs.io/>
  */
 /* pcmsolver_copyright_end */
 
@@ -320,15 +320,22 @@ void Input::initMolecule()
   }
   // 3. list of atoms and list of spheres
   double factor = angstromToBohr();
-  std::vector<Atom> radiiSet, atoms;
+  std::vector<Atom> radiiSet;
+  std::vector<Atom> atoms;
   if ( radiiSet_ == "UFF" ) {
     radiiSet = initUFF();
-  } else {
+    radiiSetName_ = "UFF";
+  } else if ( radiiSet_ == "BONDI" ) {
     radiiSet = initBondi();
+    radiiSetName_ = "Bondi-Mantina";
+  } else {
+    radiiSet = initAllinger();
+    radiiSetName_ = "Allinger's MM3";
   }
   for (int i = 0; i < charges.size(); ++i) {
     int index = int(charges(i)) - 1;
     atoms.push_back(radiiSet[index]);
+    if (scaling_) atoms[index].radiusScaling = 1.2;
   }
   // Based on the creation mode (Implicit or Atoms)
   // the spheres list might need postprocessing
@@ -336,7 +343,7 @@ void Input::initMolecule()
     for (int i = 0; i < charges.size(); ++i) {
       int index = int(charges(i)) - 1;
       double radius = radiiSet[index].radius * factor;
-      if (scaling_) radius *= radiiSet[index].radiusScaling;
+      if (scaling_) radius *= 1.2;
       spheres_.push_back(Sphere(centers.col(i), radius));
     }
     if (mode_ == "ATOMS") {

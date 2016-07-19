@@ -19,7 +19,7 @@
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
  *
  *     For information on the complete list of contributors to the
- *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
+ *     PCMSolver API, see: <http://pcmsolver.readthedocs.io/>
  */
 /* pcmsolver_copyright_end */
 
@@ -234,6 +234,8 @@ namespace pcm {
       bool hasTD_;
       /*! SurfaceFunction map */
       mutable SurfaceFunctionMap functions_;
+      /*! Collects info on atomic radii set */
+      std::string radiiSetName_;
       /*! \brief Initialize input_
        *  \param[in] input_reading input processing strategy
        *  \param[in] nr_nuclei     number of atoms in the molecule
