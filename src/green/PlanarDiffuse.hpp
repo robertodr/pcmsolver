@@ -23,8 +23,8 @@
  */
 /* pcmsolver_copyright_end */
 
-#ifndef SPHERICALDIFFUSE_HPP
-#define SPHERICALDIFFUSE_HPP
+#ifndef PLANARDIFFUSE_HPP
+#define PLANARDIFFUSE_HPP
 
 #include <cmath>
 #include <iosfwd>
@@ -45,11 +45,11 @@
 #include "GreensFunction.hpp"
 #include "utils/MathUtils.hpp"
 
-/*! \file SphericalDiffuse.hpp
- *  \class SphericalDiffuse
- *  \brief Green's function for a diffuse interface with spherical symmetry
- *  \author Hui Cao, Ville Weijo, Luca Frediani and Roberto Di Remigio
- *  \date 2010-2015
+/*! \file PlanarDiffuse.hpp
+ *  \class PlanarDiffuse
+ *  \brief Green's function for a diffuse interface with planar symmetry
+ *  \author Luca Frediani and Roberto Di Remigio
+ *  \date 2016
  *  \tparam IntegratorPolicy policy for the calculation of the matrix represenation of S and D
  *  \tparam ProfilePolicy functional form of the diffuse layer
  *
@@ -59,18 +59,19 @@
  *  2. a right-side dielectric constant;
  *  3. an interface layer width;
  *  4. an interface layer center
- *  can be used to define a new diffuse interface with spherical symmetry.
- *  The origin of the dielectric sphere can be changed by means of the constructor.
+ *  can be used to define a new diffuse interface with cylindrical symmetry,
+ *  i.e. an infinite plane.
+ *  The origin of the dielectric plane can be changed by means of the constructor.
  *  The solution of the differential equation defining the Green's function is **always**
- *  performed assuming that the dielectric sphere is centered in the origin of the coordinate
+ *  performed assuming that the dielectric plane is centered in the origin of the coordinate
  *  system. Whenever the public methods are invoked to "sample" the Green's function
  *  at a pair of points, a translation of the sampling points is performed first.
  */
 
 template <typename IntegratorPolicy = CollocationIntegrator,
           typename ProfilePolicy = OneLayerTanh>
-class SphericalDiffuse __final : public GreensFunction<Numerical, IntegratorPolicy, ProfilePolicy,
-                                               SphericalDiffuse<IntegratorPolicy, ProfilePolicy> >
+class PlanarDiffuse __final : public GreensFunction<Numerical, IntegratorPolicy, ProfilePolicy,
+                                               PlanarDiffuse<IntegratorPolicy, ProfilePolicy> >
 {
 public:
     /*! Constructor for a one-layer interface
@@ -78,30 +79,30 @@ public:
      * \param[in] e2 right-side dielectric constant
      * \param[in] w width of the interface layer
      * \param[in] c center of the diffuse layer
-     * \param[in] o center of the sphere
+     * \param[in] o center of the plane
      */
-    SphericalDiffuse(double e1, double e2, double w, double c, const Eigen::Vector3d & o, int l)
-        : GreensFunction<Numerical, IntegratorPolicy, ProfilePolicy, SphericalDiffuse<IntegratorPolicy, ProfilePolicy> >(),
+    PlanarDiffuse(double e1, double e2, double w, double c, const Eigen::Vector3d & o, int l)
+        : GreensFunction<Numerical, IntegratorPolicy, ProfilePolicy, PlanarDiffuse<IntegratorPolicy, ProfilePolicy> >(),
           origin_(o), maxLGreen_(l), maxLC_(2*l)
     {
         initProfilePolicy(e1, e2, w, c);
-        initSphericalDiffuse();
+        initPlanarDiffuse();
     }
     /*! Constructor for a one-layer interface
      * \param[in] e1 left-side dielectric constant
      * \param[in] e2 right-side dielectric constant
      * \param[in] w width of the interface layer
      * \param[in] c center of the diffuse layer
-     * \param[in] o center of the sphere
+     * \param[in] o center of the plane
      */
-    SphericalDiffuse(double e1, double e2, double w, double c, const Eigen::Vector3d & o, int l, double f)
-        : GreensFunction<Numerical, IntegratorPolicy, ProfilePolicy, SphericalDiffuse<IntegratorPolicy, ProfilePolicy> >(f),
+    PlanarDiffuse(double e1, double e2, double w, double c, const Eigen::Vector3d & o, int l, double f)
+        : GreensFunction<Numerical, IntegratorPolicy, ProfilePolicy, PlanarDiffuse<IntegratorPolicy, ProfilePolicy> >(f),
           origin_(o), maxLGreen_(l), maxLC_(2*l)
     {
         initProfilePolicy(e1, e2, w, c);
-        initSphericalDiffuse();
+        initPlanarDiffuse();
     }
-    virtual ~SphericalDiffuse() {}
+    virtual ~PlanarDiffuse() {}
 
     /*! Calculates the matrix representation of the S operator
      *  \param[in] e list of finite elements
@@ -118,7 +119,7 @@ public:
         return this->integrator_.doubleLayer(*this, e);
     }
 
-    friend std::ostream & operator<<(std::ostream & os, SphericalDiffuse & gf) {
+    friend std::ostream & operator<<(std::ostream & os, PlanarDiffuse & gf) {
         return gf.printObject(os);
     }
     /*! \brief Returns Coulomb singularity separation coefficient
@@ -165,7 +166,7 @@ public:
      *  \param[in]        p2 second point
      */
     double coefficientCoulombDerivative(const Eigen::Vector3d & direction, const Eigen::Vector3d & p1, const Eigen::Vector3d & p2) const {
-        return threePointStencil(pcm::bind(&SphericalDiffuse<IntegratorPolicy, ProfilePolicy>::coefficientCoulomb, this, pcm::_1, pcm::_2),
+        return threePointStencil(pcm::bind(&PlanarDiffuse<IntegratorPolicy, ProfilePolicy>::coefficientCoulomb, this, pcm::_1, pcm::_2),
                 p2, p1, direction, this->delta_);
     }
     /*! Returns value of the directional derivative of the
@@ -179,7 +180,7 @@ public:
      *  \param[in]        p2 second point
      */
     double CoulombDerivative(const Eigen::Vector3d & direction, const Eigen::Vector3d & p1, const Eigen::Vector3d & p2) const {
-        return threePointStencil(pcm::bind(&SphericalDiffuse<IntegratorPolicy, ProfilePolicy>::Coulomb, this, pcm::_1, pcm::_2),
+        return threePointStencil(pcm::bind(&PlanarDiffuse<IntegratorPolicy, ProfilePolicy>::Coulomb, this, pcm::_1, pcm::_2),
                 p2, p1, direction, this->delta_);
     }
     /*! Returns value of the directional derivative of the
@@ -193,7 +194,7 @@ public:
      *  \param[in]        p2 second point
      */
     double imagePotentialDerivative(const Eigen::Vector3d & direction, const Eigen::Vector3d & p1, const Eigen::Vector3d & p2) const {
-        return threePointStencil(pcm::bind(&SphericalDiffuse<IntegratorPolicy, ProfilePolicy>::imagePotential, this, pcm::_1, pcm::_2),
+        return threePointStencil(pcm::bind(&PlanarDiffuse<IntegratorPolicy, ProfilePolicy>::imagePotential, this, pcm::_1, pcm::_2),
                 p2, p1, direction, this->delta_);
     }
     /*! Handle to the dielectric profile evaluation */
@@ -252,17 +253,17 @@ private:
         return (eps_r2 * this->derivativeProbe(direction, p1, p2));
     }
     virtual KernelS exportKernelS_impl() const __override {
-      return pcm::bind(&SphericalDiffuse<IntegratorPolicy, ProfilePolicy>::kernelS, *this, pcm::_1, pcm::_2);
+      return pcm::bind(&PlanarDiffuse<IntegratorPolicy, ProfilePolicy>::kernelS, *this, pcm::_1, pcm::_2);
     }
     virtual KernelD exportKernelD_impl() const __override {
-      return pcm::bind(&SphericalDiffuse<IntegratorPolicy, ProfilePolicy>::kernelD, *this, pcm::_1, pcm::_2, pcm::_3);
+      return pcm::bind(&PlanarDiffuse<IntegratorPolicy, ProfilePolicy>::kernelD, *this, pcm::_1, pcm::_2, pcm::_3);
     }
     virtual std::ostream & printObject(std::ostream & os) __override
     {
         Eigen::IOFormat CleanFmt(Eigen::StreamPrecision, 0, ", ", "\n", "(", ")");
         os << "Green's function type: spherical diffuse" << std::endl;
         os << this->profile_ << std::endl;
-        os << "Sphere center        = " << this->origin_.transpose().format(CleanFmt) << std::endl;
+        os << "Plane center        = " << this->origin_.transpose().format(CleanFmt) << std::endl;
         os << "Angular momentum (Green's function)    = " << this->maxLGreen_ << std::endl;
         os << "Angular momentum (Coulomb coefficient) = " << this->maxLC_;
         return os;
@@ -277,10 +278,10 @@ private:
         this->profile_ = ProfilePolicy(e1, e2, w, c);
     }
     /*! This calculates all the components needed to evaluate the Green's function */
-    void initSphericalDiffuse() {
+    void initPlanarDiffuse() {
         using namespace interfaces;
 
-        LOG("SphericalDiffuse::initSphericalDiffuse");
+        LOG("PlanarDiffuse::initPlanarDiffuse");
         // Parameters for the numerical solution of the radial differential equation
         double eps_abs_     = 1.0e-10; /*! Absolute tolerance level */
         double eps_rel_     = 1.0e-06; /*! Relative tolerance level */
@@ -307,7 +308,7 @@ private:
         LOG("DONE: Computing coefficient for the separation of the Coulomb singularity");
 
         LOG("Computing radial solutions for Green's function");
-        TIMER_ON("SphericalDiffuse: Looping over angular momentum");
+        TIMER_ON("PlanarDiffuse: Looping over angular momentum");
         zeta_.reserve(maxLGreen_+1);
         omega_.reserve(maxLGreen_+1);
         for (int L = 0; L <= maxLGreen_; ++L) {
@@ -329,11 +330,11 @@ private:
             TIMER_OFF("computeOmega L = " + pcm::to_string(L));
             LOG("DONE: Computing second radial solution L = " + pcm::to_string(L));
         }
-        TIMER_OFF("SphericalDiffuse: Looping over angular momentum");
+        TIMER_OFF("PlanarDiffuse: Looping over angular momentum");
         LOG("DONE: Computing radial solutions for Green's function");
     }
 
-    /*! Center of the dielectric sphere */
+    /*! Center of the dielectric plane */
     Eigen::Vector3d origin_;
 
     /**@{ Parameters and functions for the calculation of the Green's function, including Coulomb singularity */
@@ -353,7 +354,7 @@ private:
      *  \param[in] pp probe point
      *  \param[in] Cr12 Coulomb singularity separation coefficient
      *  \note This function shifts the given source and probe points by the location of the
-     *  dielectric sphere.
+     *  dielectric plane.
      */
     double imagePotentialComponent_impl(int L, const Eigen::Vector3d & sp, const Eigen::Vector3d & pp, double Cr12) const {
         Eigen::Vector3d sp_shift = sp + this->origin_;
@@ -420,7 +421,7 @@ private:
      *  \param[in] sp first point
      *  \param[in] pp second point
      *  \note This function shifts the given source and probe points by the location of the
-     *  dielectric sphere.
+     *  dielectric plane.
      */
     double coefficient_impl(const Eigen::Vector3d & sp, const Eigen::Vector3d & pp) const {
         double r1 = (sp + this->origin_).norm();
@@ -464,4 +465,4 @@ private:
     /**@}*/
 };
 
-#endif // SPHERICALDIFFUSE_HPP
+#endif // PLANARDIFFUSE_HPP
