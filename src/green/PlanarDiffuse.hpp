@@ -37,13 +37,14 @@
 // Has to be included here
 #include "InterfacesImpl.hpp"
 // Boost.Math includes
-#include <boost/math/special_functions/legendre.hpp>
+#include <boost/math/special_functions/bessel.hpp>
 
 #include "DerivativeUtils.hpp"
 #include "bi_operators/IntegratorForward.hpp"
 #include "dielectric_profile/ProfileForward.hpp"
 #include "GreensFunction.hpp"
 #include "utils/MathUtils.hpp"
+#include "utils/QuadratureRules.hpp"
 
 /*! \file PlanarDiffuse.hpp
  *  \class PlanarDiffuse
@@ -223,13 +224,17 @@ private:
     {
         // Transfer raw arrays to Eigen vectors using the Map type
         Eigen::Map<Eigen::Matrix<double, 3, 1> > source(sp), probe(pp);
+		double rho = sdt::sqrt(std::pow((sp[0]-pp[0]),2) + std::pow((sp[1]-pp[1]),2))
+		double gauss_point = gauss_bilateral64.gaussAbscissa(kindex);
+		double kstep = -std::log((gauss_point + 1.0)/2.0);
 
         // Obtain coefficient for the separation of the Coulomb singularity
         double Cr12 = this->coefficient_impl(source, probe);
 
         double gr12 = 0.0;
-        for (int L = 1; L <= maxLGreen_; ++L) {
-            gr12 += this->imagePotentialComponent_impl(L, source, probe, Cr12);
+        for (int kindex = 0; kindex < 64; kindex++) {
+			double bess_0_x = boost::math::cyl_bessel_j(0, kstep * rho)
+            gr12 += kstep * bess_0_x * this->imagePotentialComponent_impl(kindex, source, probe, Cr12);
         }
         double r12 = (source - probe).norm();
 
@@ -287,48 +292,36 @@ private:
         double eps_rel_     = 1.0e-06; /*! Relative tolerance level */
         double factor_x_    = 0.0;     /*! Weight of the state      */
         double factor_dxdt_ = 0.0;     /*! Weight of the state derivative */
-        double r_0_         = 0.5;     /*! Lower bound of the integration interval */
-        double r_infinity_  = this->profile_.center() + 200.0; /*! Upper bound of the integration interval */
+        double zmin_        = - 100.0; /*! Lower bound of the integration interval */
+        double zmax_        =   100.0; /*! Upper bound of the integration interval */
         double observer_step_ = 1.0e-03; /*! Time step between observer calls */
-        IntegratorParameters params_(eps_abs_, eps_rel_, factor_x_, factor_dxdt_, r_0_, r_infinity_, observer_step_);
+        IntegratorParameters params_(eps_abs_, eps_rel_, factor_x_, factor_dxdt_, zmin_, zmax_, observer_step_);
         ProfileEvaluator eval_ = pcm::bind(&ProfilePolicy::operator(), this->profile_, pcm::_1);
-
-        LOG("Computing coefficient for the separation of the Coulomb singularity");
-        LOG("Computing first radial solution L = " + pcm::to_string(maxLC_));
-        TIMER_ON("computeZeta for coefficient");
-        zetaC_ = RadialFunction<StateType, LnTransformedRadial, Zeta>(maxLC_, r_0_, r_infinity_, eval_, params_);
-        TIMER_OFF("computeZeta for coefficient");
-        LOG("DONE: Computing first radial solution L = " + pcm::to_string(maxLC_));
-
-        LOG("Computing second radial solution L = " + pcm::to_string(maxLC_));
-        TIMER_ON("computeOmega for coefficient");
-        omegaC_ = RadialFunction<StateType, LnTransformedRadial, Omega>(maxLC_, r_0_, r_infinity_, eval_, params_);
-        TIMER_OFF("computeOmega for coefficient");
-        LOG("Computing second radial solution L = " + pcm::to_string(maxLC_));
-        LOG("DONE: Computing coefficient for the separation of the Coulomb singularity");
 
         LOG("Computing radial solutions for Green's function");
         TIMER_ON("PlanarDiffuse: Looping over angular momentum");
-        zeta_.reserve(maxLGreen_+1);
-        omega_.reserve(maxLGreen_+1);
-        for (int L = 0; L <= maxLGreen_; ++L) {
+        U1_.reserve(64);
+        U2_.reserve(64);
+        for (int kindex = 0; kindex < 64; kindex++) {
+			double gauss_point = gauss_bilateral64.gaussAbscissa(kindex);
+			double kstep = -std::log((gauss_point + 1.0)/2.0);
             // First radial solution
-            LOG("Computing first radial solution L = " + pcm::to_string(L));
-            TIMER_ON("computeZeta L = " + pcm::to_string(L));
-            // Create an empty RadialSolution
-            RadialFunction<StateType, LnTransformedRadial, Zeta> tmp_zeta_(L, r_0_, r_infinity_, eval_, params_);
-            zeta_.push_back(tmp_zeta_);
-            TIMER_OFF("computeZeta L = " + pcm::to_string(L));
-            LOG("DONE: Computing first radial solution L = " + pcm::to_string(L));
+            LOG("Computing first normal solution k = " + pcm::to_string(kstep));
+            TIMER_ON("computeNormal1 k = " + pcm::to_string(kstep));
+            // Create an empty NormalFunction
+            NormalFunction<StateType, NormalDifferential> tmp1_(kstep, zmin_, zmax_, eval_, params_);
+            U1_.push_back(tmp1_);
+            TIMER_OFF("computeNormal1 k = " + pcm::to_string(kstep));
+            LOG("DONE: Computing first normal solution k = " + pcm::to_string(kstep));
 
             // Second radial solution
-            LOG("Computing second radial solution L = " + pcm::to_string(L));
-            TIMER_ON("computeOmega L = " + pcm::to_string(L));
-            // Create an empty RadialSolution
-            RadialFunction<StateType, LnTransformedRadial, Omega> tmp_omega_(L, r_0_, r_infinity_, eval_, params_);
-            omega_.push_back(tmp_omega_);
-            TIMER_OFF("computeOmega L = " + pcm::to_string(L));
-            LOG("DONE: Computing second radial solution L = " + pcm::to_string(L));
+            LOG("Computing first normal solution k = " + pcm::to_string(kstep));
+            TIMER_ON("computeNormal k = " + pcm::to_string(kstep));
+            // Create an empty NormalFunction
+            NormalFunction<StateType, NormalDifferential> tmp2_(kstep, zmax_, zmin_, eval_, params_);
+            U2_.push_back(tmp2_);
+            TIMER_OFF("computeNormal2 k = " + pcm::to_string(kstep));
+            LOG("DONE: Computing second normal solution k = " + pcm::to_string(kstep));
         }
         TIMER_OFF("PlanarDiffuse: Looping over angular momentum");
         LOG("DONE: Computing radial solutions for Green's function");
@@ -338,16 +331,12 @@ private:
     Eigen::Vector3d origin_;
 
     /**@{ Parameters and functions for the calculation of the Green's function, including Coulomb singularity */
-    /*! Maximum angular momentum in the __final summation over Legendre polynomials to obtain G */
-    int maxLGreen_;
-    /*! \brief First independent radial solution, used to build Green's function.
-     *  \note The vector has dimension maxLGreen_ and has r^l behavior
+    /*! \brief First independent normal solution, used to build Green's function.
      */
-    std::vector<RadialFunction<interfaces::StateType, interfaces::LnTransformedRadial, Zeta> > zeta_;
-    /*! \brief Second independent radial solution, used to build Green's function.
-     *  \note The vector has dimension maxLGreen_  and has r^(-l-1) behavior
+    std::vector<NormalFunction<interfaces::StateType, interfaces::NormalDifferential> > U1_;
+    /*! \brief Second independent normal solution, used to build Green's function.
      */
-    std::vector<RadialFunction<interfaces::StateType, interfaces::LnTransformedRadial, Omega> > omega_;
+    std::vector<NormalFunction<interfaces::StateType, interfaces::NormalDifferential> > U2_;
     /*! \brief Returns L-th component of the radial part of the Green's function
      *  \param[in] L  angular momentum
      *  \param[in] sp source point
@@ -356,67 +345,15 @@ private:
      *  \note This function shifts the given source and probe points by the location of the
      *  dielectric plane.
      */
-    double imagePotentialComponent_impl(int L, const Eigen::Vector3d & sp, const Eigen::Vector3d & pp, double Cr12) const {
-        Eigen::Vector3d sp_shift = sp + this->origin_;
-        Eigen::Vector3d pp_shift = pp + this->origin_;
-        double r1 = sp_shift.norm();
-        double r2 = pp_shift.norm();
-        double cos_gamma = sp_shift.dot(pp_shift) / (r1 * r2);
-        // Evaluate Legendre polynomial of order L
-        // First of all clean-up cos_gamma, Legendre polynomials
-        // are only defined for -1 <= x <= 1
-        if (numericalZero(cos_gamma - 1)) cos_gamma = 1.0;
-        if (numericalZero(cos_gamma + 1)) cos_gamma = -1.0;
-        double pl_x = boost::math::legendre_p(L, cos_gamma);
-
-        /* Sample zeta_[L] */
-        double zeta1 = 0.0, zeta2 = 0.0, d_zeta2 = 0.0;
-        /* Value of zeta_[L] at point with index 1 */
-        pcm::tie(zeta1, pcm::ignore) = zeta_[L](r1);
-        /* Value of zeta_[L] and its first derivative at point with index 2 */
-        pcm::tie(zeta2, d_zeta2) = zeta_[L](r2);
-
-        /* Sample omega_[L] */
-        double omega1 = 0.0, omega2 = 0.0, d_omega2 = 0.0;
-        /* Value of omega_[L] at point with index 1 */
-        pcm::tie(omega1, pcm::ignore) = omega_[L](r1);
-        /* Value of omega_[L] and its first derivative at point with index 2 */
-        pcm::tie(omega2, d_omega2) = omega_[L](r2);
-
-        double eps_r2 = 0.0;
-        pcm::tie(eps_r2, pcm::ignore) = this->profile_(pp_shift.norm());
-
-        /* Evaluation of the Wronskian and the denominator */
-        double denominator = (d_zeta2 - d_omega2) * std::pow(r2, 2) * eps_r2;
-
-        double gr12 = 0.0;
-        if (r1 < r2) {
-            gr12 = std::exp(zeta1 - zeta2) * (2*L +1) / denominator;
-	    double f_L = r1 / r2;
-	    for (int i = 1; i < L; ++i) { f_L *= r1 / r2; }
-            gr12 = (gr12 - f_L / (r2 * Cr12) ) * pl_x ;
-        } else {
-            gr12 = std::exp(omega1 - omega2) * (2*L +1) / denominator;
-	    double f_L = r2 / r1;
-	    for (int i = 1; i < L; ++i) { f_L *= r2 / r1; }
-            gr12 = (gr12 - f_L / (r1 * Cr12) ) * pl_x ;
-        }
-
-        return gr12;
+    double imagePotentialComponent_impl(int kindex, const Eigen::Vector3d & sp, const Eigen::Vector3d & pp, double Cr12) const {
+		double gauss_point = gauss_bilateral64.gaussAbscissa(kindex);
+		double kstep = -std::log((gauss_point + 1.0)/2.0);
+		double tmp = kstep * std::exp(kstep*std::abs(sp[2]-pp[2])) * G_k(63, sp, pp);
+		return G_k(kindex, sp, pp) - std::exp(-kstep*std::abs(sp[2]-pp[2])) / (Cr12 * kstep);
     }
     /**@}*/
 
     /**@{ Parameters and functions for the calculation of the Coulomb singularity separation coefficient */
-    /*! Maximum angular momentum to obtain C(r, r'), needed to separate the Coulomb singularity */
-    int maxLC_; // = 2 * maxLGreen_;
-    /*! \brief First independent radial solution, used to build coefficient.
-     *  \note This is needed to separate the Coulomb singularity and has r^l behavior
-     */
-    RadialFunction<interfaces::StateType, interfaces::LnTransformedRadial, Zeta> zetaC_;
-    /*! \brief Second independent radial solution, used to build coefficient.
-     *  \note This is needed to separate the Coulomb singularity and has r^(-l-1) behavior
-     */
-    RadialFunction<interfaces::StateType, interfaces::LnTransformedRadial, Omega> omegaC_;
     /*! \brief Returns coefficient for the separation of the Coulomb singularity
      *  \param[in] sp first point
      *  \param[in] pp second point
@@ -424,45 +361,50 @@ private:
      *  dielectric plane.
      */
     double coefficient_impl(const Eigen::Vector3d & sp, const Eigen::Vector3d & pp) const {
-        double r1 = (sp + this->origin_).norm();
-        double r2 = (pp + this->origin_).norm();
-
-        /* Sample zetaC_ */
-        double zeta1 = 0.0, zeta2 = 0.0, d_zeta2 = 0.0;
-        /* Value of zetaC_ at point with index 1 */
-        pcm::tie(zeta1, pcm::ignore) = zetaC_(r1);
-        /* Value of zetaC_ and its first derivative at point with index 2 */
-        pcm::tie(zeta2, d_zeta2) = zetaC_(r2);
-
-        /* Sample omegaC_ */
-        double omega1 = 0.0, omega2 = 0.0, d_omega2 = 0.0;
-        /* Value of omegaC_ at point with index 1 */
-        pcm::tie(omega1, pcm::ignore) = omegaC_(r1);
-        /* Value of omegaC_ and its first derivative at point with index 2 */
-        pcm::tie(omega2, d_omega2) = omegaC_(r2);
-
-        double tmp = 0.0, coeff = 0.0;
-        double eps_r2 = 0.0;
-        pcm::tie(eps_r2, pcm::ignore) = this->profile_(r2);
-
-        /* Evaluation of the Wronskian and the denominator */
-        double denominator = (d_zeta2 - d_omega2) * std::pow(r2, 2) * eps_r2;
-
-        if (r1 < r2) {
-	    double f_L = r1 / r2;
-	    for (int i = 1; i < maxLC_; ++i) { f_L *= r1 / r2; }
-            tmp = std::exp(zeta1 - zeta2) * (2*maxLC_ +1) / denominator;
-            coeff = f_L / (tmp * r2);
-        } else {
-	    double f_L = r2 / r1;
-	    for (int i = 1; i < maxLC_; ++i) { f_L *= r2 / r1; }
-            tmp = std::exp(omega1 - omega2) * (2*maxLC_ +1) / denominator;
-            coeff = f_L / (tmp * r1);
-        }
-
-        return coeff;
+		double gauss_point = gauss_bilateral64.gaussAbscissa(63);
+		double kstep = -std::log((gauss_point + 1.0)/2.0);
+		double tmp = kstep * std::exp(kstep*std::abs(sp[2]-pp[2])) * G_k(63, sp, pp);
+		return 1.0/tmp;
     }
     /**@}*/
+
+    double G_k(int kindex, const Eigen::Vector3d & sp, const Eigen::Vector3d & pp) const {
+        Eigen::Vector3d sp_shift = sp + this->origin_;
+        Eigen::Vector3d pp_shift = pp + this->origin_;
+		double gauss_point = gauss_bilateral64.gaussAbscissa(kindex);
+		double kstep = -std::log((gauss_point + 1.0)/2.0);
+
+        /* Sample U1_ */
+        double U1s = 0.0, U1p = 0.0, dU1p = 0.0;
+        /* Value of zetaC_ at point with index 1 */
+        pcm::tie(U1s, pcm::ignore) = U1_[kindex](sp_shift[2]);
+        /* Value of zetaC_ and its first derivative at point with index 2 */
+        pcm::tie(U1p, dU1p) = U1_[kindex](pp_shift[2]);
+
+        /* Sample U2_ */
+        double U2s = 0.0, U2p = 0.0, dU2p = 0.0;
+        /* Value of zetaC_ at point with index 1 */
+        pcm::tie(U2s, pcm::ignore) = U2_[kindex](sp_shift[2]);
+        /* Value of zetaC_ and its first derivative at point with index 2 */
+        pcm::tie(U2p, dU2p) = U2_[kindex](pp_shift[2]);
+
+        double eps_r2 = 0.0;
+        pcm::tie(eps_r2, pcm::ignore) = this->profile_(pp_shift[2]);
+
+        /* Evaluation of the Wronskian and the denominator */
+        double denominator = eps_r2 * (dU2p * U1p - dU1p * U2p);
+
+		double G_k = 0.0;
+
+		if (pp_shift[2] < sp_shift[2]) {
+			G_k = 2.0 * U1s * U2p / denominator;
+        } else {
+			G_k = 2.0 * U2s * U1p / denominator;
+        }
+
+        return G_k;
+		
+	}
 };
 
 #endif // PLANARDIFFUSE_HPP

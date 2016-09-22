@@ -113,6 +113,45 @@ class LnTransformedRadial
             drhodr[1] = -rho[1] * (rho[1] + 2.0/r + gamma_epsilon) + l_ * (l_ + 1) / std::pow(r, 2);
         }
 };
+
+/*! \class NormalDifferential
+ *  \brief system of first-order normal differential equations
+ *  \author Roberto Di Remigio and Luca Frediani
+ *  \date 2016
+ *
+ *  Provides a handle to the system of differential equations for the integrator.
+ *  The dielectric profile comes in as a boost::function object.
+ */
+class NormalDifferential
+{
+    private:
+        /*! Dielectric profile function and derivative evaluation */
+        ProfileEvaluator eval_;
+        /*! Bessel function argument (k point)*/
+        double k_;
+    public:
+        /*! Constructor from profile evaluator and angular momentum */
+        NormalDifferential(const ProfileEvaluator & e, double kval) : eval_(e), k_(kval) {}
+        /*! Provides a functor for the evaluation of the system
+         *  of first-order ODEs needed by Boost.Odeint
+         *  \param[in] u state vector holding the function and its first derivative
+         *  \param[out] dudz state vector holding the first and second derivative
+         *  \param[in] z position on the integration grid
+         */
+        void operator()(const StateType & u, StateType & dudz, const double z)
+        {
+            // Evaluate the dielectric profile
+            double eps = 0.0, epsPrime = 0.0;
+            pcm::tie(eps, epsPrime) = eval_(r);
+            if (numericalZero(eps)) throw std::domain_error("Division by zero!");
+            double gamma_epsilon = epsPrime / eps;
+            // System of equations is defined here
+            dudr[0] =  u[1];
+            dudr[1] = -u[1] * gamma_epsilon + pow(k_, 2) * u[0];
+        }
+};
+
+	
 } // namespace interfaces
 
 using interfaces::ProfileEvaluator;
@@ -362,5 +401,100 @@ void writeToFile(RadialFunction<StateVariable, ODESystem, IndependentSolution> &
     fout << f << std::endl;
     fout.close();
 }
+
+/*! \file InterfacesImpl.hpp
+ *  \class NormallFunction
+ *  \brief represents solutions to the 2nd order ODE in the normal direction
+ *  \author Roberto Di Remigio and Luca Frediani
+ *  \date 2016
+ *  \tparam StateVariable type of the state variable used in the ODE solver
+ *  \tparam ODESystem system of 1st order ODEs replacing the 2nd order ODE
+ */
+template <typename StateVariable,
+          typename ODESystem>
+class NormalFunction __final
+{
+    public:
+        NormalFunction(double k, double zmin, double zmax, const ProfileEvaluator & eval, const IntegratorParameters & parms)
+            : k_(k), zmin_(zmin), zmax_(zmax), zsign_(std::copysign(1.0, zmax - zmin)) {}
+        ~NormalFunction() {}
+        /*! \brief Returns value of function and its first derivative at given point
+         *  \param[in] point evaluation point
+         */
+        pcm::tuple<double, double> operator()(double point) const {
+            return solution_(point);
+        }
+        friend std::ostream & operator<<(std::ostream &os, RadialFunction & obj) {
+            os << obj.solution_;
+            return os;
+        }
+    private:
+        typedef pcm::array<StateVariable, 3> NormalSolution;
+        /// k point of the Bessel function
+        double k_;
+        /// Lower bound of the integration interval
+        double zmin_;
+        /// Upper bound of the integration interval
+        double zmax_;
+		/// The sign of the integration interval is used to
+		/// discriminate between the two indipendent solutions of
+		/// the differential equation
+		double zsign_;
+        /// The actual data: grid, function value and first derivative values
+        NormalSolution function_;
+        /*! Reports progress of differential equation integrator */
+        void push_back(const StateVariable & x, double r) {
+            function_[0].push_back(r);
+            function_[1].push_back(x[0]);
+            function_[2].push_back(x[1]);
+        }
+        /*! \brief Calculates normal solution
+         *  \param[in] eval   dielectric profile evaluator function object
+         *  \param[in] parms parameters for the integrator
+         */
+        void compute(const ProfileEvaluator & eval, const IntegratorParameters & parms) {
+            namespace odeint = boost::numeric::odeint;
+            odeint::bulirsch_stoer_dense_out<StateVariable> stepper(parms.eps_abs_, parms.eps_rel_, parms.factor_x_, parms.factor_dxdt_);
+            ODESystem system(eval, k_);
+            // Holds the initial conditions
+            StateVariable init_sol(2);
+            // Set initial conditions
+            init_sol[0] = std::exp(zsign_ * k_ * zmin_);
+            init_sol[1] = zsign_ * k_ * init_sol[0];
+            odeint::integrate_adaptive(stepper, system, init_sol,
+                    zmin_, zmax_, parms.observer_step_,
+                    pcm::bind(&NormalFunction<StateVariable, ODESystem>::push_back, this, pcm::_1, pcm::_2));
+        }
+        /*! \brief Returns value of function at given point
+         *  \param[in] point evaluation point
+         *
+         *  If the point is below zmin_, we use
+         *  the asymptotic form exp(zsign * k * z).
+         */
+        double function_impl(double point) const {
+            double val = 0.0;
+            if (point <= zmin_) {
+                val = std::exp(zsign_ * k_ * zmin_);
+            } else {
+                val = splineInterpolation(point, function_[0], function_[1]);
+            }
+            return val;
+        }
+        /*! \brief Returns value of 1st derivative of function at given point
+         *  \param[in] point evaluation point
+         *
+         *  If the point is below zmin_, we use
+         *  the asymptotic form exp(zsign * k * z).
+         */
+        double derivative_impl(double point) const {
+            double val = 0.0;
+            if (point <= r_0_) {
+                val = zsign_ * k_ * std::exp(zsign_ * k_ * zmin_);
+            } else {
+                val = splineInterpolation(point, function_[0], function_[2]);
+            }
+            return val;
+        }
+};
 
 #endif // INTERFACESIMPL_HPP
