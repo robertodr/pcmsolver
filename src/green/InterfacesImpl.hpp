@@ -142,12 +142,12 @@ class NormalDifferential
         {
             // Evaluate the dielectric profile
             double eps = 0.0, epsPrime = 0.0;
-            pcm::tie(eps, epsPrime) = eval_(r);
+            pcm::tie(eps, epsPrime) = eval_(z);
             if (numericalZero(eps)) throw std::domain_error("Division by zero!");
             double gamma_epsilon = epsPrime / eps;
             // System of equations is defined here
-            dudr[0] =  u[1];
-            dudr[1] = -u[1] * gamma_epsilon + pow(k_, 2) * u[0];
+            dudz[0] =  u[1];
+            dudz[1] = -u[1] * gamma_epsilon + pow(k_, 2) * u[0];
         }
 };
 
@@ -403,7 +403,7 @@ void writeToFile(RadialFunction<StateVariable, ODESystem, IndependentSolution> &
 }
 
 /*! \file InterfacesImpl.hpp
- *  \class NormallFunction
+ *  \class NormalFunction
  *  \brief represents solutions to the 2nd order ODE in the normal direction
  *  \author Roberto Di Remigio and Luca Frediani
  *  \date 2016
@@ -422,10 +422,14 @@ class NormalFunction __final
          *  \param[in] point evaluation point
          */
         pcm::tuple<double, double> operator()(double point) const {
-            return solution_(point);
+			return pcm::make_tuple(function_impl(point), derivative_impl(point));
         }
-        friend std::ostream & operator<<(std::ostream &os, RadialFunction & obj) {
-            os << obj.solution_;
+        friend std::ostream & operator<<(std::ostream &os, NormalFunction & obj) {
+            for (size_t i = 0; i < obj.function_[0].size(); ++i) {
+                os << obj.function_[0][i] << "    "
+                   << obj.function_[1][i] << "    "
+                   << obj.function_[2][i] << std::endl;
+            }
             return os;
         }
     private:
@@ -473,7 +477,9 @@ class NormalFunction __final
          */
         double function_impl(double point) const {
             double val = 0.0;
-            if (point <= zmin_) {
+            if (point < zmin_ && zsign_ > 0.0 ) {
+                val = std::exp(zsign_ * k_ * zmin_);
+			} else if (point > zmin_ && zsign_ < 0.0) {
                 val = std::exp(zsign_ * k_ * zmin_);
             } else {
                 val = splineInterpolation(point, function_[0], function_[1]);
@@ -488,7 +494,9 @@ class NormalFunction __final
          */
         double derivative_impl(double point) const {
             double val = 0.0;
-            if (point <= r_0_) {
+            if (point < zmin_ && zsign_ > 0.0 ) {
+                val = zsign_ * k_ * std::exp(zsign_ * k_ * zmin_);
+			} else if (point > zmin_ && zsign_ < 0.0) {
                 val = zsign_ * k_ * std::exp(zsign_ * k_ * zmin_);
             } else {
                 val = splineInterpolation(point, function_[0], function_[2]);

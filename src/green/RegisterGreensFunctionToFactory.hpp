@@ -149,4 +149,24 @@ namespace
             SPHERICALDIFFUSE, createSphericalDiffuse);
 }
 
+namespace
+{
+    struct buildPlanarDiffuse {
+        template <typename T, typename U>
+        IGreensFunction * operator()(const greenData & data) {
+            return new PlanarDiffuse<T, U>(data.epsilon1, data.epsilon2, data.width, data.center, data.scaling);
+        }
+    };
+
+    IGreensFunction * createPlanarDiffuse(const greenData & data)
+    {
+        buildPlanarDiffuse build;
+        return for_id<integrator_types, onelayer_diffuse_profile_types, IGreensFunction>(build, data, data.howIntegrator, data.howProfile);
+    }
+    const std::string PLANARDIFFUSE("PLANARDIFFUSE");
+    const bool registeredPlanarDiffuse =
+        Factory<IGreensFunction, greenData>::TheFactory().registerObject(
+            PLANARDIFFUSE, createPlanarDiffuse);
+}
+
 #endif // REGISTERGREENSFUNCTIONTOFACTORY_HPP

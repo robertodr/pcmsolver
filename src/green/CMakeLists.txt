@@ -2,7 +2,7 @@
 list(APPEND headers_list AnisotropicLiquid.hpp DerivativeTypes.hpp DerivativeUtils.hpp GreenData.hpp GreenUtils.hpp GreensFunction.hpp
                          IGreensFunction.hpp InterfacesImpl.hpp IonicLiquid.hpp
                          RegisterGreensFunctionToFactory.hpp SphericalDiffuse.hpp
-                         SphericalSharp.hpp UniformDielectric.hpp Vacuum.hpp)
+                         SphericalSharp.hpp UniformDielectric.hpp Vacuum.hpp PlanarDiffuse.hpp)
 
 # List of sources
 list(APPEND sources_list )

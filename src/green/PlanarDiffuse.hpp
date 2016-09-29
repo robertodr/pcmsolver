@@ -79,14 +79,13 @@ public:
      * \param[in] e1 left-side dielectric constant
      * \param[in] e2 right-side dielectric constant
      * \param[in] w width of the interface layer
-     * \param[in] c center of the diffuse layer
-     * \param[in] o center of the plane
+     * \param[in] zInt position of the diffuse layer
      */
-    PlanarDiffuse(double e1, double e2, double w, double c, const Eigen::Vector3d & o, int l)
+    PlanarDiffuse(double e1, double e2, double w, double zInt)
         : GreensFunction<Numerical, IntegratorPolicy, ProfilePolicy, PlanarDiffuse<IntegratorPolicy, ProfilePolicy> >(),
-          origin_(o), maxLGreen_(l), maxLC_(2*l)
+		origin_(Eigen::Vector3d::UnitZ() * zInt)
     {
-        initProfilePolicy(e1, e2, w, c);
+        initProfilePolicy(e1, e2, w, zInt);
         initPlanarDiffuse();
     }
     /*! Constructor for a one-layer interface
@@ -96,11 +95,11 @@ public:
      * \param[in] c center of the diffuse layer
      * \param[in] o center of the plane
      */
-    PlanarDiffuse(double e1, double e2, double w, double c, const Eigen::Vector3d & o, int l, double f)
+    PlanarDiffuse(double e1, double e2, double w, double zInt, double f)
         : GreensFunction<Numerical, IntegratorPolicy, ProfilePolicy, PlanarDiffuse<IntegratorPolicy, ProfilePolicy> >(f),
-          origin_(o), maxLGreen_(l), maxLC_(2*l)
+		origin_(Eigen::Vector3d::UnitZ() * zInt)
     {
-        initProfilePolicy(e1, e2, w, c);
+        initProfilePolicy(e1, e2, w, zInt);
         initPlanarDiffuse();
     }
     virtual ~PlanarDiffuse() {}
@@ -148,13 +147,18 @@ public:
     double imagePotential(const Eigen::Vector3d & source, const Eigen::Vector3d & probe) const {
         // Obtain coefficient for the separation of the Coulomb singularity
         double Cr12 = this->coefficient_impl(source, probe);
-
-        double gr12 = 0.0;
-        for (int L = 1; L <= maxLGreen_; ++L) {
-            gr12 += this->imagePotentialComponent_impl(L, source, probe, Cr12);
+		double rho = ((source-probe).head(2)).norm();
+		double greenImage = 0.0;
+		
+        for (int kindex = 0; kindex < 64; kindex++) {
+			double gauss_point = rule_.gaussAbscissa(kindex);
+			double kstep = -std::log((gauss_point + 1.0)/2.0);
+			double bess_0_x = boost::math::cyl_bessel_j(0, kstep * rho);
+            greenImage += kstep * bess_0_x * this->imagePotentialComponent_impl(kindex, source, probe, Cr12);
         }
 
-        return gr12;
+        return greenImage;
+
     }
     /*! Returns value of the directional derivative of the
      *  Coulomb singularity separation coefficient for the pair of points p1, p2:
@@ -203,14 +207,12 @@ public:
         return this->profile_((point + this->origin_).norm());
     }
     void toFile(const std::string & prefix = "") {
-      std::string tmp;
-      prefix.empty() ? tmp = prefix : tmp = prefix + "-";
-      writeToFile(zetaC_, tmp + "zetaC.dat");
-      writeToFile(omegaC_, tmp + "omegaC.dat");
-      for (int L = 1; L <= maxLGreen_; ++L) {
-        writeToFile(zeta_[L], tmp + "zeta_" + pcm::to_string(L) + ".dat");
-        writeToFile(omega_[L], tmp + "omega_" + pcm::to_string(L) + ".dat");
-      }
+		std::string tmp;
+		prefix.empty() ? tmp = prefix : tmp = prefix + "-";
+		for (int kindex = 0; kindex < 64; kindex++) {
+			writeToFile(U1_[kindex], tmp + "U1_" + pcm::to_string(kindex) + ".dat");
+			writeToFile(U2_[kindex], tmp + "U2_" + pcm::to_string(kindex) + ".dat");
+		}
     }
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW /* See http://eigen.tuxfamily.org/dox/group__TopicStructHavingEigenMembers.html */
 private:
@@ -224,22 +226,14 @@ private:
     {
         // Transfer raw arrays to Eigen vectors using the Map type
         Eigen::Map<Eigen::Matrix<double, 3, 1> > source(sp), probe(pp);
-		double rho = sdt::sqrt(std::pow((sp[0]-pp[0]),2) + std::pow((sp[1]-pp[1]),2))
-		double gauss_point = gauss_bilateral64.gaussAbscissa(kindex);
-		double kstep = -std::log((gauss_point + 1.0)/2.0);
-
         // Obtain coefficient for the separation of the Coulomb singularity
+		double r12 = (source - probe).norm();
         double Cr12 = this->coefficient_impl(source, probe);
-
-        double gr12 = 0.0;
-        for (int kindex = 0; kindex < 64; kindex++) {
-			double bess_0_x = boost::math::cyl_bessel_j(0, kstep * rho)
-            gr12 += kstep * bess_0_x * this->imagePotentialComponent_impl(kindex, source, probe, Cr12);
-        }
-        double r12 = (source - probe).norm();
-
+        double gr12 = this->imagePotential(source, probe);
         return (1.0 / (Cr12 * r12) + gr12);
     }
+
+	gauss_bilateral64 rule_;
     /*! Returns value of the kernel of the \f$\mathcal{D}\f$ integral operator for the pair of points p1, p2:
      *  \f$ [\boldsymbol{\varepsilon}\nabla_{\mathbf{p_2}}G(\mathbf{p}_1, \mathbf{p}_2)]\cdot \mathbf{n}_{\mathbf{p}_2}\f$
      *  To obtain the kernel of the \f$\mathcal{D}^\dagger\f$ operator call this methods with \f$\mathbf{p}_1\f$
@@ -266,11 +260,9 @@ private:
     virtual std::ostream & printObject(std::ostream & os) __override
     {
         Eigen::IOFormat CleanFmt(Eigen::StreamPrecision, 0, ", ", "\n", "(", ")");
-        os << "Green's function type: spherical diffuse" << std::endl;
+        os << "Green's function type: planar diffuse" << std::endl;
         os << this->profile_ << std::endl;
-        os << "Plane center        = " << this->origin_.transpose().format(CleanFmt) << std::endl;
-        os << "Angular momentum (Green's function)    = " << this->maxLGreen_ << std::endl;
-        os << "Angular momentum (Coulomb coefficient) = " << this->maxLC_;
+        os << "Plane position        = " << this->origin_.transpose().format(CleanFmt) << std::endl;
         return os;
     }
     /*! Initializes a one-layer profile
@@ -303,7 +295,7 @@ private:
         U1_.reserve(64);
         U2_.reserve(64);
         for (int kindex = 0; kindex < 64; kindex++) {
-			double gauss_point = gauss_bilateral64.gaussAbscissa(kindex);
+			double gauss_point = rule_.gaussAbscissa(kindex);
 			double kstep = -std::log((gauss_point + 1.0)/2.0);
             // First radial solution
             LOG("Computing first normal solution k = " + pcm::to_string(kstep));
@@ -327,7 +319,6 @@ private:
         LOG("DONE: Computing radial solutions for Green's function");
     }
 
-    /*! Center of the dielectric plane */
     Eigen::Vector3d origin_;
 
     /**@{ Parameters and functions for the calculation of the Green's function, including Coulomb singularity */
@@ -346,7 +337,7 @@ private:
      *  dielectric plane.
      */
     double imagePotentialComponent_impl(int kindex, const Eigen::Vector3d & sp, const Eigen::Vector3d & pp, double Cr12) const {
-		double gauss_point = gauss_bilateral64.gaussAbscissa(kindex);
+		double gauss_point = rule_.gaussAbscissa(kindex);
 		double kstep = -std::log((gauss_point + 1.0)/2.0);
 		double tmp = kstep * std::exp(kstep*std::abs(sp[2]-pp[2])) * G_k(63, sp, pp);
 		return G_k(kindex, sp, pp) - std::exp(-kstep*std::abs(sp[2]-pp[2])) / (Cr12 * kstep);
@@ -361,7 +352,7 @@ private:
      *  dielectric plane.
      */
     double coefficient_impl(const Eigen::Vector3d & sp, const Eigen::Vector3d & pp) const {
-		double gauss_point = gauss_bilateral64.gaussAbscissa(63);
+		double gauss_point = rule_.gaussAbscissa(63);
 		double kstep = -std::log((gauss_point + 1.0)/2.0);
 		double tmp = kstep * std::exp(kstep*std::abs(sp[2]-pp[2])) * G_k(63, sp, pp);
 		return 1.0/tmp;
@@ -371,7 +362,7 @@ private:
     double G_k(int kindex, const Eigen::Vector3d & sp, const Eigen::Vector3d & pp) const {
         Eigen::Vector3d sp_shift = sp + this->origin_;
         Eigen::Vector3d pp_shift = pp + this->origin_;
-		double gauss_point = gauss_bilateral64.gaussAbscissa(kindex);
+		double gauss_point = rule_.gaussAbscissa(kindex);
 		double kstep = -std::log((gauss_point + 1.0)/2.0);
 
         /* Sample U1_ */
@@ -408,3 +399,5 @@ private:
 };
 
 #endif // PLANARDIFFUSE_HPP
+
+
