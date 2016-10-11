@@ -75,19 +75,9 @@
  */
 inline void pcmsolver_die(const std::string & message, const std::string & function, int code = EXIT_FAILURE)
 {
-  pcmsolver_die(message.c_str(), function.c_str(), code);
-}
-
-/*! \brief Kills execution and prints out error message to stderr
- *  \param message Error message
- *  \param function Name of the function killing execution
- *  \param code Error code. Defaults to EXIT_FAILURE
- */
-inline void pcmsolver_die(const char * message, const char * function, int code = EXIT_FAILURE)
-{
-  std::fprintf(stderr, "In function: %s\n", function);
-  std::fprintf(stderr, "PCMSolver fatal error %i: %s\n", code, message);
-  std::exit(EXIT_FAILURE);
+	std::fprintf(stderr, "In function: %s\n", function.c_str());
+	std::fprintf(stderr, "PCMSolver fatal error %i: %s\n", code, message.c_str());
+	std::exit(EXIT_FAILURE);
 }
 
 /// Macro to be used to signal error conditions
