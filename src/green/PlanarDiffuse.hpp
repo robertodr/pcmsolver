@@ -92,8 +92,8 @@ public:
      * \param[in] e1 left-side dielectric constant
      * \param[in] e2 right-side dielectric constant
      * \param[in] w width of the interface layer
-     * \param[in] c center of the diffuse layer
-     * \param[in] o center of the plane
+     * \param[in] zInt position of the diffuse layer
+     * \param[in] f scaling factor for diagnal elements
      */
     PlanarDiffuse(double e1, double e2, double w, double zInt, double f)
         : GreensFunction<Numerical, IntegratorPolicy, ProfilePolicy, PlanarDiffuse<IntegratorPolicy, ProfilePolicy> >(f),
@@ -230,6 +230,7 @@ private:
 		double r12 = (source - probe).norm();
         double Cr12 = this->coefficient_impl(source, probe);
         double gr12 = this->imagePotential(source, probe);
+		std::cout << "r12 Cr12 gr12 " << r12<< " " << Cr12 << " " << gr12 << std::endl;
         return (1.0 / (Cr12 * r12) + gr12);
     }
 
@@ -284,8 +285,8 @@ private:
         double eps_rel_     = 1.0e-06; /*! Relative tolerance level */
         double factor_x_    = 0.0;     /*! Weight of the state      */
         double factor_dxdt_ = 0.0;     /*! Weight of the state derivative */
-        double zmin_        = - 100.0; /*! Lower bound of the integration interval */
-        double zmax_        =   100.0; /*! Upper bound of the integration interval */
+        double zmin_        = - 30.0; /*! Lower bound of the integration interval */
+        double zmax_        =   30.0; /*! Upper bound of the integration interval */
         double observer_step_ = 1.0e-03; /*! Time step between observer calls */
         IntegratorParameters params_(eps_abs_, eps_rel_, factor_x_, factor_dxdt_, zmin_, zmax_, observer_step_);
         ProfileEvaluator eval_ = pcm::bind(&ProfilePolicy::operator(), this->profile_, pcm::_1);
@@ -295,24 +296,29 @@ private:
         U1_.reserve(64);
         U2_.reserve(64);
         for (int kindex = 0; kindex < 64; kindex++) {
+			std::cout << "kindex " << kindex << std::endl; 
 			double gauss_point = rule_.gaussAbscissa(kindex);
 			double kstep = -std::log((gauss_point + 1.0)/2.0);
             // First radial solution
             LOG("Computing first normal solution k = " + pcm::to_string(kstep));
-            TIMER_ON("computeNormal1 k = " + pcm::to_string(kstep));
+			std::cout << "Computing first normal solution k = " << pcm::to_string(kstep) << std::endl;
+            TIMER_ON("computeNormal 1 k = " + pcm::to_string(kstep));
             // Create an empty NormalFunction
             NormalFunction<StateType, NormalDifferential> tmp1_(kstep, zmin_, zmax_, eval_, params_);
+			writeToFile(tmp1_, "U1_" + pcm::to_string(kindex) + ".dat");
             U1_.push_back(tmp1_);
-            TIMER_OFF("computeNormal1 k = " + pcm::to_string(kstep));
+            TIMER_OFF("computeNormal 1 k = " + pcm::to_string(kstep));
             LOG("DONE: Computing first normal solution k = " + pcm::to_string(kstep));
 
             // Second radial solution
-            LOG("Computing first normal solution k = " + pcm::to_string(kstep));
-            TIMER_ON("computeNormal k = " + pcm::to_string(kstep));
+            LOG("Computing second normal solution k = " + pcm::to_string(kstep));
+			std::cout << "Computing second normal solution k = " << pcm::to_string(kstep) << std::endl;
+            TIMER_ON("computeNormal 2 k = " + pcm::to_string(kstep));
             // Create an empty NormalFunction
             NormalFunction<StateType, NormalDifferential> tmp2_(kstep, zmax_, zmin_, eval_, params_);
+			writeToFile(tmp2_, "U2_" + pcm::to_string(kindex) + ".dat");
             U2_.push_back(tmp2_);
-            TIMER_OFF("computeNormal2 k = " + pcm::to_string(kstep));
+            TIMER_OFF("computeNormal 2 k = " + pcm::to_string(kstep));
             LOG("DONE: Computing second normal solution k = " + pcm::to_string(kstep));
         }
         TIMER_OFF("PlanarDiffuse: Looping over angular momentum");
@@ -329,7 +335,7 @@ private:
      */
     std::vector<NormalFunction<interfaces::StateType, interfaces::NormalDifferential> > U2_;
     /*! \brief Returns L-th component of the radial part of the Green's function
-     *  \param[in] L  angular momentum
+     *  \param[in] kindex index of the integration gridpoint
      *  \param[in] sp source point
      *  \param[in] pp probe point
      *  \param[in] Cr12 Coulomb singularity separation coefficient
@@ -339,8 +345,7 @@ private:
     double imagePotentialComponent_impl(int kindex, const Eigen::Vector3d & sp, const Eigen::Vector3d & pp, double Cr12) const {
 		double gauss_point = rule_.gaussAbscissa(kindex);
 		double kstep = -std::log((gauss_point + 1.0)/2.0);
-		double tmp = kstep * std::exp(kstep*std::abs(sp[2]-pp[2])) * G_k(63, sp, pp);
-		return G_k(kindex, sp, pp) - std::exp(-kstep*std::abs(sp[2]-pp[2])) / (Cr12 * kstep);
+		return G_k(kindex, sp, pp) - std::exp(-kstep*std::abs(sp(2)-pp(2))) / (Cr12 * kstep);
     }
     /**@}*/
 
@@ -354,7 +359,14 @@ private:
     double coefficient_impl(const Eigen::Vector3d & sp, const Eigen::Vector3d & pp) const {
 		double gauss_point = rule_.gaussAbscissa(63);
 		double kstep = -std::log((gauss_point + 1.0)/2.0);
-		double tmp = kstep * std::exp(kstep*std::abs(sp[2]-pp[2])) * G_k(63, sp, pp);
+		double tmp = kstep * std::exp(kstep*std::abs(sp(2)-pp(2))) * G_k(63, sp, pp);
+		std::cout << "gauss_point " << gauss_point << std::endl;
+		std::cout << "kstep " << kstep << std::endl;
+		std::cout << "tmp " << tmp << std::endl;
+		for (int i = 0; i < 64; i++) {
+			double GK =  G_k(i, sp, pp);
+			std::cout << "GK " << i  << " " << GK << std::endl;
+		}
 		return 1.0/tmp;
     }
     /**@}*/
@@ -362,35 +374,33 @@ private:
     double G_k(int kindex, const Eigen::Vector3d & sp, const Eigen::Vector3d & pp) const {
         Eigen::Vector3d sp_shift = sp + this->origin_;
         Eigen::Vector3d pp_shift = pp + this->origin_;
-		double gauss_point = rule_.gaussAbscissa(kindex);
-		double kstep = -std::log((gauss_point + 1.0)/2.0);
 
         /* Sample U1_ */
         double U1s = 0.0, U1p = 0.0, dU1p = 0.0;
         /* Value of zetaC_ at point with index 1 */
-        pcm::tie(U1s, pcm::ignore) = U1_[kindex](sp_shift[2]);
+        pcm::tie(U1s, pcm::ignore) = U1_[kindex](sp_shift(2));
         /* Value of zetaC_ and its first derivative at point with index 2 */
-        pcm::tie(U1p, dU1p) = U1_[kindex](pp_shift[2]);
+        pcm::tie(U1p, dU1p) = U1_[kindex](pp_shift(2));
 
         /* Sample U2_ */
         double U2s = 0.0, U2p = 0.0, dU2p = 0.0;
         /* Value of zetaC_ at point with index 1 */
-        pcm::tie(U2s, pcm::ignore) = U2_[kindex](sp_shift[2]);
+        pcm::tie(U2s, pcm::ignore) = U2_[kindex](sp_shift(2));
         /* Value of zetaC_ and its first derivative at point with index 2 */
-        pcm::tie(U2p, dU2p) = U2_[kindex](pp_shift[2]);
+        pcm::tie(U2p, dU2p) = U2_[kindex](pp_shift(2));
 
         double eps_r2 = 0.0;
-        pcm::tie(eps_r2, pcm::ignore) = this->profile_(pp_shift[2]);
+        pcm::tie(eps_r2, pcm::ignore) = this->profile_(pp_shift(2));
 
         /* Evaluation of the Wronskian and the denominator */
-        double denominator = eps_r2 * (dU2p * U1p - dU1p * U2p);
+        double denominator = eps_r2 * (dU2p - dU1p);
 
 		double G_k = 0.0;
 
-		if (pp_shift[2] < sp_shift[2]) {
-			G_k = 2.0 * U1s * U2p / denominator;
+		if (pp_shift(2) < sp_shift(2)) {
+			G_k = 2.0 * std::exp(U1s - U1p) / denominator;
         } else {
-			G_k = 2.0 * U2s * U1p / denominator;
+			G_k = 2.0 * std::exp(U2s - U2p) / denominator;
         }
 
         return G_k;

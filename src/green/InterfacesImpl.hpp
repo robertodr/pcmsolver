@@ -146,8 +146,8 @@ class NormalDifferential
             if (numericalZero(eps)) throw std::domain_error("Division by zero!");
             double gamma_epsilon = epsPrime / eps;
             // System of equations is defined here
-            dudz[0] =  u[1];
-            dudz[1] = -u[1] * gamma_epsilon + pow(k_, 2) * u[0];
+            dudz[0] = u[1];
+            dudz[1] = -u[1] * (u[1] + gamma_epsilon) + std::pow(k_, 2);
         }
 };
 
@@ -416,7 +416,7 @@ class NormalFunction __final
 {
     public:
         NormalFunction(double k, double zmin, double zmax, const ProfileEvaluator & eval, const IntegratorParameters & parms)
-            : k_(k), zmin_(zmin), zmax_(zmax), zsign_(std::copysign(1.0, zmax - zmin)) {}
+            : k_(k), zmin_(zmin), zmax_(zmax), zsign_(std::copysign(1.0, zmax - zmin)) {compute(eval, parms); }
         ~NormalFunction() {}
         /*! \brief Returns value of function and its first derivative at given point
          *  \param[in] point evaluation point
@@ -458,16 +458,29 @@ class NormalFunction __final
          */
         void compute(const ProfileEvaluator & eval, const IntegratorParameters & parms) {
             namespace odeint = boost::numeric::odeint;
-            odeint::bulirsch_stoer_dense_out<StateVariable> stepper(parms.eps_abs_, parms.eps_rel_, parms.factor_x_, parms.factor_dxdt_);
+			odeint::bulirsch_stoer_dense_out<StateVariable> stepper(parms.eps_abs_, parms.eps_rel_, parms.factor_x_, parms.factor_dxdt_);
             ODESystem system(eval, k_);
             // Holds the initial conditions
             StateVariable init_sol(2);
             // Set initial conditions
-            init_sol[0] = std::exp(zsign_ * k_ * zmin_);
-            init_sol[1] = zsign_ * k_ * init_sol[0];
+			init_sol[0] = zsign_ * k_ * zmin_;
+			init_sol[1] = zsign_ * k_;
+			/*
             odeint::integrate_adaptive(stepper, system, init_sol,
-                    zmin_, zmax_, parms.observer_step_,
+                    zmin_, zmax_, zsign_ * parms.observer_step_,
                     pcm::bind(&NormalFunction<StateVariable, ODESystem>::push_back, this, pcm::_1, pcm::_2));
+			*/
+            odeint::integrate(system, init_sol,
+                    zmin_, zmax_, zsign_ * parms.observer_step_,
+                    pcm::bind(&NormalFunction<StateVariable, ODESystem>::push_back, this, pcm::_1, pcm::_2));
+            // Reverse order of StateVariable-s in RadialSolution
+            // this ensures that they are in ascending order, as later expected by function_impl and derivative_impl
+			if (zsign_ < 0.0) {
+				BOOST_FOREACH(StateVariable & comp, function_) {
+					std::reverse(comp.begin(), comp.end());
+				}
+			}
+
         }
         /*! \brief Returns value of function at given point
          *  \param[in] point evaluation point
@@ -504,5 +517,22 @@ class NormalFunction __final
             return val;
         }
 };
+
+/*! \brief Write contents of a NormalFunction to file
+ *  \param[in] f NormalFunction whose contents have to be printed
+ *  \param[in] fname name of the file
+ *  \author Roberto Di Remigio and Luca Frediani
+ *  \date 2016
+ *  \tparam StateVariable type of the state variable used in the ODE solver
+ *  \tparam ODESystem system of 1st order ODEs replacing the 2nd order ODE
+ */
+template <typename StateVariable,
+          typename ODESystem>
+void writeToFile(NormalFunction<StateVariable, ODESystem> & f, const std::string & fname) {
+    std::ofstream fout;
+    fout.open(fname.c_str());
+    fout << f << std::endl;
+    fout.close();
+}
 
 #endif // INTERFACESIMPL_HPP
