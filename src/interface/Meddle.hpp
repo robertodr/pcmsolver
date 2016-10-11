@@ -101,7 +101,6 @@ namespace pcm {
              */
             void getCenter(int its, double center[]) const;
             /*! \brief Getter for the areas/weights of the finite elements
-             *  \param[in, out] context the PCM context object
              *  \param[out] areas array holding the weights/areas of the finite elements
              */
             void getAreas(double areas[]) const;
