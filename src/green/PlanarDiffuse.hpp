@@ -356,9 +356,6 @@ private:
 		double gauss_point = rule_.gaussAbscissa(63);
 		double kstep = -std::log((gauss_point + 1.0)/2.0);
 		double tmp = kstep * std::exp(kstep*std::abs(sp(2)-pp(2))) * G_k(63, sp, pp);
-		for (int i = 0; i < 64; i++) {
-			double GK =  G_k(i, sp, pp);
-		}
 		return 1.0/tmp;
     }
     /**@}*/
