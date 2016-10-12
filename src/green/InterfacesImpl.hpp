@@ -491,9 +491,9 @@ class NormalFunction __final
         double function_impl(double point) const {
             double val = 0.0;
             if (point < zmin_ && zsign_ > 0.0 ) {
-                val = std::exp(zsign_ * k_ * zmin_);
+                val = zsign_ * k_ * zmin_;
 			} else if (point > zmin_ && zsign_ < 0.0) {
-                val = std::exp(zsign_ * k_ * zmin_);
+                val = zsign_ * k_ * zmin_;
             } else {
                 val = splineInterpolation(point, function_[0], function_[1]);
             }
@@ -508,9 +508,9 @@ class NormalFunction __final
         double derivative_impl(double point) const {
             double val = 0.0;
             if (point < zmin_ && zsign_ > 0.0 ) {
-                val = zsign_ * k_ * std::exp(zsign_ * k_ * zmin_);
+                val = zsign_ * k_;
 			} else if (point > zmin_ && zsign_ < 0.0) {
-                val = zsign_ * k_ * std::exp(zsign_ * k_ * zmin_);
+                val = zsign_ * k_;
             } else {
                 val = splineInterpolation(point, function_[0], function_[2]);
             }

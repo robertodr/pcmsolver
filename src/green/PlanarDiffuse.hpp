@@ -154,8 +154,11 @@ public:
 			double gauss_point = rule_.gaussAbscissa(kindex);
 			double kstep = -std::log((gauss_point + 1.0)/2.0);
 			double bess_0_x = boost::math::cyl_bessel_j(0, kstep * rho);
-            greenImage += kstep * bess_0_x * this->imagePotentialComponent_impl(kindex, source, probe, Cr12);
+			double gaussWeight = rule_.gaussAbscissa(kindex);
+			double GkImage = this->imagePotentialComponent_impl(kindex, source, probe, Cr12);
+            greenImage += kstep * bess_0_x * GkImage * gaussWeight;
         }
+		
 
         return greenImage;
 
