@@ -286,7 +286,7 @@ struct gauss_bilateral64 {
 
     /*! Weights for 64-point Gaussian quadrature rule */
     static double gaussWeight(int i) {
-        static std::vector<double> w64(32);
+        static std::vector<double> w64(64);
 
         w64[0]  = 0.0017832807216964329472961;
         w64[1]  = 0.0041470332605624676352875;
