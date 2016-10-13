@@ -46,15 +46,15 @@ SCENARIO("Evaluation of the planar diffuse Green's function and its derivatives"
     GIVEN("A permittivity profile modelled by the hyperbolic tangent function")
     {
         // High dielectric constant inside
-        double eps1 = 100.0;
+        double eps1 = 1.0;
         // Low dielectric constant outside
-        double eps2 = 10.0;
-        double width = 10.0;
+        double eps2 = 100.0;
+        double width = 0.01;
         // Evaluation at negative z
-        Eigen::Vector3d source1 = (Eigen::Vector3d() << 1.0, 0.0, -25.0).finished();
+        Eigen::Vector3d source1 = (Eigen::Vector3d() << 0.0, 0.0, -35.0).finished();
         Eigen::Vector3d sourceNormal1 = source1;
         sourceNormal1.normalize();
-        Eigen::Vector3d probe1 = (Eigen::Vector3d() << 2.0, 0.0, -25.0).finished();
+        Eigen::Vector3d probe1 = (Eigen::Vector3d() << 20.0, 0.0, -35.0).finished();
         Eigen::Vector3d probeNormal1 = probe1;
         probeNormal1.normalize();
         // Evaluation at positive z

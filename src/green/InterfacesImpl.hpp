@@ -458,7 +458,8 @@ class NormalFunction __final
          */
         void compute(const ProfileEvaluator & eval, const IntegratorParameters & parms) {
             namespace odeint = boost::numeric::odeint;
-			odeint::bulirsch_stoer_dense_out<StateVariable> stepper(parms.eps_abs_, parms.eps_rel_, parms.factor_x_, parms.factor_dxdt_);
+			//			odeint::bulirsch_stoer_dense_out<StateVariable> stepper(parms.eps_abs_, parms.eps_rel_, parms.factor_x_, parms.factor_dxdt_);
+			odeint::runge_kutta_fehlberg78<StateVariable> stepper;
             ODESystem system(eval, k_);
             // Holds the initial conditions
             StateVariable init_sol(2);
@@ -470,7 +471,7 @@ class NormalFunction __final
                     zmin_, zmax_, zsign_ * parms.observer_step_,
                     pcm::bind(&NormalFunction<StateVariable, ODESystem>::push_back, this, pcm::_1, pcm::_2));
 			*/
-            odeint::integrate(system, init_sol,
+            odeint::integrate_const(stepper, system, init_sol,
                     zmin_, zmax_, zsign_ * parms.observer_step_,
                     pcm::bind(&NormalFunction<StateVariable, ODESystem>::push_back, this, pcm::_1, pcm::_2));
             // Reverse order of StateVariable-s in RadialSolution

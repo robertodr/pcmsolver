@@ -152,11 +152,12 @@ public:
 		
         for (int kindex = 0; kindex < 64; kindex++) {
 			double gauss_point = rule_.gaussAbscissa(kindex);
-			double kstep = -std::log((gauss_point + 1.0)/2.0);
+			double gaussWeight = rule_.gaussWeight(kindex) * 0.5;
+			double ystep = (gauss_point + 1.0)/2.0;
+			double kstep = -std::log(ystep);
 			double bess_0_x = boost::math::cyl_bessel_j(0, kstep * rho);
-			double gaussWeight = rule_.gaussAbscissa(kindex);
 			double GkImage = this->imagePotentialComponent_impl(kindex, source, probe, Cr12);
-            greenImage += kstep * bess_0_x * GkImage * gaussWeight;
+            greenImage += GkImage * kstep * bess_0_x * gaussWeight / ystep;
         }
 		
 
@@ -287,9 +288,9 @@ private:
         double eps_rel_     = 1.0e-06; /*! Relative tolerance level */
         double factor_x_    = 0.0;     /*! Weight of the state      */
         double factor_dxdt_ = 0.0;     /*! Weight of the state derivative */
-        double zmin_        = - 30.0; /*! Lower bound of the integration interval */
-        double zmax_        =   30.0; /*! Upper bound of the integration interval */
-        double observer_step_ = 1.0e-03; /*! Time step between observer calls */
+        double zmin_        = - 50.0; /*! Lower bound of the integration interval */
+        double zmax_        =   50.0; /*! Upper bound of the integration interval */
+        double observer_step_ = this->profile_.width(); /*! Time step between observer calls */
         IntegratorParameters params_(eps_abs_, eps_rel_, factor_x_, factor_dxdt_, zmin_, zmax_, observer_step_);
         ProfileEvaluator eval_ = pcm::bind(&ProfilePolicy::operator(), this->profile_, pcm::_1);
 
