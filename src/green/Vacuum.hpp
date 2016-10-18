@@ -73,12 +73,11 @@ private:
   }
 
   virtual KernelS exportKernelS_impl() const __override {
-    return pcm::bind(&Vacuum<DerivativeTraits, IntegratorPolicy>::kernelS, *this,
-                     pcm::_1, pcm::_2);
+    return pcm::bind(&Vacuum<DerivativeTraits>::kernelS, *this, pcm::_1, pcm::_2);
   }
   virtual KernelD exportKernelD_impl() const __override {
-    return pcm::bind(&Vacuum<DerivativeTraits, IntegratorPolicy>::kernelD, *this,
-                     pcm::_1, pcm::_2, pcm::_3);
+    return pcm::bind(&Vacuum<DerivativeTraits>::kernelD, *this, pcm::_1, pcm::_2,
+                     pcm::_3);
   }
 
   virtual double coefficient_impl(const Eigen::Vector3d & UNUSED(source),
