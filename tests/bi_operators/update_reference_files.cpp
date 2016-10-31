@@ -31,7 +31,9 @@
 
 #include <Eigen/Core>
 
-#include "bi_operators/BoundaryIntegralOperators.hpp"
+#include "bi_operators/CollocationIntegrator.hpp"
+#include "bi_operators/PurisimaIntegrator.hpp"
+#include "bi_operators/NumericalIntegrator.hpp"
 #include "cavity/Element.hpp"
 #include "cavity/GePolCavity.hpp"
 #include "green/SphericalDiffuse.hpp"

@@ -36,7 +36,7 @@
 #include "cavity/Element.hpp"
 #include "cavity/GePolCavity.hpp"
 #include "green/IonicLiquid.hpp"
-#include "bi_operators/BoundaryIntegralOperators.hpp"
+#include "bi_operators/NumericalIntegrator.hpp"
 #include "green/UniformDielectric.hpp"
 #include "TestingMolecules.hpp"
 #include "green/Vacuum.hpp"
