@@ -26,6 +26,7 @@
 #ifndef GREENSFUNCTION_HPP
 #define GREENSFUNCTION_HPP
 
+#include <cmath>
 #include <iosfwd>
 
 #include "Config.hpp"
@@ -48,7 +49,8 @@
 template <typename DerivativeTraits, typename ProfilePolicy>
 class GreensFunction : public IGreensFunction {
 public:
-  GreensFunction() : delta_(1.0e-04) {}
+  GreensFunction() : delta_(1.0e-04), factor_(1.07) {}
+  GreensFunction(double fac) : delta_(1.0e-04), factor_(fac) {}
   virtual ~GreensFunction() {}
   /**@{ Methods to sample the Green's function directional derivatives */
   /*! Returns value of the directional derivative of the
@@ -63,7 +65,7 @@ public:
    */
   virtual double derivativeSource(const Eigen::Vector3d & normal_p1,
                                   const Eigen::Vector3d & p1,
-                                  const Eigen::Vector3d & p2) const __override {
+                                  const Eigen::Vector3d & p2) const {
     DerivativeTraits t1[3], t2[3];
     t1[0] = p1(0);
     t1[1] = p1(1);
@@ -88,7 +90,7 @@ public:
    */
   virtual double derivativeProbe(const Eigen::Vector3d & normal_p2,
                                  const Eigen::Vector3d & p1,
-                                 const Eigen::Vector3d & p2) const __override {
+                                 const Eigen::Vector3d & p2) const {
     DerivativeTraits t1[3], t2[3];
     t1[0] = p1(0);
     t1[1] = p1(1);
@@ -174,14 +176,21 @@ protected:
     os << "Green's Function" << std::endl;
     return os;
   }
+  /// Step for numerical differentiation
   double delta_;
+  /*! Scaling factor for the diagonal elements of the matrix representation of
+   * the S and D operators
+   */
+  double factor_;
+  /// Permittivity profile
   ProfilePolicy profile_;
 };
 
 template <typename ProfilePolicy>
 class GreensFunction<Numerical, ProfilePolicy> : public IGreensFunction {
 public:
-  GreensFunction() : delta_(1.0e-04) {}
+  GreensFunction() : delta_(1.0e-04), factor_(1.07) {}
+  GreensFunction(double fac) : delta_(1.0e-04), factor_(fac) {}
   virtual ~GreensFunction() {}
   /**@{ Methods to sample the Green's function directional derivatives */
   /*! Returns value of the directional derivative of the
@@ -287,8 +296,51 @@ protected:
     os << "Green's Function" << std::endl;
     return os;
   }
+  /// Step for numerical differentiation
   double delta_;
+  /*! Scaling factor for the diagonal elements of the matrix representation of
+   * the S and D operators
+   */
+  double factor_;
+  /// Permittivity profile
   ProfilePolicy profile_;
 };
+
+namespace integrator {
+/*! Approximate collocation formula for the diagonal of:
+ * \f[
+ *  (\mathcal{S}_\mathrm{i}f)(\mathbf{s}) = \int_\Gamma
+ * \mathop{}\!\mathrm{d}\mathbf{s}^\prime
+ *  \frac{f(\mathbf{s}^\prime)}{|\mathbf{s} - \mathbf{s}^\prime|}
+ *  \f]
+ *  The
+ *  \param[in] area   area of the finite element, \f$ a_i \f$
+ *  \param[in] factor scaling factor for diagonal elements, \f$ k \f$
+ *  \return The approximate value of \f$S_{ii, \mathrm{i}} = k\sqrt{\frac{4\pi}{a_i}}
+ * \f$
+ */
+inline double diagonalSi(double area, double factor) {
+  return (factor * std::sqrt(4 * M_PI / area));
+}
+
+/*! Approximate collocation formula for the diagonal of:
+ * \f[
+ *  (\mathcal{D}_\mathrm{i}f)(\mathbf{s}) = \int_\Gamma
+ * \mathop{}\!\mathrm{d}\mathbf{s}^\prime
+ *  \frac{(\mathbf{s} - \mathbf{s}^\prime)\cdot
+ * \mathbf{n}_{\mathbf{s}^\prime}}{|\mathbf{s} -
+ * \mathbf{s}^\prime|^3}f(\mathbf{s}^\prime)
+ *  \f]
+ *  The
+ *  \param[in] area   area of the finite element, \f$ a_i \f$
+ *  \param[in] radius radius of the finite element, \f$ R_i \f$
+ *  \param[in] factor scaling factor for diagonal elements, \f$ k \f$
+ *  \return The approximate value of \f$D_{ii, \mathrm{i}} =
+ * -k\sqrt{\frac{\pi}{a_i}}\frac{1}{R_i} \f$
+ */
+inline double diagonalDi(double area, double radius, double factor) {
+  return (-factor * std::sqrt(M_PI / area) * 1.0 / radius);
+}
+} // namespace integrator
 
 #endif // GREENSFUNCTION_HPP

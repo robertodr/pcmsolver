@@ -6,13 +6,13 @@ add_subdirectory(numerical_quadrature)
 add_subdirectory(gepol)
 add_subdirectory(dielectric_profile)
 add_subdirectory(green)
-add_subdirectory(bi_operators)
+#add_subdirectory(bi_operators)
 add_subdirectory(cpcm)
 add_subdirectory(iefpcm)
 
 link_directories(${PROJECT_BINARY_DIR}/lib)
 add_executable(unit_tests unit_tests.cpp
-                          $<TARGET_OBJECTS:bi_operators-tests>
+  # $<TARGET_OBJECTS:bi_operators-tests>
                           $<TARGET_OBJECTS:cpcm-tests>
                           $<TARGET_OBJECTS:dielectric_profile-tests>
                           $<TARGET_OBJECTS:gepol-tests>

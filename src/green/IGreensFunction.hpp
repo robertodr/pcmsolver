@@ -47,36 +47,17 @@ class Element;
  *  \f[
  *      G(\mathbf{r}, \mathbf{r}^\prime) : \mathbb{R}^6 \rightarrow \mathbb{R}
  *  \f]
- *  that can be written as the sum of a singular and a non-singular part:
- *  \f[
- *      G(\mathbf{r}, \mathbf{r}^\prime) =
- *      \frac{1}{C(\mathbf{r}, \mathbf{r}^\prime)|\mathbf{r} - \mathbf{r}^\prime|} +
- *      G_\mathrm{img}(\mathbf{r}, \mathbf{r}^\prime)
- *  \f]
- *  The singular part is the Coulomb portion of the Green's function, possibly
- *  scaled by a position-dependent scalar coefficient:
- *  \f$C(\mathbf{r}, \mathbf{r}^\prime)\f$
- *  The non-singular part is usually associated with the image portion of the
- *  Green's function. This does not necessarily mean that the non-singular
- *  portion is physically an image contribution.
  *
- *  # Design motivation and rationale
- *
- *  Our definition of an electrostatic Green's function is rather arbitrary.
- *  However, at the time of writing, it covers all possible electrostatic
- *  Green's function already available within the library.
- *  Why do we need such a design?
  *  Green's functions and their directional derivatives appear as kernels of
  *  the \f$\mathcal{S}\f$ and \f$\mathcal{D}\f$ integral operators.
- *  Forming the matrix representation of these operators requires performing an
- *  integration over a surface finite element.
+ *  Forming the matrix representation of these operators requires performing
+ *  integrations over surface finite elements.
  *  Since these Green's functions present a Coulombic divergence, the diagonal
  *  elements of the operators will diverge unless appropriately formulated.
- *  This is possible, but requires **explicit** access to the expressions for
- *  the Coulomb singularity scaling coefficient and non-singular part. Hiding
- *  these details would otherwise introduce tight coupling with the solver
- *  and/or an intermediate boundary integral operator object.
- *  The Non-Virtual Interface (NVI) idiom is used.
+ *  This is possible, but requires **explicit** access to the _subtype_
+ *  of this abstract base object.
+ *  This justifies the need for the singleLayer and doubleLayer functions.
+ *  The code uses the Non-Virtual Interface (NVI) idiom.
  */
 
 /*! \typedef KernelS
@@ -130,95 +111,27 @@ public:
   KernelS exportKernelS() const { return exportKernelS_impl(); }
   KernelD exportKernelD() const { return exportKernelD_impl(); }
 
-  /**@{ Methods to sample the Green's function singular part and its probe point
-   * directional derivative */
-  /*! \brief Returns Coulomb singularity separation coefficient
-   *  \param[in] source location of the source charge
-   *  \param[in] probe location of the probe charge
-   *  \note This is the Non-Virtual Interface (NVI)
-   */
-  double coefficientCoulomb(const Eigen::Vector3d & source,
-                            const Eigen::Vector3d & probe) const {
-    return coefficient_impl(source, probe);
-  }
-  /*! \brief Returns singular part of the Green's function
-   *  \param[in] source location of the source charge
-   *  \param[in] probe location of the probe charge
-   *  \note This method only has a Non-Virtual Interface (NVI)
-   */
-  double Coulomb(const Eigen::Vector3d & source,
-                 const Eigen::Vector3d & probe) const {
-    double r12 = (source - probe).norm();
-    return (1.0 / (coefficient_impl(source, probe) * r12));
-  }
-  /*! Returns value of the directional derivative of the
-   *  Coulomb singularity separation coefficient for the pair of points p1, p2:
-   *  \f$ \nabla_{\mathbf{p_2}}G(\mathbf{p}_1, \mathbf{p}_2)\cdot
-   * \mathbf{n}_{\mathbf{p}_2}\f$
-   *  Notice that this method returns the directional derivative with respect
-   *  to the probe point, thus assuming that the direction is relative to that point.
-   *  \param[in] direction the direction
-   *  \param[in]        p1 first point
-   *  \param[in]        p2 second point
-   *  \note This is the Non-Virtual Interface (NVI)
-   */
-  double coefficientCoulombDerivative(const Eigen::Vector3d & direction,
-                                      const Eigen::Vector3d & p1,
-                                      const Eigen::Vector3d & p2) const {
-    return coefficientCoulombDerivative_impl(direction, p1, p2);
-  }
-  /*! Returns value of the directional derivative of the
-   *  singular part of the Greens's function for the pair of points p1, p2:
-   *  \f$ \nabla_{\mathbf{p_2}}G(\mathbf{p}_1, \mathbf{p}_2)\cdot
-   * \mathbf{n}_{\mathbf{p}_2}\f$
-   *  Notice that this method returns the directional derivative with respect
-   *  to the probe point, thus assuming that the direction is relative to that point.
-   *  \param[in] direction the direction
-   *  \param[in]        p1 first point
-   *  \param[in]        p2 second point
-   *  \note This is the Non-Virtual Interface (NVI)
-   */
-  double CoulombDerivative(const Eigen::Vector3d & direction,
-                           const Eigen::Vector3d & p1,
-                           const Eigen::Vector3d & p2) const {
-    return CoulombDerivative_impl(direction, p1, p2);
-  }
-  /**@}*/
-
-  /**@{ Methods to sample the Green's function non-singular part (aka the image) and
-   * its probe point directional derivative */
-  /*! \brief Returns non-singular part of the Green's function (image potential)
-   *  \param[in] source location of the source charge
-   *  \param[in] probe location of the probe charge
-   *  \note This is the Non-Virtual Interface (NVI)
-   */
-  double imagePotential(const Eigen::Vector3d & source,
-                        const Eigen::Vector3d & probe) const {
-    return imagePotential_impl(source, probe);
-  }
-  /*! Returns value of the directional derivative of the
-   *  non-singular part (image potential) of the Greens's function for the pair of
-   * points p1, p2:
-   *  \f$ \nabla_{\mathbf{p_2}}G(\mathbf{p}_1, \mathbf{p}_2)\cdot
-   * \mathbf{n}_{\mathbf{p}_2}\f$
-   *  Notice that this method returns the directional derivative with respect
-   *  to the probe point, thus assuming that the direction is relative to that point.
-   *  \param[in] direction the direction
-   *  \param[in]        p1 first point
-   *  \param[in]        p2 second point
-   *  \note This is the Non-Virtual Interface (NVI)
-   */
-  double imagePotentialDerivative(const Eigen::Vector3d & direction,
-                                  const Eigen::Vector3d & p1,
-                                  const Eigen::Vector3d & p2) const {
-    return imagePotentialDerivative_impl(direction, p1, p2);
-  }
-  /**@}*/
-
   /*! Whether the Green's function describes a uniform environment */
   virtual bool uniform() const = 0;
   /*! Returns a dielectric permittivity profile */
   virtual Permittivity permittivity() const = 0;
+
+  /**@{ Methods to compute the diagonal of the matrix representation of the S and D
+   *    operators by approximate collocation. */
+  /*! Calculates an element on the diagonal of the matrix representation of the
+   * S operator using an approximate collocation formula.
+   *  \param[in] e finite element on the cavity
+   *  \note This is the Non-Virtual Interface (NVI)
+   */
+  double singleLayer(const Element & e) const { return singleLayer_impl(e); }
+  /*! Calculates an element of the diagonal of the matrix representation of the D
+   * operator
+   * using an approximate collocation formula.
+   *  \param[in] e finite element on the cavity
+   *  \note This is the Non-Virtual Interface (NVI)
+   */
+  double doubleLayer(const Element & e) const { return doubleLayer_impl(e); }
+  /**@}*/
 
   friend std::ostream & operator<<(std::ostream & os, IGreensFunction & gf) {
     return gf.printObject(os);
@@ -256,66 +169,20 @@ protected:
   virtual KernelS exportKernelS_impl() const = 0;
   virtual KernelD exportKernelD_impl() const = 0;
 
-  /**@{ Methods to sample the Green's function singular part and its probe point
-   * directional derivative */
-  /*! \brief Returns Coulomb singularity separation coefficient
-   *  \param[in] source location of the source charge
-   *  \param[in] probe location of the probe charge
+  /**@{ Methods to compute the diagonal of the matrix representation of the S and D
+   *    operators by approximate collocation. */
+  /*! Calculates an element on the diagonal of the matrix representation of the
+   * S operator using an approximate collocation formula.
+   *  \param[in] e finite element on the cavity
    */
-  virtual double coefficient_impl(const Eigen::Vector3d & source,
-                                  const Eigen::Vector3d & probe) const = 0;
-  /*! Returns value of the directional derivative of the
-   *  Coulomb singularity separation coefficient for the pair of points p1, p2:
-   *  \f$ \nabla_{\mathbf{p_2}}G(\mathbf{p}_1, \mathbf{p}_2)\cdot
-   * \mathbf{n}_{\mathbf{p}_2}\f$
-   *  Notice that this method returns the directional derivative with respect
-   *  to the probe point, thus assuming that the direction is relative to that point.
-   *  \param[in] direction the direction
-   *  \param[in]        p1 first point
-   *  \param[in]        p2 second point
+  virtual double singleLayer_impl(const Element & e) const = 0;
+  /*! Calculates an element of the diagonal of the matrix representation of the D
+   * operator
+   * using an approximate collocation formula.
+   *  \param[in] e finite element on the cavity
    */
-  virtual double coefficientCoulombDerivative_impl(
-      const Eigen::Vector3d & direction, const Eigen::Vector3d & p1,
-      const Eigen::Vector3d & p2) const = 0;
-  /*! Returns value of the directional derivative of the
-   *  singular part of the Greens's function for the pair of points p1, p2:
-   *  \f$ \nabla_{\mathbf{p_2}}G(\mathbf{p}_1, \mathbf{p}_2)\cdot
-   * \mathbf{n}_{\mathbf{p}_2}\f$
-   *  Notice that this method returns the directional derivative with respect
-   *  to the probe point, thus assuming that the direction is relative to that point.
-   *  \param[in] direction the direction
-   *  \param[in]        p1 first point
-   *  \param[in]        p2 second point
-   */
-  virtual double CoulombDerivative_impl(const Eigen::Vector3d & direction,
-                                        const Eigen::Vector3d & p1,
-                                        const Eigen::Vector3d & p2) const = 0;
-  /**@}*/
+  virtual double doubleLayer_impl(const Element & e) const = 0;
 
-  /**@{ Methods to sample the Green's function non-singular part (aka the image) and
-   * its probe point directional derivative */
-  /*! \brief Returns non-singular part of the Green's function (image potential)
-   *  \param[in] source location of the source charge
-   *  \param[in] probe location of the probe charge
-   */
-  virtual double imagePotential_impl(const Eigen::Vector3d & source,
-                                     const Eigen::Vector3d & probe) const = 0;
-  /*! Returns value of the directional derivative of the
-   *  non-singular part (image potential) of the Greens's function for the pair of
-   * points p1, p2:
-   *  \f$ \nabla_{\mathbf{p_2}}G(\mathbf{p}_1, \mathbf{p}_2)\cdot
-   * \mathbf{n}_{\mathbf{p}_2}\f$
-   *  Notice that this method returns the directional derivative with respect
-   *  to the probe point, thus assuming that the direction is relative to that point.
-   *  \param[in] direction the direction
-   *  \param[in]        p1 first point
-   *  \param[in]        p2 second point
-   *  \note This is the Non-Virtual Interface (NVI)
-   */
-  virtual double imagePotentialDerivative_impl(const Eigen::Vector3d & direction,
-                                               const Eigen::Vector3d & p1,
-                                               const Eigen::Vector3d & p2) const = 0;
-  /**@}*/
   virtual std::ostream & printObject(std::ostream & os) = 0;
 };
 
