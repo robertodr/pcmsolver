@@ -38,6 +38,11 @@
 #include "DerivativeUtils.hpp"
 #include "GreensFunction.hpp"
 #include "dielectric_profile/Yukawa.hpp"
+#include "cavity/Element.hpp"
+
+#include "GreenData.hpp"
+#include "utils/ForId.hpp"
+#include "utils/Factory.hpp"
 
 /*! \file IonicLiquid.hpp
  *  \class IonicLiquid
@@ -51,7 +56,11 @@
 template <typename DerivativeTraits = AD_directional>
 class IonicLiquid __final : public GreensFunction<DerivativeTraits, Yukawa> {
 public:
-  IonicLiquid(double eps, double k) : GreensFunction<DerivativeTraits, Yukawa> {
+  IonicLiquid(double eps, double k) : GreensFunction<DerivativeTraits, Yukawa>() {
+    this->profile_ = Yukawa(eps, k);
+  }
+  IonicLiquid(double eps, double k, double fac)
+      : GreensFunction<DerivativeTraits, Yukawa>(fac) {
     this->profile_ = Yukawa(eps, k);
   }
   virtual ~IonicLiquid() {}
@@ -82,30 +91,12 @@ private:
                      pcm::_2, pcm::_3);
   }
 
-  virtual double coefficient_impl(const Eigen::Vector3d & UNUSED(source),
-                                  const Eigen::Vector3d & UNUSED(probe)) const
-      __override {
-    return this->profile_.epsilon;
-  }
-  virtual double coefficientCoulombDerivative_impl(
-      const Eigen::Vector3d & UNUSED(direction), const Eigen::Vector3d & UNUSED(p1),
-      const Eigen::Vector3d & UNUSED(p2)) const __override {
+  virtual double singleLayer_impl(const Element & UNUSED(e)) const __override {
+    PCMSOLVER_ERROR("Not implemented yet for IonicLiquid", BOOST_CURRENT_FUNCTION);
     return 0.0;
   }
-  virtual double CoulombDerivative_impl(
-      const Eigen::Vector3d & direction, const Eigen::Vector3d & p1,
-      const Eigen::Vector3d & p2) const __override {
-    return this->derivativeProbe(direction, p1, p2);
-  }
-
-  virtual double imagePotential_impl(const Eigen::Vector3d & UNUSED(source),
-                                     const Eigen::Vector3d & UNUSED(probe)) const
-      __override {
-    return 0.0;
-  }
-  virtual double imagePotentialDerivative_impl(
-      const Eigen::Vector3d & UNUSED(direction), const Eigen::Vector3d & UNUSED(p1),
-      const Eigen::Vector3d & UNUSED(p2)) const __override {
+  virtual double doubleLayer_impl(const Element & UNUSED(e)) const __override {
+    PCMSOLVER_ERROR("Not implemented yet for IonicLiquid", BOOST_CURRENT_FUNCTION);
     return 0.0;
   }
 
@@ -115,5 +106,22 @@ private:
     return os;
   }
 };
+
+namespace {
+struct buildIonicLiquid {
+  template <typename T> IGreensFunction * operator()(const greenData & data) {
+    return new IonicLiquid<T>(data.epsilon, data.kappa, data.scaling);
+  }
+};
+
+IGreensFunction * createIonicLiquid(const greenData & data) {
+  buildIonicLiquid build;
+  return for_id<derivative_types, IGreensFunction>(build, data, data.howDerivative);
+}
+const std::string IONICLIQUID("IONICLIQUID");
+const bool registeredIonicLiquid =
+    Factory<IGreensFunction, greenData>::TheFactory().registerObject(
+        IONICLIQUID, createIonicLiquid);
+}
 
 #endif // IONICLIQUID_HPP

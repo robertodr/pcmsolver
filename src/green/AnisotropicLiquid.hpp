@@ -38,6 +38,11 @@
 #include "DerivativeUtils.hpp"
 #include "dielectric_profile/Anisotropic.hpp"
 #include "GreensFunction.hpp"
+#include "cavity/Element.hpp"
+
+#include "GreenData.hpp"
+#include "utils/ForId.hpp"
+#include "utils/Factory.hpp"
 
 /*! \file AnisotropicLiquid.hpp
  *  \class AnisotropicLiquid
@@ -47,7 +52,6 @@
  *  \date 2016
  *  \tparam DerivativeTraits evaluation strategy for the function and its derivatives
  */
-// TODO Check the implementation of the coefficient_impl function!
 
 template <typename DerivativeTraits = AD_directional>
 class AnisotropicLiquid __final
@@ -59,6 +63,11 @@ public:
   AnisotropicLiquid(const Eigen::Vector3d & eigen_eps,
                     const Eigen::Vector3d & euler_ang)
       : GreensFunction<DerivativeTraits, Anisotropic>() {
+    this->profile_ = Anisotropic(eigen_eps, euler_ang);
+  }
+  AnisotropicLiquid(const Eigen::Vector3d & eigen_eps,
+                    const Eigen::Vector3d & euler_ang, double fac)
+      : GreensFunction<DerivativeTraits, Anisotropic>(fac) {
     this->profile_ = Anisotropic(eigen_eps, euler_ang);
   }
   virtual ~AnisotropicLiquid() {}
@@ -105,31 +114,14 @@ public:
                      pcm::_2, pcm::_3);
   }
 
-  virtual double coefficient_impl(const Eigen::Vector3d & UNUSED(source),
-                                  const Eigen::Vector3d & UNUSED(probe)) const
-      __override {
-    // WARNING This is totally arbitrary!
-    return this->profile_.detEps;
-  }
-  virtual double coefficientCoulombDerivative_impl(
-      const Eigen::Vector3d & UNUSED(direction), const Eigen::Vector3d & UNUSED(p1),
-      const Eigen::Vector3d & UNUSED(p2)) const __override {
+  virtual double singleLayer_impl(const Element & UNUSED(e)) const __override {
+    PCMSOLVER_ERROR("Not implemented yet for AnisotropicLiquid",
+                    BOOST_CURRENT_FUNCTION);
     return 0.0;
   }
-  virtual double CoulombDerivative_impl(
-      const Eigen::Vector3d & direction, const Eigen::Vector3d & p1,
-      const Eigen::Vector3d & p2) const __override {
-    return this->derivativeProbe(direction, p1, p2);
-  }
-
-  virtual double imagePotential_impl(const Eigen::Vector3d & UNUSED(source),
-                                     const Eigen::Vector3d & UNUSED(probe)) const
-      __override {
-    return 0.0;
-  }
-  virtual double imagePotentialDerivative_impl(
-      const Eigen::Vector3d & UNUSED(direction), const Eigen::Vector3d & UNUSED(p1),
-      const Eigen::Vector3d & UNUSED(p2)) const __override {
+  virtual double doubleLayer_impl(const Element & UNUSED(e)) const __override {
+    PCMSOLVER_ERROR("Not implemented yet for AnisotropicLiquid",
+                    BOOST_CURRENT_FUNCTION);
     return 0.0;
   }
 
@@ -139,5 +131,23 @@ public:
     return os;
   }
 };
+
+namespace {
+struct buildAnisotropicLiquid {
+  template <typename T> IGreensFunction * operator()(const greenData & data) {
+    return new AnisotropicLiquid<T>(data.epsilonTensor, data.eulerAngles,
+                                    data.scaling);
+  }
+};
+
+IGreensFunction * createAnisotropicLiquid(const greenData & data) {
+  buildAnisotropicLiquid build;
+  return for_id<derivative_types, IGreensFunction>(build, data, data.howDerivative);
+}
+const std::string ANISOTROPICLIQUID("ANISOTROPICLIQUID");
+const bool registeredAnisotropicLiquid =
+    Factory<IGreensFunction, greenData>::TheFactory().registerObject(
+        ANISOTROPICLIQUID, createAnisotropicLiquid);
+}
 
 #endif // ANISOTROPICLIQUID_HPP
