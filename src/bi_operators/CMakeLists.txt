@@ -1,8 +1,8 @@
 # List of headers
-list(APPEND headers_list CollocationIntegrator.hpp IntegratorForward.hpp IntegratorHelperFunctions.hpp IntegratorTypes.hpp NumericalIntegrator.hpp PurisimaIntegrator.hpp)
+list(APPEND headers_list IntegratorHelperFunctions.hpp BoundaryIntegralOperators.hpp)
 
 # List of sources
-list(APPEND sources_list )
+list(APPEND sources_list BoundaryIntegralOperators.cpp)
 
 add_library(bi_operators OBJECT ${headers_list} ${sources_list})
 set_target_properties(bi_operators PROPERTIES POSITION_INDEPENDENT_CODE 1 )
