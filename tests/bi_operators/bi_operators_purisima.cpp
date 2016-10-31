@@ -34,7 +34,8 @@
 
 #include "cavity/Element.hpp"
 #include "cavity/GePolCavity.hpp"
-#include "bi_operators/BoundaryIntegralOperators.hpp"
+#include "bi_operators/CollocationIntegrator.hpp"
+#include "bi_operators/PurisimaIntegrator.hpp"
 #include "green/SphericalDiffuse.hpp"
 #include "TestingMolecules.hpp"
 #include "green/UniformDielectric.hpp"

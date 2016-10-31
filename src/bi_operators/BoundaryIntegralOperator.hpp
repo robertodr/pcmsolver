@@ -24,6 +24,8 @@
 #ifndef BOUNDARYINTEGRALOPERATORS_HPP
 #define BOUNDARYINTEGRALOPERATORS_HPP
 
+#include <vector>
+
 #include "Config.hpp"
 
 #include <Eigen/Core>
@@ -41,46 +43,6 @@ public:
 private:
   virtual Eigen::MatrixXd compute(const std::vector<Element> & elems,
                                   const IGreensFunction & gf) const = 0;
-};
-
-class CollocationS __final : public BoundaryIntegralOperator {
-private:
-  virtual Eigen::MatrixXd compute(const std::vector<Element> & elems,
-                                  const IGreensFunction & gf) const __override;
-};
-
-class NumericalS __final : public BoundaryIntegralOperator {
-private:
-  virtual Eigen::MatrixXd compute(const std::vector<Element> & elems,
-                                  const IGreensFunction & gf) const __override;
-};
-
-class CollocationD __final : public BoundaryIntegralOperator {
-private:
-  virtual Eigen::MatrixXd compute(const std::vector<Element> & elems,
-                                  const IGreensFunction & gf) const __override;
-};
-
-class PurisimaD __final : public BoundaryIntegralOperator {
-private:
-  /*! Computes the matrix representation of the double layer operator by collocation
-   *  using the Purisima sum rule to compute the diagonal elements.
-   *  \param[in] cav discretized cavity
-   *  \param[in] gf  a Green's function
-   *
-   *  The sum rule for the diagonal elements is:
-   *  \f[
-   *    D_{ii} = -\left(2\pi + \sum_{j\neq i}D_{ij}a_j \right)\frac{1}{a_i}
-   *  \f]
-   */
-  virtual Eigen::MatrixXd compute(const std::vector<Element> & elems,
-                                  const IGreensFunction & gf) const __override;
-};
-
-class NumericalD __final : public BoundaryIntegralOperator {
-private:
-  virtual Eigen::MatrixXd compute(const std::vector<Element> & elems,
-                                  const IGreensFunction & gf) const __override;
 };
 } // namespace integrator
 
