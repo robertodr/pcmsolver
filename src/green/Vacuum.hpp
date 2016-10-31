@@ -37,6 +37,11 @@
 #include "DerivativeTypes.hpp"
 #include "DerivativeUtils.hpp"
 #include "GreensFunction.hpp"
+#include "cavity/Element.hpp"
+
+#include "GreenData.hpp"
+#include "utils/ForId.hpp"
+#include "utils/Factory.hpp"
 
 /*! \file Vacuum.hpp
  *  \class Vacuum
@@ -53,6 +58,9 @@ template <typename DerivativeTraits = AD_directional>
 class Vacuum __final : public GreensFunction<DerivativeTraits, Uniform> {
 public:
   Vacuum() : GreensFunction<DerivativeTraits, Uniform>() {
+    this->profile_ = Uniform(1.0);
+  }
+  Vacuum(double fac) : GreensFunction<DerivativeTraits, Uniform>(fac) {
     this->profile_ = Uniform(1.0);
   }
   virtual ~Vacuum() {}
@@ -80,31 +88,11 @@ private:
                      pcm::_3);
   }
 
-  virtual double coefficient_impl(const Eigen::Vector3d & UNUSED(source),
-                                  const Eigen::Vector3d & UNUSED(probe)) const
-      __override {
-    return this->profile_.epsilon;
+  virtual double singleLayer_impl(const Element & e) const __override {
+    return integrator::diagonalSi(e.area(), this->factor_);
   }
-  virtual double coefficientCoulombDerivative_impl(
-      const Eigen::Vector3d & UNUSED(direction), const Eigen::Vector3d & UNUSED(p1),
-      const Eigen::Vector3d & UNUSED(p2)) const __override {
-    return 0.0;
-  }
-  virtual double CoulombDerivative_impl(
-      const Eigen::Vector3d & direction, const Eigen::Vector3d & p1,
-      const Eigen::Vector3d & p2) const __override {
-    return this->derivativeProbe(direction, p1, p2);
-  }
-
-  virtual double imagePotential_impl(const Eigen::Vector3d & UNUSED(source),
-                                     const Eigen::Vector3d & UNUSED(probe)) const
-      __override {
-    return 0.0;
-  }
-  virtual double imagePotentialDerivative_impl(
-      const Eigen::Vector3d & UNUSED(direction), const Eigen::Vector3d & UNUSED(p1),
-      const Eigen::Vector3d & UNUSED(p2)) const __override {
-    return 0.0;
+  virtual double doubleLayer_impl(const Element & e) const __override {
+    return integrator::diagonalDi(e.area(), e.sphere().radius, this->factor_);
   }
 
   virtual std::ostream & printObject(std::ostream & os) __override {
@@ -112,5 +100,22 @@ private:
     return os;
   }
 };
+
+namespace {
+struct buildVacuum {
+  template <typename T> IGreensFunction * operator()(const greenData & data) {
+    return new Vacuum<T>(data.scaling);
+  }
+};
+
+IGreensFunction * createVacuum(const greenData & data) {
+  buildVacuum build;
+  return for_id<derivative_types, IGreensFunction>(build, data, data.howDerivative);
+}
+const std::string VACUUM("VACUUM");
+const bool registeredVacuum =
+    Factory<IGreensFunction, greenData>::TheFactory().registerObject(VACUUM,
+                                                                     createVacuum);
+}
 
 #endif // VACUUM_HPP
