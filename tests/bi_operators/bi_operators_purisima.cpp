@@ -34,16 +34,14 @@
 
 #include "cavity/Element.hpp"
 #include "cavity/GePolCavity.hpp"
-#include "bi_operators/CollocationIntegrator.hpp"
-#include "bi_operators/PurisimaIntegrator.hpp"
+#include "bi_operators/Purisima.hpp"
 #include "green/SphericalDiffuse.hpp"
 #include "TestingMolecules.hpp"
 #include "green/UniformDielectric.hpp"
 #include "green/Vacuum.hpp"
 #include "utils/MathUtils.hpp"
 
-using integrator::CollocationS;
-using integrator::PurisimaD;
+using integrator::Purisima;
 
 SCENARIO(
     "A collocation integrator with diagonal elements according to Purisima for D",
@@ -55,17 +53,16 @@ SCENARIO(
     GePolCavity cavity = GePolCavity(molec, area, 0.0, 100.0);
     Eigen::MatrixXd results = Eigen::MatrixXd::Zero(cavity.size(), cavity.size());
     Eigen::MatrixXd reference = Eigen::MatrixXd::Zero(cavity.size(), cavity.size());
-    CollocationS singleLayer;
-    PurisimaD doubleLayer;
+    Purisima op;
 
-    /*! \class PurisimaIntegrator
-     *  \test \b PurisimaIntegratorTest_vacuum tests the evaluation by collocation of
+    /*! \class Purisima
+     *  \test \b PurisimaTest_vacuum tests the evaluation by collocation of
      * the vacuum matrix representations of S and D
      */
     WHEN("the vacuum Green's function is used") {
       Vacuum<> gf;
       THEN("the matrix elements of S are") {
-        results = singleLayer(cavity, gf);
+        results = op.computeS(cavity, gf);
         reference = cnpy::custom::npy_load<double>("vacuum_S_collocation.npy");
         for (int i = 0; i < cavity.size(); ++i) {
           for (int j = 0; j < cavity.size(); ++j) {
@@ -74,7 +71,7 @@ SCENARIO(
         }
       }
       AND_THEN("the matrix elements of D are") {
-        results = doubleLayer(cavity, gf);
+        results = op.computeD(cavity, gf);
         reference = cnpy::custom::npy_load<double>("vacuum_D_purisima.npy");
         for (int i = 0; i < cavity.size(); ++i) {
           for (int j = 0; j < cavity.size(); ++j) {
@@ -84,15 +81,15 @@ SCENARIO(
       }
     }
 
-    /*! \class PurisimaIntegrator
-     *  \test \b PurisimaIntegratorTest_uniformdielectric tests the evaluation by
+    /*! \class Purisima
+     *  \test \b PurisimaTest_uniformdielectric tests the evaluation by
      * collocation of the uniform dielectric matrix representations of S and D
      */
     AND_WHEN("the uniform dielectric Green's function is used") {
       double epsilon = 80.0;
       UniformDielectric<> gf(epsilon);
       THEN("the matrix elements of S are") {
-        results = singleLayer(cavity, gf);
+        results = op.computeS(cavity, gf);
         reference =
             cnpy::custom::npy_load<double>("uniformdielectric_S_collocation.npy");
         for (int i = 0; i < cavity.size(); ++i) {
@@ -102,7 +99,7 @@ SCENARIO(
         }
       }
       AND_THEN("the matrix elements of D are") {
-        results = doubleLayer(cavity, gf);
+        results = op.computeD(cavity, gf);
         reference =
             cnpy::custom::npy_load<double>("uniformdielectric_D_purisima.npy");
         for (int i = 0; i < cavity.size(); ++i) {

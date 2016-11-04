@@ -35,7 +35,7 @@
 #include "utils/cnpy.hpp"
 #include "cavity/Element.hpp"
 #include "cavity/GePolCavity.hpp"
-#include "bi_operators/NumericalIntegrator.hpp"
+#include "bi_operators/Numerical.hpp"
 #include "utils/MathUtils.hpp"
 #include "TestingMolecules.hpp"
 

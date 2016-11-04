@@ -29,12 +29,15 @@
 
 #include <Eigen/Core>
 
+#include "bi_operators/Collocation.hpp"
 #include "green/DerivativeTypes.hpp"
 #include "cavity/GePolCavity.hpp"
 #include "green/Vacuum.hpp"
 #include "green/UniformDielectric.hpp"
 #include "solver/CPCMSolver.hpp"
 #include "TestingMolecules.hpp"
+
+using integrator::Collocation;
 
 SCENARIO("Test solver for the C-PCM for a point charge and a GePol cavity",
          "[solver][cpcm][cpcm_gepol-point]") {
@@ -45,6 +48,8 @@ SCENARIO("Test solver for the C-PCM for a point charge and a GePol cavity",
     UniformDielectric<> gf_o(permittivity);
     bool symm = true;
     double correction = 0.5;
+
+    Collocation S;
 
     double charge = 8.0;
     double totalASC = -charge * (permittivity - 1) / (permittivity + correction);
@@ -63,7 +68,7 @@ SCENARIO("Test solver for the C-PCM for a point charge and a GePol cavity",
       cavity.saveCavity("point.npz");
 
       CPCMSolver solver(symm, correction);
-      solver.buildSystemMatrix(cavity, gf_i, gf_o);
+      solver.buildSystemMatrix(cavity, gf_i, gf_o, S);
 
       int size = cavity.size();
       Eigen::VectorXd fake_mep = computeMEP(cavity.elements(), charge);
@@ -101,7 +106,7 @@ SCENARIO("Test solver for the C-PCM for a point charge and a GePol cavity",
       GePolCavity cavity = GePolCavity(point, area, probeRadius, minRadius);
 
       CPCMSolver solver(symm, correction);
-      solver.buildSystemMatrix(cavity, gf_i, gf_o);
+      solver.buildSystemMatrix(cavity, gf_i, gf_o, S);
 
       double charge = 8.0;
       int size = cavity.size();

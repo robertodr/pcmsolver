@@ -31,9 +31,9 @@
 
 #include <Eigen/Core>
 
-#include "bi_operators/CollocationIntegrator.hpp"
-#include "bi_operators/PurisimaIntegrator.hpp"
-#include "bi_operators/NumericalIntegrator.hpp"
+#include "bi_operators/Collocation.hpp"
+#include "bi_operators/Purisima.hpp"
+#include "bi_operators/Numerical.hpp"
 #include "cavity/Element.hpp"
 #include "cavity/GePolCavity.hpp"
 #include "green/SphericalDiffuse.hpp"
@@ -73,47 +73,42 @@ int main() {
 }
 
 void save_vacuum_collocation() {
-  using integrator::CollocationS;
-  using integrator::CollocationD;
+  using integrator::Collocation;
 
   Molecule molec = dummy<0>(1.44 / bohrToAngstrom());
   double area = 10.0;
   GePolCavity cavity(molec, area, 0.0, 100.0);
 
-  CollocationS singleLayer;
-  CollocationD doubleLayer;
+  Collocation op;
 
   Vacuum<> gf;
 
-  Eigen::MatrixXd S_results = singleLayer(cavity, gf);
+  Eigen::MatrixXd S_results = op.computeS(cavity, gf);
   cnpy::custom::npy_save("vacuum_S_collocation.npy", S_results);
-  Eigen::MatrixXd D_results = doubleLayer(cavity, gf);
+  Eigen::MatrixXd D_results = op.computeD(cavity, gf);
   cnpy::custom::npy_save("vacuum_D_collocation.npy", D_results);
 }
 
 void save_uniform_dielectric_collocation() {
-  using integrator::CollocationS;
-  using integrator::CollocationD;
+  using integrator::Collocation;
 
   double epsilon = 80.0;
   Molecule molec = dummy<0>(1.44 / bohrToAngstrom());
   double area = 10.0;
   GePolCavity cavity(molec, area, 0.0, 100.0);
 
-  CollocationS singleLayer;
-  CollocationD doubleLayer;
+  Collocation op;
 
   UniformDielectric<> gf(epsilon);
 
-  Eigen::MatrixXd S_results = singleLayer(cavity, gf);
+  Eigen::MatrixXd S_results = op.computeS(cavity, gf);
   cnpy::custom::npy_save("uniformdielectric_S_collocation.npy", S_results);
-  Eigen::MatrixXd D_results = doubleLayer(cavity, gf);
+  Eigen::MatrixXd D_results = op.computeD(cavity, gf);
   cnpy::custom::npy_save("uniformdielectric_D_collocation.npy", D_results);
 }
 
 void save_tanh_spherical_diffuse_collocation() {
-  using integrator::CollocationS;
-  using integrator::CollocationD;
+  using integrator::Collocation;
 
   double epsilon = 80.0;
   double width = 5.0;
@@ -122,117 +117,97 @@ void save_tanh_spherical_diffuse_collocation() {
   double area = 10.0;
   GePolCavity cavity(molec, area, 0.0, 100.0);
 
-  CollocationS singleLayer;
-  CollocationD doubleLayer;
+  Collocation op;
 
   SphericalDiffuse<> gf(epsilon, epsilon, width, sphereRadius,
                         Eigen::Vector3d::Zero(), 3);
 
-  Eigen::MatrixXd S_results = singleLayer(cavity, gf);
+  Eigen::MatrixXd S_results = op.computeS(cavity, gf);
   cnpy::custom::npy_save("tanhsphericaldiffuse_S_collocation.npy", S_results);
-  Eigen::MatrixXd D_results = doubleLayer(cavity, gf);
+  Eigen::MatrixXd D_results = op.computeD(cavity, gf);
   cnpy::custom::npy_save("tanhsphericaldiffuse_D_collocation.npy", D_results);
 }
 
 void save_vacuum_purisima() {
-  using integrator::CollocationS;
-  using integrator::PurisimaD;
+  using integrator::Purisima;
 
   Molecule molec = dummy<0>(1.44 / bohrToAngstrom());
   double area = 10.0;
   GePolCavity cavity(molec, area, 0.0, 100.0);
 
-  CollocationS singleLayer;
-  PurisimaD doubleLayer;
+  Purisima op;
 
   Vacuum<> gf;
 
-  Eigen::MatrixXd D_results = doubleLayer(cavity, gf);
+  Eigen::MatrixXd D_results = op.computeD(cavity, gf);
   cnpy::custom::npy_save("vacuum_D_purisima.npy", D_results);
 }
 
 void save_uniform_dielectric_purisima() {
-  using integrator::CollocationS;
-  using integrator::PurisimaD;
+  using integrator::Purisima;
 
   double epsilon = 80.0;
   Molecule molec = dummy<0>(1.44 / bohrToAngstrom());
   double area = 10.0;
   GePolCavity cavity(molec, area, 0.0, 100.0);
 
-  CollocationS singleLayer;
-  PurisimaD doubleLayer;
+  Purisima op;
 
   UniformDielectric<> gf(epsilon);
 
-  Eigen::MatrixXd D_results = doubleLayer(cavity, gf);
+  Eigen::MatrixXd D_results = op.computeD(cavity, gf);
   cnpy::custom::npy_save("uniformdielectric_D_purisima.npy", D_results);
 }
 
 void save_vacuum_numerical() {
-  using integrator::NumericalS;
-  using integrator::NumericalD;
-
   Molecule molec = dummy<0>(1.44 / bohrToAngstrom());
   double area = 10.0;
   GePolCavity cavity(molec, area, 0.0, 100.0);
 
-  NumericalS singleLayer;
-  NumericalD doubleLayer;
+  integrator::Numerical op;
 
   Vacuum<> gf;
 
-  Eigen::MatrixXd S_results = singleLayer(cavity, gf);
+  Eigen::MatrixXd S_results = op.computeS(cavity, gf);
   cnpy::custom::npy_save("vacuum_S_numerical.npy", S_results);
-  Eigen::MatrixXd D_results = doubleLayer(cavity, gf);
+  Eigen::MatrixXd D_results = op.computeD(cavity, gf);
   cnpy::custom::npy_save("vacuum_D_numerical.npy", D_results);
 }
 
 void save_uniform_dielectric_numerical() {
-  using integrator::NumericalS;
-  using integrator::NumericalD;
-
   double epsilon = 80.0;
   Molecule molec = dummy<0>(1.44 / bohrToAngstrom());
   double area = 10.0;
   GePolCavity cavity(molec, area, 0.0, 100.0);
 
-  NumericalS singleLayer;
-  NumericalD doubleLayer;
+  integrator::Numerical op;
 
   UniformDielectric<> gf(epsilon);
 
-  Eigen::MatrixXd S_results = singleLayer(cavity, gf);
+  Eigen::MatrixXd S_results = op.computeS(cavity, gf);
   cnpy::custom::npy_save("uniformdielectric_S_numerical.npy", S_results);
-  Eigen::MatrixXd D_results = doubleLayer(cavity, gf);
+  Eigen::MatrixXd D_results = op.computeD(cavity, gf);
   cnpy::custom::npy_save("uniformdielectric_D_numerical.npy", D_results);
 }
 
 void save_ionic_liquid_numerical() {
-  using integrator::NumericalS;
-  using integrator::NumericalD;
-
   double eps = 80.0;
   double kappa = 1.5;
   Molecule molec = dummy<0>(1.44 / bohrToAngstrom());
   double area = 10.0;
   GePolCavity cavity(molec, area, 0.0, 100.0);
 
-  NumericalS singleLayer;
-  NumericalD doubleLayer;
+  integrator::Numerical op;
 
   IonicLiquid<> gf(eps, kappa);
 
-  Eigen::MatrixXd S_results = singleLayer(cavity, gf);
+  Eigen::MatrixXd S_results = op.computeS(cavity, gf);
   cnpy::custom::npy_save("ionicliquid_S_numerical.npy", S_results);
-  Eigen::MatrixXd D_results = doubleLayer(cavity, gf);
+  Eigen::MatrixXd D_results = op.computeD(cavity, gf);
   cnpy::custom::npy_save("ionicliquid_D_numerical.npy", D_results);
 }
 
 void save_anisotropic_liquid_numerical() {
-  using integrator::NumericalS;
-  using integrator::NumericalD;
-
   Eigen::Vector3d epsilon = Eigen::Vector3d::Zero();
   epsilon << 80.0, 80.0, 80.0;
   Eigen::Vector3d euler = Eigen::Vector3d::Zero();
@@ -241,21 +216,17 @@ void save_anisotropic_liquid_numerical() {
   double area = 10.0;
   GePolCavity cavity(molec, area, 0.0, 100.0);
 
-  NumericalS singleLayer;
-  NumericalD doubleLayer;
+  integrator::Numerical op;
 
   AnisotropicLiquid<> gf(epsilon, euler);
 
-  Eigen::MatrixXd S_results = singleLayer(cavity, gf);
+  Eigen::MatrixXd S_results = op.computeS(cavity, gf);
   cnpy::custom::npy_save("anisotropicliquid_S_numerical.npy", S_results);
-  Eigen::MatrixXd D_results = doubleLayer(cavity, gf);
+  Eigen::MatrixXd D_results = op.computeD(cavity, gf);
   cnpy::custom::npy_save("anisotropicliquid_D_numerical.npy", D_results);
 }
 
 void save_tanh_spherical_diffuse_numerical() {
-  using integrator::NumericalS;
-  using integrator::NumericalD;
-
   double epsilon = 80.0;
   double width = 5.0;
   double sphereRadius = 100.0;
@@ -263,15 +234,14 @@ void save_tanh_spherical_diffuse_numerical() {
   double area = 10.0;
   GePolCavity cavity(molec, area, 0.0, 100.0);
 
-  NumericalS singleLayer;
-  NumericalD doubleLayer;
+  integrator::Numerical op;
 
   SphericalDiffuse<> gf(epsilon, epsilon, width, sphereRadius,
                         Eigen::Vector3d::Zero(), 3);
 
-  Eigen::MatrixXd S_results = singleLayer(cavity, gf);
+  Eigen::MatrixXd S_results = op.computeS(cavity, gf);
   cnpy::custom::npy_save("tanhsphericaldiffuse_S_numerical.npy", S_results);
-  Eigen::MatrixXd D_results = doubleLayer(cavity, gf);
+  Eigen::MatrixXd D_results = op.computeD(cavity, gf);
   cnpy::custom::npy_save("tanhsphericaldiffuse_D_numerical.npy", D_results);
 }
 
