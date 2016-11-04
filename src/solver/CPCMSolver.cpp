@@ -33,21 +33,24 @@
 
 #include <Eigen/Core>
 
-#include "SolverImpl.hpp"
+#include "bi_operators/BoundaryIntegralOperator.hpp"
 #include "cavity/Cavity.hpp"
 #include "cavity/Element.hpp"
 #include "green/IGreensFunction.hpp"
 #include "utils/MathUtils.hpp"
+#include "SolverData.hpp"
+#include "utils/Factory.hpp"
 
 void CPCMSolver::buildSystemMatrix_impl(const Cavity & cavity,
                                         const IGreensFunction & gf_i,
-                                        const IGreensFunction & gf_o) {
+                                        const IGreensFunction & gf_o,
+                                        const BoundaryIntegralOperator & op) {
   if (!isotropic_)
     PCMSOLVER_ERROR("C-PCM is defined only for isotropic environments!",
                     BOOST_CURRENT_FUNCTION);
   TIMER_ON("Computing S");
   double epsilon = profiles::epsilon(gf_o.permittivity());
-  S_ = solver::computeS(cavity, gf_i);
+  S_ = op.computeS(cavity, gf_i);
   S_ /= (epsilon - 1.0) / (epsilon + correction_);
   // Get in Hermitian form
   if (hermitivitize_)
@@ -88,4 +91,14 @@ std::ostream & CPCMSolver::printSolver(std::ostream & os) {
   }
 
   return os;
+}
+
+namespace {
+PCMSolver * createCPCMSolver(const solverData & data) {
+  return new CPCMSolver(data.hermitivitize, data.correction);
+}
+const std::string CPCMSOLVER("CPCM");
+const bool registeredCPCMSolver =
+    Factory<PCMSolver, solverData>::TheFactory().registerObject(CPCMSOLVER,
+                                                                createCPCMSolver);
 }

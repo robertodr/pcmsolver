@@ -21,7 +21,7 @@
  * PCMSolver API, see: <http://pcmsolver.readthedocs.io/>
  */
 
-#include "PurisimaIntegrator.hpp"
+#include "Purisima.hpp"
 
 #include "Config.hpp"
 
@@ -29,10 +29,32 @@
 
 #include "cavity/Element.hpp"
 #include "green/IGreensFunction.hpp"
+#include "BIOperatorData.hpp"
+#include "utils/Factory.hpp"
 
 namespace integrator {
-Eigen::MatrixXd PurisimaD::compute(const std::vector<Element> & elems,
-                                   const IGreensFunction & gf) const {
+Purisima::Purisima() : factor_(1.07) {}
+
+Purisima::Purisima(double fac) : factor_(fac) {}
+
+Eigen::MatrixXd Purisima::computeS_impl(const std::vector<Element> & elems,
+                                        const IGreensFunction & gf) const {
+  PCMSolverIndex cavitySize = elems.size();
+  Eigen::MatrixXd S = Eigen::MatrixXd::Zero(cavitySize, cavitySize);
+  for (PCMSolverIndex i = 0; i < cavitySize; ++i) {
+    Element source = elems[i];
+    S(i, i) = gf.singleLayer(source, factor_);
+    for (PCMSolverIndex j = 0; j < cavitySize; ++j) {
+      Element probe = elems[j];
+      if (i != j)
+        S(i, j) = gf.kernelS(source.center(), probe.center());
+    }
+  }
+  return S;
+}
+
+Eigen::MatrixXd Purisima::computeD_impl(const std::vector<Element> & elems,
+                                        const IGreensFunction & gf) const {
   PCMSolverIndex cavitySize = elems.size();
   Eigen::MatrixXd D = Eigen::MatrixXd::Zero(cavitySize, cavitySize);
   for (PCMSolverIndex i = 0; i < cavitySize; ++i) {
@@ -51,3 +73,13 @@ Eigen::MatrixXd PurisimaD::compute(const std::vector<Element> & elems,
   return D;
 }
 } // namespace integrator
+
+namespace {
+BoundaryIntegralOperator * createPurisima(const biOperatorData & data) {
+  return new integrator::Purisima(data.scaling);
+}
+const std::string PURISIMA("PURISIMA");
+const bool registeredPurisima =
+    Factory<BoundaryIntegralOperator, biOperatorData>::TheFactory().registerObject(
+        PURISIMA, createPurisima);
+}

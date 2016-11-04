@@ -31,10 +31,9 @@
 #include "green/IGreensFunction.hpp"
 #include "utils/MathUtils.hpp"
 
-namespace integrator {
-Eigen::MatrixXd BoundaryIntegralOperator::operator()(
+Eigen::MatrixXd BoundaryIntegralOperator::computeS(
     const Cavity & cav, const IGreensFunction & gf) const {
-  Eigen::MatrixXd biop = compute(cav.elements(), gf);
+  Eigen::MatrixXd biop = computeS_impl(cav.elements(), gf);
   // Perform symmetry blocking
   // The total size of the cavity
   PCMSolverIndex cavitySize = cav.size();
@@ -49,4 +48,21 @@ Eigen::MatrixXd BoundaryIntegralOperator::operator()(
   }
   return biop;
 }
-} // namespace integrator
+
+Eigen::MatrixXd BoundaryIntegralOperator::computeD(
+    const Cavity & cav, const IGreensFunction & gf) const {
+  Eigen::MatrixXd biop = computeD_impl(cav.elements(), gf);
+  // Perform symmetry blocking
+  // The total size of the cavity
+  PCMSolverIndex cavitySize = cav.size();
+  // The number of irreps in the group
+  int nrBlocks = cav.pointGroup().nrIrrep();
+  // The size of the irreducible portion of the cavity
+  int dimBlock = cav.irreducible_size();
+  if (cav.pointGroup().nrGenerators() != 0) {
+    TIMER_ON("Symmetry blocking");
+    symmetryBlocking(biop, cavitySize, dimBlock, nrBlocks);
+    TIMER_OFF("Symmetry blocking");
+  }
+  return biop;
+}

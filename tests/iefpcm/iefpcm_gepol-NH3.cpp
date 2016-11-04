@@ -29,6 +29,7 @@
 
 #include <Eigen/Core>
 
+#include "bi_operators/Collocation.hpp"
 #include "green/DerivativeTypes.hpp"
 #include "cavity/GePolCavity.hpp"
 #include "utils/Molecule.hpp"
@@ -37,6 +38,8 @@
 #include "green/UniformDielectric.hpp"
 #include "solver/IEFSolver.hpp"
 #include "utils/Symmetry.hpp"
+
+using integrator::Collocation;
 
 /*! \class IEFSolver
  *  \test \b NH3GePol tests IEFSolver using ammonia and a GePol cavity
@@ -54,9 +57,12 @@ TEST_CASE("Test solver for the IEFPCM with NH3 molecule and a GePol cavity",
   double permittivity = 78.39;
   Vacuum<> gf_i;
   UniformDielectric<> gf_o(permittivity);
+
+  Collocation op;
+
   bool symm = true;
   IEFSolver solver(symm);
-  solver.buildSystemMatrix(cavity, gf_i, gf_o);
+  solver.buildSystemMatrix(cavity, gf_i, gf_o, op);
 
   double Ncharge = 7.0;
   double Hcharge = 1.0;

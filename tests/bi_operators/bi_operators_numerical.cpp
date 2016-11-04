@@ -36,14 +36,11 @@
 #include "cavity/Element.hpp"
 #include "cavity/GePolCavity.hpp"
 #include "green/IonicLiquid.hpp"
-#include "bi_operators/NumericalIntegrator.hpp"
+#include "bi_operators/Numerical.hpp"
 #include "green/UniformDielectric.hpp"
 #include "TestingMolecules.hpp"
 #include "green/Vacuum.hpp"
 #include "utils/MathUtils.hpp"
-
-using integrator::NumericalS;
-using integrator::NumericalD;
 
 SCENARIO(
     "A collocation integrator with numerical integrator of the diagonal elements",
@@ -54,17 +51,16 @@ SCENARIO(
     GePolCavity cavity = GePolCavity(molec, area, 0.0, 100.0);
     Eigen::MatrixXd results = Eigen::MatrixXd::Zero(cavity.size(), cavity.size());
     Eigen::MatrixXd reference = Eigen::MatrixXd::Zero(cavity.size(), cavity.size());
-    NumericalS singleLayer;
-    NumericalD doubleLayer;
+    integrator::Numerical op;
 
-    /*! \class NumericalIntegrator
-     *  \test \b NumericalIntegratorTest_vacuum tests the numerical evaluation of the
+    /*! \class Numerical
+     *  \test \b NumericalTest_vacuum tests the numerical evaluation of the
      * vacuum matrix representations of S and D
      */
     WHEN("the vacuum Green's function is used") {
       Vacuum<> gf;
       THEN("the matrix elements of S are") {
-        results = singleLayer(cavity, gf);
+        results = op.computeS(cavity, gf);
         // Numerical integrator not really working now...
         /*
         reference = cnpy::custom::npy_load<double>("vacuum_S_numerical.npy");
@@ -76,7 +72,7 @@ SCENARIO(
         */
       }
       AND_THEN("the matrix elements of D are") {
-        Eigen::MatrixXd results = doubleLayer(cavity, gf);
+        Eigen::MatrixXd results = op.computeD(cavity, gf);
         // Numerical integrator not really working now...
         /*
         reference = cnpy::custom::npy_load<double>("vacuum_D_numerical.npy");
@@ -91,15 +87,15 @@ SCENARIO(
       }
     }
 
-    /*! \class NumericalIntegrator
-     *  \test \b NumericalIntegratorTest_uniformdielectric tests the numerical
+    /*! \class Numerical
+     *  \test \b NumericalTest_uniformdielectric tests the numerical
      * evaluation of the uniform dielectric matrix representations of S and D
      */
     WHEN("the uniform dielectric Green's function is used") {
       double eps = 80.0;
       UniformDielectric<> gf(eps);
       THEN("the matrix elements of S are") {
-        results = singleLayer(cavity, gf);
+        results = op.computeS(cavity, gf);
         // Numerical integrator not really working now...
         /*
         reference =
@@ -112,7 +108,7 @@ SCENARIO(
         */
       }
       AND_THEN("the matrix elements of D are") {
-        Eigen::MatrixXd results = doubleLayer(cavity, gf);
+        Eigen::MatrixXd results = op.computeD(cavity, gf);
         // Numerical integrator not really working now...
         /*
         reference =
@@ -126,8 +122,8 @@ SCENARIO(
       }
     }
 
-    /*! \class NumericalIntegrator
-     *  \test \b NumericalIntegratorTest_ionic tests the numerical evaluation of the
+    /*! \class Numerical
+     *  \test \b NumericalTest_ionic tests the numerical evaluation of the
      * ionic liquid matrix representations of S and D
      */
     WHEN("the ionic liquid Green's function is used") {
@@ -135,7 +131,7 @@ SCENARIO(
       double kappa = 1.5;
       IonicLiquid<> gf(eps, kappa);
       THEN("the matrix elements of S are") {
-        results = singleLayer(cavity, gf);
+        results = op.computeS(cavity, gf);
         // Numerical integrator not really working now...
         /*
         reference = cnpy::custom::npy_load<double>("ionicliquid_S_numerical.npy");
@@ -147,7 +143,7 @@ SCENARIO(
         */
       }
       AND_THEN("the matrix elements of D are") {
-        results = doubleLayer(cavity, gf);
+        results = op.computeD(cavity, gf);
         // Numerical integrator not really working now...
         /*
         reference = cnpy::custom::npy_load<double>("ionicliquid_D_numerical.npy");
@@ -160,8 +156,8 @@ SCENARIO(
       }
     }
 
-    /*! \class NumericalIntegrator
-     *  \test \b NumericalIntegratorTest_anisotropic tests the numerical evaluation
+    /*! \class Numerical
+     *  \test \b NumericalTest_anisotropic tests the numerical evaluation
      * of the anisotropic liquid matrix representations of S and D
      */
     WHEN("the ionic liquid Green's function is used") {
@@ -169,7 +165,7 @@ SCENARIO(
       Eigen::Vector3d euler = (Eigen::Vector3d() << 0.0, 0.0, 0.0).finished();
       AnisotropicLiquid<> gf(epsilon, euler);
       THEN("the matrix elements of S are") {
-        results = singleLayer(cavity, gf);
+        results = op.computeS(cavity, gf);
         // Numerical integrator not really working now...
         /*
         reference =
@@ -182,7 +178,7 @@ SCENARIO(
         */
       }
       AND_THEN("the matrix elements of D are") {
-        results = doubleLayer(cavity, gf);
+        results = op.computeD(cavity, gf);
         // Numerical integrator not really working now...
         /*
         reference =

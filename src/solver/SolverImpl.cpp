@@ -31,102 +31,31 @@
 #include <Eigen/Core>
 #include <Eigen/LU>
 
+#include "bi_operators/BoundaryIntegralOperator.hpp"
 #include "cavity/Cavity.hpp"
 #include "cavity/Element.hpp"
 #include "green/IGreensFunction.hpp"
 #include "utils/MathUtils.hpp"
 
 namespace solver {
-Eigen::MatrixXd computeS(const Cavity & cav, const IGreensFunction & gf) {
-  // The total size of the cavity
-  PCMSolverIndex cavitySize = cav.size();
-  // The number of irreps in the group
-  int nrBlocks = cav.pointGroup().nrIrrep();
-  // The size of the irreducible portion of the cavity
-  int dimBlock = cav.irreducible_size();
-
-  // Compute S
-  Eigen::MatrixXd S = Eigen::MatrixXd::Zero(cavitySize, cavitySize);
-  for (PCMSolverIndex i = 0; i < cavitySize; ++i) {
-    // Fill diagonal
-    Element source = cav.elements(i);
-    S(i, i) = gf.singleLayer(source);
-    for (PCMSolverIndex j = 0; j < cavitySize; ++j) {
-      // Fill off-diagonal
-      Element probe = cav.elements(j);
-      if (i != j)
-        S(i, j) = gf.kernelS(source.center(), probe.center());
-    }
-  }
-
-  // Perform symmetry blocking
-  // If the group is C1 avoid symmetry blocking, we will just pack the fullPCMMatrix
-  // into "block diagonal" when all other manipulations are done.
-  if (cav.pointGroup().nrGenerators() != 0) {
-    TIMER_ON("Symmetry blocking");
-    symmetryBlocking(S, cavitySize, dimBlock, nrBlocks);
-    TIMER_OFF("Symmetry blocking");
-  }
-
-  return S;
-}
-
-Eigen::MatrixXd computeD(const Cavity & cav, const IGreensFunction & gf) {
-  // The total size of the cavity
-  PCMSolverIndex cavitySize = cav.size();
-  // The number of irreps in the group
-  int nrBlocks = cav.pointGroup().nrIrrep();
-  // The size of the irreducible portion of the cavity
-  int dimBlock = cav.irreducible_size();
-
-  // Compute D
-  Eigen::MatrixXd D = Eigen::MatrixXd::Zero(cavitySize, cavitySize);
-  for (PCMSolverIndex i = 0; i < cavitySize; ++i) {
-    // Fill diagonal
-    Element source = cav.elements(i);
-    D(i, i) = gf.doubleLayer(source);
-    for (PCMSolverIndex j = 0; j < cavitySize; ++j) {
-      // Fill off-diagonal
-      Element probe = cav.elements(j);
-      if (i != j)
-        D(i, j) =
-            gf.kernelD(probe.normal().normalized(), source.center(), probe.center());
-    }
-  }
-
-  // Perform symmetry blocking
-  // If the group is C1 avoid symmetry blocking, we will just pack the fullPCMMatrix
-  // into "block diagonal" when all other manipulations are done.
-  if (cav.pointGroup().nrGenerators() != 0) {
-    TIMER_ON("Symmetry blocking");
-    symmetryBlocking(D, cavitySize, dimBlock, nrBlocks);
-    TIMER_OFF("Symmetry blocking");
-  }
-
-  return D;
-}
-
 Eigen::MatrixXd anisotropicTEpsilon(const Cavity & cav, const IGreensFunction & gf_i,
-                                    const IGreensFunction & gf_o) {
-  // The total size of the cavity
-  PCMSolverIndex cavitySize = cav.size();
-
-  // Compute SI, DI and SE, DE on the whole cavity, regardless of symmetry
+                                    const IGreensFunction & gf_o,
+                                    const BoundaryIntegralOperator & op) {
   TIMER_ON("Computing SI");
-  Eigen::MatrixXd SI = computeS(cav, gf_i);
+  Eigen::MatrixXd SI = op.computeS(cav, gf_i);
   TIMER_OFF("Computing SI");
   TIMER_ON("Computing DI");
-  Eigen::MatrixXd DI = computeD(cav, gf_i);
+  Eigen::MatrixXd DI = op.computeD(cav, gf_i);
   TIMER_OFF("Computing DI");
   TIMER_ON("Computing SE");
-  Eigen::MatrixXd SE = computeS(cav, gf_o);
+  Eigen::MatrixXd SE = op.computeS(cav, gf_o);
   TIMER_OFF("Computing SE");
   TIMER_ON("Computing DE");
-  Eigen::MatrixXd DE = computeD(cav, gf_o);
+  Eigen::MatrixXd DE = op.computeD(cav, gf_o);
   TIMER_OFF("Computing DE");
 
   Eigen::MatrixXd a = cav.elementArea().asDiagonal();
-  Eigen::MatrixXd Id = Eigen::MatrixXd::Identity(cavitySize, cavitySize);
+  Eigen::MatrixXd Id = Eigen::MatrixXd::Identity(cav.size(), cav.size());
 
   TIMER_ON("Assemble T matrix");
   Eigen::MatrixXd T = ((2 * M_PI * Id - DE * a) * SI +
@@ -137,20 +66,17 @@ Eigen::MatrixXd anisotropicTEpsilon(const Cavity & cav, const IGreensFunction & 
 }
 
 Eigen::MatrixXd isotropicTEpsilon(const Cavity & cav, const IGreensFunction & gf_i,
-                                  double epsilon) {
-  // The total size of the cavity
-  PCMSolverIndex cavitySize = cav.size();
-
-  // Compute SI and DI on the whole cavity, regardless of symmetry
+                                  double epsilon,
+                                  const BoundaryIntegralOperator & op) {
   TIMER_ON("Computing SI");
-  Eigen::MatrixXd SI = computeS(cav, gf_i);
+  Eigen::MatrixXd SI = op.computeS(cav, gf_i);
   TIMER_OFF("Computing SI");
   TIMER_ON("Computing DI");
-  Eigen::MatrixXd DI = computeD(cav, gf_i);
+  Eigen::MatrixXd DI = op.computeD(cav, gf_i);
   TIMER_OFF("Computing DI");
 
   Eigen::MatrixXd a = cav.elementArea().asDiagonal();
-  Eigen::MatrixXd Id = Eigen::MatrixXd::Identity(cavitySize, cavitySize);
+  Eigen::MatrixXd Id = Eigen::MatrixXd::Identity(cav.size(), cav.size());
 
   double fact = (epsilon + 1.0) / (epsilon - 1.0);
   TIMER_ON("Assemble T matrix");
@@ -162,26 +88,23 @@ Eigen::MatrixXd isotropicTEpsilon(const Cavity & cav, const IGreensFunction & gf
 
 Eigen::MatrixXd anisotropicRinfinity(const Cavity & cav,
                                      const IGreensFunction & gf_i,
-                                     const IGreensFunction & gf_o) {
-  // The total size of the cavity
-  PCMSolverIndex cavitySize = cav.size();
-
-  // Compute SI, DI and SE, DE on the whole cavity, regardless of symmetry
+                                     const IGreensFunction & gf_o,
+                                     const BoundaryIntegralOperator & op) {
   TIMER_ON("Computing SI");
-  Eigen::MatrixXd SI = computeS(cav, gf_i);
+  Eigen::MatrixXd SI = op.computeS(cav, gf_i);
   TIMER_OFF("Computing SI");
   TIMER_ON("Computing DI");
-  Eigen::MatrixXd DI = computeD(cav, gf_i);
+  Eigen::MatrixXd DI = op.computeD(cav, gf_i);
   TIMER_OFF("Computing DI");
   TIMER_ON("Computing SE");
-  Eigen::MatrixXd SE = computeS(cav, gf_o);
+  Eigen::MatrixXd SE = op.computeS(cav, gf_o);
   TIMER_OFF("Computing SE");
   TIMER_ON("Computing DE");
-  Eigen::MatrixXd DE = computeD(cav, gf_o);
+  Eigen::MatrixXd DE = op.computeD(cav, gf_o);
   TIMER_OFF("Computing DE");
 
   Eigen::MatrixXd a = cav.elementArea().asDiagonal();
-  Eigen::MatrixXd Id = Eigen::MatrixXd::Identity(cavitySize, cavitySize);
+  Eigen::MatrixXd Id = Eigen::MatrixXd::Identity(cav.size(), cav.size());
 
   TIMER_ON("Assemble R matrix");
   Eigen::MatrixXd R =
@@ -191,18 +114,14 @@ Eigen::MatrixXd anisotropicRinfinity(const Cavity & cav,
   return R;
 }
 
-Eigen::MatrixXd isotropicRinfinity(const Cavity & cav,
-                                   const IGreensFunction & gf_i) {
-  // The total size of the cavity
-  PCMSolverIndex cavitySize = cav.size();
-
-  // Compute DI on the whole cavity, regardless of symmetry
+Eigen::MatrixXd isotropicRinfinity(const Cavity & cav, const IGreensFunction & gf_i,
+                                   const BoundaryIntegralOperator & D) {
   TIMER_ON("Computing DI");
-  Eigen::MatrixXd DI = computeD(cav, gf_i);
+  Eigen::MatrixXd DI = D.computeD(cav, gf_i);
   TIMER_OFF("Computing DI");
 
   Eigen::MatrixXd a = cav.elementArea().asDiagonal();
-  Eigen::MatrixXd Id = Eigen::MatrixXd::Identity(cavitySize, cavitySize);
+  Eigen::MatrixXd Id = Eigen::MatrixXd::Identity(cav.size(), cav.size());
 
   TIMER_ON("Assemble R matrix");
   Eigen::MatrixXd R = (2 * M_PI * Id - DI * a);
@@ -213,9 +132,10 @@ Eigen::MatrixXd isotropicRinfinity(const Cavity & cav,
 
 Eigen::MatrixXd anisotropicIEFMatrix(const Cavity & cav,
                                      const IGreensFunction & gf_i,
-                                     const IGreensFunction & gf_o) {
-  Eigen::MatrixXd T = anisotropicTEpsilon(cav, gf_i, gf_o);
-  Eigen::MatrixXd R = anisotropicRinfinity(cav, gf_i, gf_o);
+                                     const IGreensFunction & gf_o,
+                                     const BoundaryIntegralOperator & op) {
+  Eigen::MatrixXd T = anisotropicTEpsilon(cav, gf_i, gf_o, op);
+  Eigen::MatrixXd R = anisotropicRinfinity(cav, gf_i, gf_o, op);
 
   TIMER_ON("Assemble T^-1R matrix");
   Eigen::MatrixXd fullPCMMatrix = T.partialPivLu().solve(R);
@@ -225,9 +145,10 @@ Eigen::MatrixXd anisotropicIEFMatrix(const Cavity & cav,
 }
 
 Eigen::MatrixXd isotropicIEFMatrix(const Cavity & cav, const IGreensFunction & gf_i,
-                                   double epsilon) {
-  Eigen::MatrixXd T = isotropicTEpsilon(cav, gf_i, epsilon);
-  Eigen::MatrixXd R = isotropicRinfinity(cav, gf_i);
+                                   double epsilon,
+                                   const BoundaryIntegralOperator & op) {
+  Eigen::MatrixXd T = isotropicTEpsilon(cav, gf_i, epsilon, op);
+  Eigen::MatrixXd R = isotropicRinfinity(cav, gf_i, op);
 
   TIMER_ON("Assemble T^-1R matrix");
   Eigen::MatrixXd fullPCMMatrix = T.partialPivLu().solve(R);

@@ -29,11 +29,14 @@
 
 #include <Eigen/Core>
 
+#include "bi_operators/Collocation.hpp"
 #include "green/DerivativeTypes.hpp"
 #include "cavity/GePolCavity.hpp"
 #include "green/Vacuum.hpp"
 #include "green/UniformDielectric.hpp"
 #include "solver/CPCMSolver.hpp"
+
+using integrator::Collocation;
 
 /*! \class CPCMSolver
  *  \test \b pointChargeGePolRestart tests CPCMSolver using a point charge with a
@@ -53,8 +56,11 @@ TEST_CASE(
   UniformDielectric<> gf_o(permittivity);
   bool symm = true;
   double correction = 0.0;
+
+  Collocation S;
+
   CPCMSolver solver(symm, correction);
-  solver.buildSystemMatrix(cavity, gf_i, gf_o);
+  solver.buildSystemMatrix(cavity, gf_i, gf_o, S);
 
   double charge = 8.0;
   int size = cavity.size();

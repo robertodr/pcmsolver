@@ -47,7 +47,6 @@ class Element;
  *  \f[
  *      G(\mathbf{r}, \mathbf{r}^\prime) : \mathbb{R}^6 \rightarrow \mathbb{R}
  *  \f]
- *
  *  Green's functions and their directional derivatives appear as kernels of
  *  the \f$\mathcal{S}\f$ and \f$\mathcal{D}\f$ integral operators.
  *  Forming the matrix representation of these operators requires performing
@@ -121,16 +120,22 @@ public:
   /*! Calculates an element on the diagonal of the matrix representation of the
    * S operator using an approximate collocation formula.
    *  \param[in] e finite element on the cavity
+   *  \param[in] factor the scaling factor for the diagonal elements
    *  \note This is the Non-Virtual Interface (NVI)
    */
-  double singleLayer(const Element & e) const { return singleLayer_impl(e); }
+  double singleLayer(const Element & e, double factor) const {
+    return singleLayer_impl(e, factor);
+  }
   /*! Calculates an element of the diagonal of the matrix representation of the D
    * operator
    * using an approximate collocation formula.
    *  \param[in] e finite element on the cavity
+   *  \param[in] factor the scaling factor for the diagonal elements
    *  \note This is the Non-Virtual Interface (NVI)
    */
-  double doubleLayer(const Element & e) const { return doubleLayer_impl(e); }
+  double doubleLayer(const Element & e, double factor) const {
+    return doubleLayer_impl(e, factor);
+  }
   /**@}*/
 
   friend std::ostream & operator<<(std::ostream & os, IGreensFunction & gf) {
@@ -174,14 +179,16 @@ protected:
   /*! Calculates an element on the diagonal of the matrix representation of the
    * S operator using an approximate collocation formula.
    *  \param[in] e finite element on the cavity
+   *  \param[in] factor the scaling factor for the diagonal elements
    */
-  virtual double singleLayer_impl(const Element & e) const = 0;
+  virtual double singleLayer_impl(const Element & e, double factor) const = 0;
   /*! Calculates an element of the diagonal of the matrix representation of the D
    * operator
    * using an approximate collocation formula.
    *  \param[in] e finite element on the cavity
+   *  \param[in] factor the scaling factor for the diagonal elements
    */
-  virtual double doubleLayer_impl(const Element & e) const = 0;
+  virtual double doubleLayer_impl(const Element & e, double factor) const = 0;
 
   virtual std::ostream & printObject(std::ostream & os) = 0;
 };

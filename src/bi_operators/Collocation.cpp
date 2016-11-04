@@ -21,7 +21,7 @@
  * PCMSolver API, see: <http://pcmsolver.readthedocs.io/>
  */
 
-#include "CollocationIntegrator.hpp"
+#include "Collocation.hpp"
 
 #include "Config.hpp"
 
@@ -29,15 +29,21 @@
 
 #include "cavity/Element.hpp"
 #include "green/IGreensFunction.hpp"
+#include "BIOperatorData.hpp"
+#include "utils/Factory.hpp"
 
 namespace integrator {
-Eigen::MatrixXd CollocationS::compute(const std::vector<Element> & elems,
-                                      const IGreensFunction & gf) const {
+Collocation::Collocation() : factor_(1.07) {}
+
+Collocation::Collocation(double fac) : factor_(fac) {}
+
+Eigen::MatrixXd Collocation::computeS_impl(const std::vector<Element> & elems,
+                                           const IGreensFunction & gf) const {
   PCMSolverIndex cavitySize = elems.size();
   Eigen::MatrixXd S = Eigen::MatrixXd::Zero(cavitySize, cavitySize);
   for (PCMSolverIndex i = 0; i < cavitySize; ++i) {
     Element source = elems[i];
-    S(i, i) = gf.singleLayer(source);
+    S(i, i) = gf.singleLayer(source, factor_);
     for (PCMSolverIndex j = 0; j < cavitySize; ++j) {
       Element probe = elems[j];
       if (i != j)
@@ -47,13 +53,13 @@ Eigen::MatrixXd CollocationS::compute(const std::vector<Element> & elems,
   return S;
 }
 
-Eigen::MatrixXd CollocationD::compute(const std::vector<Element> & elems,
-                                      const IGreensFunction & gf) const {
+Eigen::MatrixXd Collocation::computeD_impl(const std::vector<Element> & elems,
+                                           const IGreensFunction & gf) const {
   PCMSolverIndex cavitySize = elems.size();
   Eigen::MatrixXd D = Eigen::MatrixXd::Zero(cavitySize, cavitySize);
   for (PCMSolverIndex i = 0; i < cavitySize; ++i) {
     Element source = elems[i];
-    D(i, i) = gf.doubleLayer(source);
+    D(i, i) = gf.doubleLayer(source, factor_);
     for (PCMSolverIndex j = 0; j < cavitySize; ++j) {
       Element probe = elems[j];
       if (i != j)
@@ -64,3 +70,13 @@ Eigen::MatrixXd CollocationD::compute(const std::vector<Element> & elems,
   return D;
 }
 } // namespace integrator
+
+namespace {
+BoundaryIntegralOperator * createCollocation(const biOperatorData & data) {
+  return new integrator::Collocation(data.scaling);
+}
+const std::string COLLOCATION("COLLOCATION");
+const bool registeredCollocation =
+    Factory<BoundaryIntegralOperator, biOperatorData>::TheFactory().registerObject(
+        COLLOCATION, createCollocation);
+}

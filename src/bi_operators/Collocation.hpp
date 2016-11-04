@@ -21,8 +21,8 @@
  * PCMSolver API, see: <http://pcmsolver.readthedocs.io/>
  */
 
-#ifndef PURISIMAINTEGRATOR_HPP
-#define PURISIMAINTEGRATOR_HPP
+#ifndef COLLOCATION_HPP
+#define COLLOCATION_HPP
 
 #include <vector>
 
@@ -35,36 +35,39 @@ class IGreensFunction;
 
 #include "BoundaryIntegralOperator.hpp"
 
-/*! \file PurisimaIntegrator.hpp
- *  \struct PurisimaIntegrator
- *  \brief Implementation of the double layer operator matrix representation using
- *  one-point collocation and Purisima's strategy for the diagonal of D
+namespace integrator {
+/*! \file Collocation.hpp
+ *  \class Collocation
+ *  \brief Implementation of the single and double layer operators matrix
+ *representation using one-point collocation
  *  \author Roberto Di Remigio
  *  \date 2015, 2016
  *
- *  Calculates the diagonal elements of D as:
+ *  Calculates the diagonal elements of S as:
  *  \f[
- *  	D_{ii} = -\left(2\pi + \sum_{j\neq i}D_{ij}a_j \right)\frac{1}{a_i}
+ *   S_{ii} = factor * \sqrt{\frac{4\pi}{a_i}}
  *  \f]
- *  The original reference is \cite Purisima1995
+ *  while the diagonal elements of D are:
+ *  \f[
+ *   D_{ii} = -factor * \sqrt{\frac{\pi}{a_i}} \frac{1}{R_I}
+ *  \f]
  */
+class Collocation __final : public BoundaryIntegralOperator {
+public:
+  Collocation();
+  Collocation(double fac);
+  virtual ~Collocation() {}
 
-namespace integrator {
-class PurisimaD __final : public BoundaryIntegralOperator {
 private:
-  /*! Computes the matrix representation of the double layer operator by collocation
-   *  using the Purisima sum rule to compute the diagonal elements.
-   *  \param[in] cav discretized cavity
-   *  \param[in] gf  a Green's function
-   *
-   *  The sum rule for the diagonal elements is:
-   *  \f[
-   *    D_{ii} = -\left(2\pi + \sum_{j\neq i}D_{ij}a_j \right)\frac{1}{a_i}
-   *  \f]
+  /*! Scaling factor for the diagonal elements of the matrix representation of
+   * the S and D operators
    */
-  virtual Eigen::MatrixXd compute(const std::vector<Element> & elems,
-                                  const IGreensFunction & gf) const __override;
+  double factor_;
+  virtual Eigen::MatrixXd computeS_impl(const std::vector<Element> & elems,
+                                        const IGreensFunction & gf) const __override;
+  virtual Eigen::MatrixXd computeD_impl(const std::vector<Element> & elems,
+                                        const IGreensFunction & gf) const __override;
 };
 } // namespace integrator
 
-#endif // PURISIMAINTEGRATOR_HPP
+#endif // COLLOCATION_HPP

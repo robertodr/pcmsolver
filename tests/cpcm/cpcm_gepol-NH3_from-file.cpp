@@ -29,11 +29,14 @@
 
 #include <Eigen/Core>
 
+#include "bi_operators/Collocation.hpp"
 #include "green/DerivativeTypes.hpp"
 #include "cavity/GePolCavity.hpp"
 #include "green/Vacuum.hpp"
 #include "green/UniformDielectric.hpp"
 #include "solver/CPCMSolver.hpp"
+
+using integrator::Collocation;
 
 /*! \class CPCMSolver
  *  \test \b NH3GePolRestart tests CPCMSolver using ammonia with a GePol cavity read
@@ -54,8 +57,11 @@ TEST_CASE("Test solver for the C-PCM for NH3 and a restarted GePol cavity",
   UniformDielectric<> gf_o(permittivity);
   bool symm = true;
   double correction = 0.0;
+
+  Collocation S;
+
   CPCMSolver solver(symm, correction);
-  solver.buildSystemMatrix(cavity, gf_i, gf_o);
+  solver.buildSystemMatrix(cavity, gf_i, gf_o, S);
 
   double Ncharge = 7.0;
   double Hcharge = 1.0;

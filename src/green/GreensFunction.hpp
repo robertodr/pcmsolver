@@ -49,8 +49,7 @@
 template <typename DerivativeTraits, typename ProfilePolicy>
 class GreensFunction : public IGreensFunction {
 public:
-  GreensFunction() : delta_(1.0e-04), factor_(1.07) {}
-  GreensFunction(double fac) : delta_(1.0e-04), factor_(fac) {}
+  GreensFunction() : delta_(1.0e-04) {}
   virtual ~GreensFunction() {}
   /**@{ Methods to sample the Green's function directional derivatives */
   /*! Returns value of the directional derivative of the
@@ -178,10 +177,6 @@ protected:
   }
   /// Step for numerical differentiation
   double delta_;
-  /*! Scaling factor for the diagonal elements of the matrix representation of
-   * the S and D operators
-   */
-  double factor_;
   /// Permittivity profile
   ProfilePolicy profile_;
 };
@@ -189,8 +184,7 @@ protected:
 template <typename ProfilePolicy>
 class GreensFunction<Numerical, ProfilePolicy> : public IGreensFunction {
 public:
-  GreensFunction() : delta_(1.0e-04), factor_(1.07) {}
-  GreensFunction(double fac) : delta_(1.0e-04), factor_(fac) {}
+  GreensFunction() : delta_(1.0e-04) {}
   virtual ~GreensFunction() {}
   /**@{ Methods to sample the Green's function directional derivatives */
   /*! Returns value of the directional derivative of the
@@ -298,10 +292,6 @@ protected:
   }
   /// Step for numerical differentiation
   double delta_;
-  /*! Scaling factor for the diagonal elements of the matrix representation of
-   * the S and D operators
-   */
-  double factor_;
   /// Permittivity profile
   ProfilePolicy profile_;
 };

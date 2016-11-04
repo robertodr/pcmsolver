@@ -5,7 +5,7 @@ list(APPEND headers_list AnisotropicLiquid.hpp DerivativeTypes.hpp DerivativeUti
                          SphericalSharp.hpp UniformDielectric.hpp Vacuum.hpp)
 
 # List of sources
-list(APPEND sources_list )
+list(APPEND sources_list Vacuum.cpp UniformDielectric.cpp IonicLiquid.cpp AnisotropicLiquid.cpp SphericalDiffuse.cpp)
 
 add_library(green OBJECT ${sources_list} ${headers_list})
 set_target_properties(green PROPERTIES POSITION_INDEPENDENT_CODE 1 )

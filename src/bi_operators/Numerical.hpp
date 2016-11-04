@@ -21,8 +21,8 @@
  * PCMSolver API, see: <http://pcmsolver.readthedocs.io/>
  */
 
-#ifndef NUMERICALINTEGRATOR_HPP
-#define NUMERICALINTEGRATOR_HPP
+#ifndef NUMERICAL_HPP
+#define NUMERICAL_HPP
 
 #include <vector>
 
@@ -35,8 +35,9 @@ class IGreensFunction;
 
 #include "BoundaryIntegralOperator.hpp"
 
-/*! \file NumericalIntegrator.hpp
- *  \struct NumericalIntegrator
+namespace integrator {
+/*! \file Numerical.hpp
+ *  \class Numerical
  *  \brief Implementation of the single and double layer operators matrix
  *representation using one-point collocation
  *  \author Roberto Di Remigio
@@ -45,18 +46,12 @@ class IGreensFunction;
  *  Calculates the diagonal elements of S and D by collocation, using numerical
  *integration.
  */
-
-namespace integrator {
-class NumericalS __final : public BoundaryIntegralOperator {
+class Numerical __final : public BoundaryIntegralOperator {
 private:
-  virtual Eigen::MatrixXd compute(const std::vector<Element> & elems,
-                                  const IGreensFunction & gf) const __override;
-};
-
-class NumericalD __final : public BoundaryIntegralOperator {
-private:
-  virtual Eigen::MatrixXd compute(const std::vector<Element> & elems,
-                                  const IGreensFunction & gf) const __override;
+  virtual Eigen::MatrixXd computeS_impl(const std::vector<Element> & elems,
+                                        const IGreensFunction & gf) const __override;
+  virtual Eigen::MatrixXd computeD_impl(const std::vector<Element> & elems,
+                                        const IGreensFunction & gf) const __override;
 };
 
 /*! \typedef KernelS
@@ -94,4 +89,4 @@ template <int PhiPoints, int ThetaPoints>
 double integrateD(const KernelD & F, const Element & e);
 } // namespace integrator
 
-#endif // NUMERICALINTEGRATOR_HPP
+#endif // NUMERICAL_HPP
