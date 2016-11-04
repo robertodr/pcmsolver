@@ -34,15 +34,14 @@
 
 #include "cavity/Element.hpp"
 #include "cavity/GePolCavity.hpp"
-#include "bi_operators/CollocationIntegrator.hpp"
+#include "bi_operators/Collocation.hpp"
 #include "green/SphericalDiffuse.hpp"
 #include "TestingMolecules.hpp"
 #include "green/UniformDielectric.hpp"
 #include "green/Vacuum.hpp"
 #include "utils/MathUtils.hpp"
 
-using integrator::CollocationS;
-using integrator::CollocationD;
+using integrator::Collocation;
 
 SCENARIO("A collocation integrator with approximate diagonal elements",
          "[bi_operators][bi_operators_collocation]") {
@@ -53,17 +52,16 @@ SCENARIO("A collocation integrator with approximate diagonal elements",
     GePolCavity cavity = GePolCavity(molec, area, 0.0, 100.0);
     Eigen::MatrixXd results = Eigen::MatrixXd::Zero(cavity.size(), cavity.size());
     Eigen::MatrixXd reference = Eigen::MatrixXd::Zero(cavity.size(), cavity.size());
-    CollocationS singleLayer;
-    CollocationD doubleLayer;
+    Collocation op;
 
-    /*! \class CollocationIntegrator
-     *  \test \b CollocationIntegratorTest_vacuum tests the evaluation by collocation
+    /*! \class Collocation
+     *  \test \b CollocationTest_vacuum tests the evaluation by collocation
      * of the vacuum matrix representations of S and D
      */
     WHEN("the vacuum Green's function is used") {
       Vacuum<> gf;
       THEN("the matrix elements of S are") {
-        results = singleLayer(cavity, gf);
+        results = op.computeS(cavity, gf);
         reference = cnpy::custom::npy_load<double>("vacuum_S_collocation.npy");
         for (int i = 0; i < cavity.size(); ++i) {
           for (int j = 0; j < cavity.size(); ++j) {
@@ -72,7 +70,7 @@ SCENARIO("A collocation integrator with approximate diagonal elements",
         }
       }
       AND_THEN("the matrix elements of D are") {
-        results = doubleLayer(cavity, gf);
+        results = op.computeD(cavity, gf);
         reference = cnpy::custom::npy_load<double>("vacuum_D_collocation.npy");
         for (int i = 0; i < cavity.size(); ++i) {
           for (int j = 0; j < cavity.size(); ++j) {
@@ -82,15 +80,15 @@ SCENARIO("A collocation integrator with approximate diagonal elements",
       }
     }
 
-    /*! \class CollocationIntegrator
-     *  \test \b CollocationIntegratorTest_uniformdielectric tests the evaluation by
+    /*! \class Collocation
+     *  \test \b CollocationTest_uniformdielectric tests the evaluation by
      * collocation of the uniform dielectric matrix representations of S and D
      */
     AND_WHEN("the uniform dielectric Green's function is used") {
       double epsilon = 80.0;
       UniformDielectric<> gf(epsilon);
       THEN("the matrix elements of S are") {
-        results = singleLayer(cavity, gf);
+        results = op.computeS(cavity, gf);
         reference =
             cnpy::custom::npy_load<double>("uniformdielectric_S_collocation.npy");
         for (int i = 0; i < cavity.size(); ++i) {
@@ -100,7 +98,7 @@ SCENARIO("A collocation integrator with approximate diagonal elements",
         }
       }
       AND_THEN("the matrix elements of D are") {
-        results = doubleLayer(cavity, gf);
+        results = op.computeD(cavity, gf);
         reference =
             cnpy::custom::npy_load<double>("uniformdielectric_D_collocation.npy");
         for (int i = 0; i < cavity.size(); ++i) {
@@ -111,8 +109,8 @@ SCENARIO("A collocation integrator with approximate diagonal elements",
       }
     }
 
-    /*! \class CollocationIntegrator
-     *  \test \b CollocationIntegratorTest_tanhsphericaldiffuse tests the evaluation
+    /*! \class Collocation
+     *  \test \b CollocationTest_tanhsphericaldiffuse tests the evaluation
      * by collocation of the spherical diffuse matrix representations of S and D
      */
     AND_WHEN("the spherical diffuse with a tanh profile Green's function is used") {
@@ -122,7 +120,7 @@ SCENARIO("A collocation integrator with approximate diagonal elements",
       SphericalDiffuse<> gf(epsilon, epsilon, width, sphereRadius,
                             Eigen::Vector3d::Zero(), 3);
       THEN("the matrix elements of S are") {
-        results = singleLayer(cavity, gf);
+        results = op.computeS(cavity, gf);
         reference =
             cnpy::custom::npy_load<double>("tanhsphericaldiffuse_S_collocation.npy");
         for (int i = 0; i < cavity.size(); ++i) {
@@ -132,7 +130,7 @@ SCENARIO("A collocation integrator with approximate diagonal elements",
         }
       }
       AND_THEN("the matrix elements of D are") {
-        results = doubleLayer(cavity, gf);
+        results = op.computeD(cavity, gf);
         reference =
             cnpy::custom::npy_load<double>("tanhsphericaldiffuse_D_collocation.npy");
         for (int i = 0; i < cavity.size(); ++i) {

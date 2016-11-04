@@ -29,6 +29,7 @@
 
 #include <Eigen/Core>
 
+#include "bi_operators/Collocation.hpp"
 #include "green/DerivativeTypes.hpp"
 #include "cavity/GePolCavity.hpp"
 #include "utils/Molecule.hpp"
@@ -36,6 +37,8 @@
 #include "green/UniformDielectric.hpp"
 #include "solver/IEFSolver.hpp"
 #include "TestingMolecules.hpp"
+
+using integrator::Collocation;
 
 SCENARIO(
     "Test solver for the anisotropic IEFPCM for a point charge and a GePol cavity",
@@ -46,6 +49,8 @@ SCENARIO(
     Vacuum<> gf_i;
     UniformDielectric<> gf_o(permittivity);
     bool symm = true;
+
+    Collocation op;
 
     double charge = 8.0;
     double totalASC = -charge * (permittivity - 1) / permittivity;
@@ -66,10 +71,10 @@ SCENARIO(
       GePolCavity cavity = GePolCavity(point, area, probeRadius, minRadius);
 
       IEFSolver aniso_solver(symm);
-      aniso_solver.buildAnisotropicMatrix(cavity, gf_i, gf_o);
+      aniso_solver.buildAnisotropicMatrix(cavity, gf_i, gf_o, op);
 
       IEFSolver iso_solver(symm);
-      iso_solver.buildIsotropicMatrix(cavity, gf_i, gf_o);
+      iso_solver.buildIsotropicMatrix(cavity, gf_i, gf_o, op);
 
       int size = cavity.size();
       Eigen::VectorXd fake_mep = computeMEP(cavity.elements(), charge);
@@ -115,10 +120,10 @@ SCENARIO(
       GePolCavity cavity = GePolCavity(point, area, probeRadius, minRadius);
 
       IEFSolver aniso_solver(symm);
-      aniso_solver.buildAnisotropicMatrix(cavity, gf_i, gf_o);
+      aniso_solver.buildAnisotropicMatrix(cavity, gf_i, gf_o, op);
 
       IEFSolver iso_solver(symm);
-      iso_solver.buildIsotropicMatrix(cavity, gf_i, gf_o);
+      iso_solver.buildIsotropicMatrix(cavity, gf_i, gf_o, op);
 
       int size = cavity.size();
       Eigen::VectorXd fake_mep = computeMEP(cavity.elements(), charge, origin);

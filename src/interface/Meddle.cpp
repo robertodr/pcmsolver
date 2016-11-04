@@ -36,14 +36,15 @@
 
 #include <boost/foreach.hpp>
 
+#include "bi_operators/BIOperatorData.hpp"
+#include "bi_operators/BoundaryIntegralOperator.hpp"
 #include "cavity/Cavity.hpp"
-#include "cavity/RegisterCavityToFactory.hpp"
 #include "green/IGreensFunction.hpp"
 #include "solver/PCMSolver.hpp"
-#include "solver/RegisterSolverToFactory.hpp"
 #include "utils/Atom.hpp"
 #include "Citation.hpp"
 #include "utils/cnpy.hpp"
+#include "utils/Factory.hpp"
 #include "utils/Solvent.hpp"
 #include "utils/Sphere.hpp"
 
@@ -377,7 +378,11 @@ void Meddle::initStaticSolver() {
   std::string modelType = input_.solverType();
   K_0_ = Factory<PCMSolver, solverData>::TheFactory().create(modelType,
                                                              input_.solverParams());
-  K_0_->buildSystemMatrix(*cavity_, *gf_i, *gf_o);
+  BoundaryIntegralOperator * biop =
+      Factory<BoundaryIntegralOperator, biOperatorData>::TheFactory().create(
+          input_.integratorType(), input_.integratorParams());
+  K_0_->buildSystemMatrix(*cavity_, *gf_i, *gf_o, *biop);
+  delete biop;
 
   infoStream_ << "========== Static solver " << std::endl;
   infoStream_ << *K_0_ << std::endl;
@@ -394,8 +399,13 @@ void Meddle::initDynamicSolver() {
   std::string modelType = input_.solverType();
   K_d_ = Factory<PCMSolver, solverData>::TheFactory().create(modelType,
                                                              input_.solverParams());
-  K_d_->buildSystemMatrix(*cavity_, *gf_i, *gf_o);
+
+  BoundaryIntegralOperator * biop =
+      Factory<BoundaryIntegralOperator, biOperatorData>::TheFactory().create(
+          input_.integratorType(), input_.integratorParams());
+  K_d_->buildSystemMatrix(*cavity_, *gf_i, *gf_o, *biop);
   hasDynamic_ = true;
+  delete biop;
 
   infoStream_ << "========== Dynamic solver " << std::endl;
   infoStream_ << *K_d_ << std::endl;

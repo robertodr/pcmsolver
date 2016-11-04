@@ -29,12 +29,15 @@
 
 #include <Eigen/Core>
 
+#include "bi_operators/Collocation.hpp"
 #include "green/DerivativeTypes.hpp"
 #include "cavity/GePolCavity.hpp"
 #include "utils/Molecule.hpp"
 #include "green/Vacuum.hpp"
 #include "green/UniformDielectric.hpp"
 #include "solver/IEFSolver.hpp"
+
+using integrator::Collocation;
 
 /*! \class IEFSolver
  *  \test \b pointChargeGePolRestart tests IEFSolver using a point charge with a
@@ -50,9 +53,12 @@ TEST_CASE(
   double permittivity = 78.39;
   Vacuum<> gf_i;
   UniformDielectric<> gf_o(permittivity);
+
+  Collocation op;
+
   bool symm = true;
   IEFSolver solver(symm);
-  solver.buildSystemMatrix(cavity, gf_i, gf_o);
+  solver.buildSystemMatrix(cavity, gf_i, gf_o, op);
 
   double charge = 8.0;
   int size = cavity.size();

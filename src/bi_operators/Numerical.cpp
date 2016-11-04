@@ -21,7 +21,7 @@
  * PCMSolver API, see: <http://pcmsolver.readthedocs.io/>
  */
 
-#include "NumericalIntegrator.hpp"
+#include "Numerical.hpp"
 
 #include <cmath>
 #include <vector>
@@ -38,10 +38,12 @@
 #include "green/IGreensFunction.hpp"
 #include "utils/MathUtils.hpp"
 #include "utils/QuadratureRules.hpp"
+#include "BIOperatorData.hpp"
+#include "utils/Factory.hpp"
 
 namespace integrator {
-Eigen::MatrixXd NumericalS::compute(const std::vector<Element> & elems,
-                                    const IGreensFunction & gf) const {
+Eigen::MatrixXd Numerical::computeS_impl(const std::vector<Element> & elems,
+                                         const IGreensFunction & gf) const {
   PCMSolverIndex cavitySize = elems.size();
   Eigen::MatrixXd S = Eigen::MatrixXd::Zero(cavitySize, cavitySize);
   for (PCMSolverIndex i = 0; i < cavitySize; ++i) {
@@ -56,8 +58,8 @@ Eigen::MatrixXd NumericalS::compute(const std::vector<Element> & elems,
   return S;
 }
 
-Eigen::MatrixXd NumericalD::compute(const std::vector<Element> & elems,
-                                    const IGreensFunction & gf) const {
+Eigen::MatrixXd Numerical::computeD_impl(const std::vector<Element> & elems,
+                                         const IGreensFunction & gf) const {
   PCMSolverIndex cavitySize = elems.size();
   Eigen::MatrixXd D = Eigen::MatrixXd::Zero(cavitySize, cavitySize);
   for (PCMSolverIndex i = 0; i < cavitySize; ++i) {
@@ -299,3 +301,13 @@ double integrateD(const KernelD & F, const Element & e) {
 template double integrateS<64, 16>(const KernelS & F, const Element & e);
 template double integrateD<64, 16>(const KernelD & F, const Element & e);
 } // namespace integrator
+
+namespace {
+BoundaryIntegralOperator * createNumerical(const biOperatorData & /* data */) {
+  return new integrator::Numerical();
+}
+const std::string NUMERICAL("NUMERICAL");
+const bool registeredNumerical =
+    Factory<BoundaryIntegralOperator, biOperatorData>::TheFactory().registerObject(
+        NUMERICAL, createNumerical);
+}
