@@ -36,25 +36,30 @@
 #include <Eigen/Core>
 #include <Eigen/LU>
 
+#include "bi_operators/BoundaryIntegralOperator.hpp"
 #include "cavity/Cavity.hpp"
 #include "cavity/Element.hpp"
 #include "green/IGreensFunction.hpp"
 #include "utils/MathUtils.hpp"
 #include "SolverImpl.hpp"
+#include "SolverData.hpp"
+#include "utils/Factory.hpp"
 
 void IEFSolver::buildSystemMatrix_impl(const Cavity & cavity,
                                        const IGreensFunction & gf_i,
-                                       const IGreensFunction & gf_o) {
+                                       const IGreensFunction & gf_o,
+                                       const BoundaryIntegralOperator & op) {
   isotropic_ = (gf_i.uniform() && gf_o.uniform());
-  isotropic_ ? buildIsotropicMatrix(cavity, gf_i, gf_o)
-             : buildAnisotropicMatrix(cavity, gf_i, gf_o);
+  isotropic_ ? buildIsotropicMatrix(cavity, gf_i, gf_o, op)
+             : buildAnisotropicMatrix(cavity, gf_i, gf_o, op);
 }
 
 void IEFSolver::buildAnisotropicMatrix(const Cavity & cav,
                                        const IGreensFunction & gf_i,
-                                       const IGreensFunction & gf_o) {
-  Tepsilon_ = solver::anisotropicTEpsilon(cav, gf_i, gf_o);
-  Rinfinity_ = solver::anisotropicRinfinity(cav, gf_i, gf_o);
+                                       const IGreensFunction & gf_o,
+                                       const BoundaryIntegralOperator & op) {
+  Tepsilon_ = solver::anisotropicTEpsilon(cav, gf_i, gf_o, op);
+  Rinfinity_ = solver::anisotropicRinfinity(cav, gf_i, gf_o, op);
 
   // Pack into a block diagonal matrix
   // The number of irreps in the group
@@ -70,10 +75,11 @@ void IEFSolver::buildAnisotropicMatrix(const Cavity & cav,
 
 void IEFSolver::buildIsotropicMatrix(const Cavity & cav,
                                      const IGreensFunction & gf_i,
-                                     const IGreensFunction & gf_o) {
-  Tepsilon_ =
-      solver::isotropicTEpsilon(cav, gf_i, profiles::epsilon(gf_o.permittivity()));
-  Rinfinity_ = solver::isotropicRinfinity(cav, gf_i);
+                                     const IGreensFunction & gf_o,
+                                     const BoundaryIntegralOperator & op) {
+  Tepsilon_ = solver::isotropicTEpsilon(cav, gf_i,
+                                        profiles::epsilon(gf_o.permittivity()), op);
+  Rinfinity_ = solver::isotropicRinfinity(cav, gf_i, op);
 
   // Pack into a block diagonal matrix
   // The number of irreps in the group
@@ -133,4 +139,14 @@ std::ostream & IEFSolver::printSolver(std::ostream & os) {
   }
 
   return os;
+}
+
+namespace {
+PCMSolver * createIEFSolver(const solverData & data) {
+  return new IEFSolver(data.hermitivitize);
+}
+const std::string IEFSOLVER("IEFPCM");
+const bool registeredIEFSolver =
+    Factory<PCMSolver, solverData>::TheFactory().registerObject(IEFSOLVER,
+                                                                createIEFSolver);
 }

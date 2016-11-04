@@ -30,6 +30,7 @@
 
 #include <Eigen/Core>
 
+#include "bi_operators/Collocation.hpp"
 #include "green/DerivativeTypes.hpp"
 #include "cavity/GePolCavity.hpp"
 #include "utils/Molecule.hpp"
@@ -37,6 +38,8 @@
 #include "green/UniformDielectric.hpp"
 #include "solver/CPCMSolver.hpp"
 #include "TestingMolecules.hpp"
+
+using integrator::Collocation;
 
 /*! \class CPCMSolver
  *  \test \b C2H4GePolD2h tests CPCMSolver using C2H4 with a GePol cavity in D2h
@@ -57,8 +60,10 @@ TEST_CASE("Test solver for the CPCM and the C2H4 molecule in D2h symmetry",
   bool symm = true;
   double correction = 0.0;
 
+  Collocation S;
+
   CPCMSolver solver(symm, correction);
-  solver.buildSystemMatrix(cavity, gf_i, gf_o);
+  solver.buildSystemMatrix(cavity, gf_i, gf_o, S);
 
   double Ccharge = 6.0;
   double Hcharge = 1.0;

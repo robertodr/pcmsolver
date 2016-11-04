@@ -31,10 +31,9 @@
 #include <Eigen/Core>
 #include <Eigen/LU>
 
-#include "cavity/Cavity.hpp"
-#include "cavity/Element.hpp"
-#include "green/IGreensFunction.hpp"
-#include "utils/MathUtils.hpp"
+class Cavity;
+class IGreensFunction;
+class BoundaryIntegralOperator;
 
 /*! \file SolverImpl.hpp
  *  \brief Functions common to all solvers
@@ -43,28 +42,11 @@
  */
 
 namespace solver {
-/*! \brief Builds the matrix representation of the single layer operator S
- *  \param[in] cav the discretized cavity
- *  \param[in] gf  the Green's function
- *  \return the \f$\mathbf{S}\f$ matrix
- *  \note This function blocks the matrix according to the molecular point group.
- *  \warning This function does not pack the matrix into a collections of blocks.
- */
-Eigen::MatrixXd computeS(const Cavity & cav, const IGreensFunction & gf);
-
-/*! \brief Builds the matrix representation of the double layer operator D
- *  \param[in] cav the discretized cavity
- *  \param[in] gf  the Green's function
- *  \return the \f$\mathbf{D}\f$ matrix
- *  \note This function blocks the matrix according to the molecular point group.
- *  \warning This function does not pack the matrix into a collections of blocks.
- */
-Eigen::MatrixXd computeD(const Cavity & cav, const IGreensFunction & gf);
-
 /*! \brief Builds the **anisotropic** IEFPCM matrix
  *  \param[in] cav the discretized cavity
  *  \param[in] gf_i Green's function inside the cavity
  *  \param[in] gf_o Green's function outside the cavity
+ *  \param[in] op integrator strategy for the single and double layer operators
  *  \return the \f$ \mathbf{K} = \mathbf{T}^{-1}\mathbf{R}\mathbf{A} \f$ matrix
  *
  *  This function calculates the PCM matrix. We use the following definitions:
@@ -84,12 +66,14 @@ Eigen::MatrixXd computeD(const Cavity & cav, const IGreensFunction & gf);
  */
 Eigen::MatrixXd anisotropicIEFMatrix(const Cavity & cav,
                                      const IGreensFunction & gf_i,
-                                     const IGreensFunction & gf_o);
+                                     const IGreensFunction & gf_o,
+                                     const BoundaryIntegralOperator & op);
 
 /*! \brief Builds the **isotropic** IEFPCM matrix
  *  \param[in] cav the discretized cavity
  *  \param[in] gf_i Green's function inside the cavity
  *  \param[in] epsilon permittivity outside the cavity
+ *  \param[in] op integrator strategy for the single and double layer operators
  *  \return the \f$ \mathbf{K} = \mathbf{T}^{-1}\mathbf{R}\mathbf{A} \f$ matrix
  *
  *  This function calculates the PCM matrix. We use the following definitions:
@@ -105,12 +89,14 @@ Eigen::MatrixXd anisotropicIEFMatrix(const Cavity & cav,
  *  The matrix is not symmetrized and is not symmetry packed.
  */
 Eigen::MatrixXd isotropicIEFMatrix(const Cavity & cav, const IGreensFunction & gf_i,
-                                   double epsilon);
+                                   double epsilon,
+                                   const BoundaryIntegralOperator & op);
 
 /*! \brief Builds the **anisotropic** \f$ \mathbf{T}_\varepsilon \f$ matrix
  *  \param[in] cav the discretized cavity
  *  \param[in] gf_i Green's function inside the cavity
  *  \param[in] gf_o Green's function outside the cavity
+ *  \param[in] op integrator strategy for the single and double layer operators
  *  \return the \f$ \mathbf{T}_\varepsilon \f$ matrix
  *
  *  We use the following definition:
@@ -124,12 +110,14 @@ Eigen::MatrixXd isotropicIEFMatrix(const Cavity & cav, const IGreensFunction & g
  *  The matrix is not symmetrized and is not symmetry packed.
  */
 Eigen::MatrixXd anisotropicTEpsilon(const Cavity & cav, const IGreensFunction & gf_i,
-                                    const IGreensFunction & gf_o);
+                                    const IGreensFunction & gf_o,
+                                    const BoundaryIntegralOperator & op);
 
 /*! \brief Builds the **isotropic** \f$ \mathbf{T}_\varepsilon \f$ matrix
  *  \param[in] cav the discretized cavity
  *  \param[in] gf_i Green's function inside the cavity
  *  \param[in] epsilon permittivity outside the cavity
+ *  \param[in] op integrator strategy for the single and double layer operators
  *  \return the \f$ \mathbf{T}_\varepsilon \f$ matrix
  *
  *  We use the following definition:
@@ -141,12 +129,14 @@ Eigen::MatrixXd anisotropicTEpsilon(const Cavity & cav, const IGreensFunction & 
  *  The matrix is not symmetrized and is not symmetry packed.
  */
 Eigen::MatrixXd isotropicTEpsilon(const Cavity & cav, const IGreensFunction & gf_i,
-                                  double epsilon);
+                                  double epsilon,
+                                  const BoundaryIntegralOperator & op);
 
 /*! \brief Builds the **anisotropic** \f$ \mathbf{R}_\infty \f$ matrix
  *  \param[in] cav the discretized cavity
  *  \param[in] gf_i Green's function inside the cavity
  *  \param[in] gf_o Green's function outside the cavity
+ *  \param[in] op integrator strategy for the single and double layer operators
  *  \return the \f$ \mathbf{R}_\infty\mathbf{A} \f$ matrix
  *
  *  We use the following definition:
@@ -159,11 +149,13 @@ Eigen::MatrixXd isotropicTEpsilon(const Cavity & cav, const IGreensFunction & gf
  */
 Eigen::MatrixXd anisotropicRinfinity(const Cavity & cav,
                                      const IGreensFunction & gf_i,
-                                     const IGreensFunction & gf_o);
+                                     const IGreensFunction & gf_o,
+                                     const BoundaryIntegralOperator & op);
 
 /*! \brief Builds the **isotropic** \f$ \mathbf{R}_\infty \f$ matrix
  *  \param[in] cav the discretized cavity
  *  \param[in] gf_i Green's function inside the cavity
+ *  \param[in] D    integrator strategy for the double layer operator
  *  \return the \f$ \mathbf{R}_\infty\mathbf{A} \f$ matrix
  *
  *  We use the following definition:
@@ -173,5 +165,6 @@ Eigen::MatrixXd anisotropicRinfinity(const Cavity & cav,
  *  \f]
  *  The matrix is not symmetrized and is not symmetry packed.
  */
-Eigen::MatrixXd isotropicRinfinity(const Cavity & cav, const IGreensFunction & gf_i);
+Eigen::MatrixXd isotropicRinfinity(const Cavity & cav, const IGreensFunction & gf_i,
+                                   const BoundaryIntegralOperator & D);
 } // namespace solver

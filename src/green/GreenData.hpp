@@ -39,14 +39,10 @@
 struct greenData {
   /*! The way the derivatives of the Green's function are evaluated */
   int howDerivative;
-  /*! Evaluation policy for the diagonal of the S and D operators */
-  int howIntegrator;
   /*! Dielectric profile type */
   int howProfile;
   /*! The permittivity */
   double epsilon;
-  /*! Scaling for the diagonal of the approximate collocation matrices */
-  double scaling;
   /*! Inverse of the Debye length */
   double kappa;
   /*! Diagonal values of the permittivity tensor with respect to the lab frame */
@@ -78,8 +74,7 @@ struct greenData {
   bool empty;
 
   greenData() { empty = true; }
-  greenData(int how_d, int how_i, int how_p, double _epsilon = 1.0, double s = 1.07,
-            double _kappa = 0.0,
+  greenData(int how_d, int how_p, double _epsilon = 1.0, double _kappa = 0.0,
             const Eigen::Vector3d & epstens = Eigen::Vector3d::Zero(),
             const Eigen::Vector3d & euler = Eigen::Vector3d::Zero(),
             double _epsReal = 0.0, double _epsImaginary = 0.0,
@@ -88,10 +83,8 @@ struct greenData {
             double _c = 100.0, double _w = 5.0,
             const Eigen::Vector3d & _o = Eigen::Vector3d::Zero(), int l = 30)
       : howDerivative(how_d),
-        howIntegrator(how_i),
         howProfile(how_p),
         epsilon(_epsilon),
-        scaling(s),
         kappa(_kappa),
         epsilonTensor(epstens),
         eulerAngles(euler),

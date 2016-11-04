@@ -21,30 +21,23 @@
  * PCMSolver API, see: <http://pcmsolver.readthedocs.io/>
  */
 
-#ifndef BOUNDARYINTEGRALOPERATORS_HPP
-#define BOUNDARYINTEGRALOPERATORS_HPP
-
-#include <vector>
+#ifndef BIOPERATORDATA_HPP
+#define BIOPERATORDATA_HPP
 
 #include "Config.hpp"
 
-#include <Eigen/Core>
+/*! @struct biOperatorData
+ *  @brief Contains all data defined from user input to set up the integrators
+ */
 
-class Cavity;
-class Element;
-class IGreensFunction;
+struct biOperatorData {
+  /*! Scaling for the diagonal of the approximate collocation matrices */
+  double scaling;
+  /*! Whether the structure was initialized with user input or not */
+  bool empty;
 
-class BoundaryIntegralOperator {
-public:
-  virtual ~BoundaryIntegralOperator() {}
-  Eigen::MatrixXd computeS(const Cavity & cav, const IGreensFunction & gf) const;
-  Eigen::MatrixXd computeD(const Cavity & cav, const IGreensFunction & gf) const;
-
-private:
-  virtual Eigen::MatrixXd computeS_impl(const std::vector<Element> & elems,
-                                        const IGreensFunction & gf) const = 0;
-  virtual Eigen::MatrixXd computeD_impl(const std::vector<Element> & elems,
-                                        const IGreensFunction & gf) const = 0;
+  biOperatorData() { empty = true; }
+  biOperatorData(double s) : scaling(s) { empty = false; }
 };
 
-#endif // BOUNDARYINTEGRALOPERATORS_HPP
+#endif // BIOPERATORDATA_HPP

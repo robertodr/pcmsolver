@@ -29,6 +29,7 @@
 
 #include <Eigen/Core>
 
+#include "bi_operators/Collocation.hpp"
 #include "green/DerivativeTypes.hpp"
 #include "cavity/GePolCavity.hpp"
 #include "utils/Molecule.hpp"
@@ -36,6 +37,8 @@
 #include "solver/IEFSolver.hpp"
 #include "green/SphericalDiffuse.hpp"
 #include "TestingMolecules.hpp"
+
+using integrator::Collocation;
 
 SCENARIO("Test solver for the IEFPCM for a point charge in a spherical diffuse "
          "environment and a GePol cavity",
@@ -49,6 +52,8 @@ SCENARIO("Test solver for the IEFPCM for a point charge in a spherical diffuse "
     double width = 5.0;
     Vacuum<> gf_i;
     bool symm = true;
+
+    Collocation op;
 
     double charge = 8.0;
     double totalASC = -charge * (eps1 - 1) / eps1;
@@ -68,7 +73,7 @@ SCENARIO("Test solver for the IEFPCM for a point charge in a spherical diffuse "
 
       SphericalDiffuse<> gf_o(eps1, eps2, width, center, Eigen::Vector3d::Zero(), 3);
       IEFSolver solver(symm);
-      solver.buildSystemMatrix(cavity, gf_i, gf_o);
+      solver.buildSystemMatrix(cavity, gf_i, gf_o, op);
       int size = cavity.size();
       Eigen::VectorXd fake_mep = computeMEP(cavity.elements(), charge, origin);
       for (int i = 0; i < size; ++i) {
@@ -100,7 +105,7 @@ SCENARIO("Test solver for the IEFPCM for a point charge in a spherical diffuse "
       SphericalDiffuse<> gf_o(eps1, eps2, width, center, origin, 3);
 
       IEFSolver solver(symm);
-      solver.buildSystemMatrix(cavity, gf_i, gf_o);
+      solver.buildSystemMatrix(cavity, gf_i, gf_o, op);
 
       int size = cavity.size();
       Eigen::VectorXd fake_mep = computeMEP(cavity.elements(), charge);

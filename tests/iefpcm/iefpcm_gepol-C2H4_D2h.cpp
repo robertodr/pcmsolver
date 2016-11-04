@@ -30,6 +30,7 @@
 
 #include <Eigen/Core>
 
+#include "bi_operators/Collocation.hpp"
 #include "green/DerivativeTypes.hpp"
 #include "cavity/GePolCavity.hpp"
 #include "utils/Molecule.hpp"
@@ -37,6 +38,8 @@
 #include "green/UniformDielectric.hpp"
 #include "solver/IEFSolver.hpp"
 #include "TestingMolecules.hpp"
+
+using integrator::Collocation;
 
 /*! \class IEFSolver
  *  \test \b C2H4GePolD2h tests IEFSolver using C2H4 with a GePol cavity in D2h
@@ -54,9 +57,12 @@ TEST_CASE("Test solver for the IEFPCM and the C2H4 molecule in D2h symmetry",
   double permittivity = 78.39;
   Vacuum<> gf_i;
   UniformDielectric<> gf_o(permittivity);
+
+  Collocation op;
+
   bool symm = true;
   IEFSolver solver(symm);
-  solver.buildSystemMatrix(cavity, gf_i, gf_o);
+  solver.buildSystemMatrix(cavity, gf_i, gf_o, op);
 
   double Ccharge = 6.0;
   double Hcharge = 1.0;
