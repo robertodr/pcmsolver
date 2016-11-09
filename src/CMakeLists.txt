@@ -18,6 +18,7 @@ list(APPEND _objects $<TARGET_OBJECTS:cavity>
                      $<TARGET_OBJECTS:bi_operators>
                      $<TARGET_OBJECTS:pedra>
                      $<TARGET_OBJECTS:solver>
+                     $<TARGET_OBJECTS:td_solver>
                      $<TARGET_OBJECTS:utils>
                      $<TARGET_OBJECTS:getkw>
     )
