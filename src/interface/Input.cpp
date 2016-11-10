@@ -189,7 +189,7 @@ void Input::reader(const std::string & filename) {
   const Section & chgdist = input_.getSect("CHARGEDISTRIBUTION");
   if (chgdist.isDefined()) {
     // Set monopoles
-    if (chgdist.getKey<std::vector<double>>("MONOPOLES").isDefined()) {
+    if (chgdist.getKey<std::vector<double> >("MONOPOLES").isDefined()) {
       std::vector<double> mono = chgdist.getDblVec("MONOPOLES");
       int j = 0;
       int n = int(mono.size() / 4);
@@ -203,7 +203,7 @@ void Input::reader(const std::string & filename) {
       }
     }
     // Set dipoles
-    if (chgdist.getKey<std::vector<double>>("DIPOLES").isDefined()) {
+    if (chgdist.getKey<std::vector<double> >("DIPOLES").isDefined()) {
       std::vector<double> dipo = chgdist.getDblVec("DIPOLES");
       int j = 0;
       int n = int(dipo.size() / 6);
