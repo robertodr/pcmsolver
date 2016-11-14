@@ -1,7 +1,6 @@
-/* pcmsolver_copyright_start */
-/*
- *     PCMSolver, an API for the Polarizable Continuum Model
- *     Copyright (C) 2013-2015 Roberto Di Remigio, Luca Frediani and contributors
+/**
+ * PCMSolver, an API for the Polarizable Continuum Model
+ * Copyright (C) 2016 Roberto Di Remigio, Luca Frediani and collaborators.
  *
  *     This file is part of PCMSolver.
  *
@@ -21,7 +20,6 @@
  *     For information on the complete list of contributors to the
  *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
  */
-/* pcmsolver_copyright_end */
 
 #include "IEFSolver.hpp"
 
@@ -39,101 +37,126 @@
 #include "cavity/Cavity.hpp"
 #include "cavity/Element.hpp"
 #include "green/IGreensFunction.hpp"
+#include "utils/Factory.hpp"
 #include "utils/MathUtils.hpp"
 #include "SolverImpl.hpp"
+#include "SolverData.hpp"
 
-void IEFSolver::buildSystemMatrix_impl(const Cavity & cavity, const IGreensFunction & gf_i, const IGreensFunction & gf_o)
-{
+void IEFSolver::buildSystemMatrix_impl(const Cavity & cavity,
+                                       const IGreensFunction & gf_i,
+                                       const IGreensFunction & gf_o,
+                                       const BoundaryIntegralOperator & op) {
   // Route computation of system matrix based on environment
-  switch(environment_) {
+  switch (environment_) {
     case RegularIsotropic:
-      buildRegularIsotropicMatrix(cavity, gf_i, gf_o);
+      buildRegularIsotropicMatrix(cavity, gf_i, gf_o, op);
       break;
     case FlippedIsotropic:
-      buildFlippedIsotropicMatrix(cavity, gf_i, gf_o);
+      buildFlippedIsotropicMatrix(cavity, gf_i, gf_o, op);
       break;
     case AnisotropicEnv:
-      buildAnisotropicMatrix(cavity, gf_i, gf_o);
+      buildAnisotropicMatrix(cavity, gf_i, gf_o, op);
       break;
     default:
-      buildAnisotropicMatrix(cavity, gf_i, gf_o);
+      buildAnisotropicMatrix(cavity, gf_i, gf_o, op);
       break;
   }
 }
 
-void IEFSolver::buildAnisotropicMatrix(const Cavity & cav, const IGreensFunction & gf_i, const IGreensFunction & gf_o)
-{
-  fullPCMMatrix_ = anisotropicIEFMatrix(cav, gf_i, gf_o);
-  // Symmetrize K := (K + K+)/2
-  if (hermitivitize_) {
-    hermitivitize(fullPCMMatrix_);
-  }
+void IEFSolver::buildAnisotropicMatrix(const Cavity & cav,
+                                       const IGreensFunction & gf_i,
+                                       const IGreensFunction & gf_o,
+                                       const BoundaryIntegralOperator & op) {
+  Tepsilon_ = solver::anisotropicTEpsilon(cav, gf_i, gf_o, op);
+  Rinfinity_ = solver::anisotropicRinfinity(cav, gf_i, gf_o, op);
+
   // Pack into a block diagonal matrix
   // The number of irreps in the group
   int nrBlocks = cav.pointGroup().nrIrrep();
   // The size of the irreducible portion of the cavity
   int dimBlock = cav.irreducible_size();
   // For the moment just packs into a std::vector<Eigen::MatrixXd>
-  symmetryPacking(blockPCMMatrix_, fullPCMMatrix_, dimBlock, nrBlocks);
+  symmetryPacking(blockTepsilon_, Tepsilon_, dimBlock, nrBlocks);
+  symmetryPacking(blockRinfinity_, Rinfinity_, dimBlock, nrBlocks);
 
   built_ = true;
 }
 
-void IEFSolver::buildRegularIsotropicMatrix(const Cavity & cav, const IGreensFunction & gf_i, const IGreensFunction & gf_o)
-{
-  fullPCMMatrix_ = regularIsotropicIEFMatrix(cav, gf_i, profiles::epsilon(gf_o.permittivity()));
-  // Symmetrize K := (K + K+)/2
-  if (hermitivitize_) {
-    hermitivitize(fullPCMMatrix_);
-  }
+void IEFSolver::buildRegularIsotropicMatrix(const Cavity & cav,
+                                            const IGreensFunction & gf_i,
+                                            const IGreensFunction & gf_o,
+                                            const BoundaryIntegralOperator & op) {
+  Tepsilon_ = solver::isotropicTEpsilon(cav, gf_i,
+                                        profiles::epsilon(gf_o.permittivity()), op);
+  Rinfinity_ = solver::isotropicRinfinity(cav, gf_i, op);
+
   // Pack into a block diagonal matrix
   // The number of irreps in the group
   int nrBlocks = cav.pointGroup().nrIrrep();
   // The size of the irreducible portion of the cavity
   int dimBlock = cav.irreducible_size();
   // For the moment just packs into a std::vector<Eigen::MatrixXd>
-  symmetryPacking(blockPCMMatrix_, fullPCMMatrix_, dimBlock, nrBlocks);
+  symmetryPacking(blockTepsilon_, Tepsilon_, dimBlock, nrBlocks);
+  symmetryPacking(blockRinfinity_, Rinfinity_, dimBlock, nrBlocks);
 
   built_ = true;
 }
 
-void IEFSolver::buildFlippedIsotropicMatrix(const Cavity & cav, const IGreensFunction & gf_i, const IGreensFunction & gf_o)
-{
-  fullPCMMatrix_ = flippedIsotropicIEFMatrix(cav, gf_o, profiles::epsilon(gf_i.permittivity()));
-  // Symmetrize K := (K + K+)/2
-  if (hermitivitize_) {
-    hermitivitize(fullPCMMatrix_);
-  }
+void IEFSolver::buildFlippedIsotropicMatrix(const Cavity & cav,
+                                            const IGreensFunction & gf_i,
+                                            const IGreensFunction & gf_o,
+                                            const BoundaryIntegralOperator & op) {
+  Tepsilon_ = solver::flippedIsotropicTEpsilon(
+      cav, gf_o, profiles::epsilon(gf_i.permittivity()), op);
+  Rinfinity_ = solver::isotropicRinfinity(cav, gf_o, op);
+
   // Pack into a block diagonal matrix
   // The number of irreps in the group
   int nrBlocks = cav.pointGroup().nrIrrep();
   // The size of the irreducible portion of the cavity
   int dimBlock = cav.irreducible_size();
   // For the moment just packs into a std::vector<Eigen::MatrixXd>
-  symmetryPacking(blockPCMMatrix_, fullPCMMatrix_, dimBlock, nrBlocks);
+  symmetryPacking(blockTepsilon_, Tepsilon_, dimBlock, nrBlocks);
+  symmetryPacking(blockRinfinity_, Rinfinity_, dimBlock, nrBlocks);
 
   built_ = true;
 }
 
-Eigen::VectorXd IEFSolver::computeCharge_impl(const Eigen::VectorXd & potential, int irrep) const
-{
+Eigen::VectorXd IEFSolver::computeCharge_impl(const Eigen::VectorXd & potential,
+                                              int irrep) const {
   // The potential and charge vector are of dimension equal to the
   // full dimension of the cavity. We have to select just the part
   // relative to the irrep needed.
-  int fullDim = fullPCMMatrix_.rows();
+  int fullDim = Rinfinity_.rows();
   Eigen::VectorXd charge = Eigen::VectorXd::Zero(fullDim);
-  int nrBlocks = blockPCMMatrix_.size();
-  int irrDim = fullDim/nrBlocks;
-  charge.segment(irrep*irrDim, irrDim) =
-    - blockPCMMatrix_[irrep] * potential.segment(irrep*irrDim, irrDim);
+  int nrBlocks = blockRinfinity_.size();
+  int irrDim = fullDim / nrBlocks;
+  charge.segment(irrep * irrDim, irrDim) =
+      -blockTepsilon_[irrep].partialPivLu().solve(
+          blockRinfinity_[irrep] * potential.segment(irrep * irrDim, irrDim));
+
+  // Obtain polarization weights
+  if (hermitivitize_) {
+    Eigen::VectorXd adj_asc = Eigen::VectorXd::Zero(fullDim);
+    // Form T^\dagger * v = c
+    adj_asc.segment(irrep * irrDim, irrDim) =
+        blockTepsilon_[irrep].adjoint().partialPivLu().solve(
+            potential.segment(irrep * irrDim, irrDim));
+    // Form R^\dagger * c = q^* ("transposed" polarization charges)
+    adj_asc.segment(irrep * irrDim, irrDim) =
+        -blockRinfinity_[irrep].adjoint() *
+        (adj_asc.segment(irrep * irrDim, irrDim).eval());
+    // Get polarization weights
+    charge = 0.5 * (adj_asc + charge.eval());
+  }
+
   return charge;
 }
 
-std::ostream & IEFSolver::printSolver(std::ostream & os)
-{
+std::ostream & IEFSolver::printSolver(std::ostream & os) {
   std::string type;
   // Route computation of system matrix based on environment
-  switch(environment_) {
+  switch (environment_) {
     case RegularIsotropic:
       type = "IEFPCM, regular isotropic";
       break;
@@ -155,4 +178,14 @@ std::ostream & IEFSolver::printSolver(std::ostream & os)
   }
 
   return os;
+}
+
+namespace {
+PCMSolver * createIEFSolver(const solverData & data) {
+  return new IEFSolver(data.hermitivitize);
+}
+const std::string IEFSOLVER("IEFPCM");
+const bool registeredIEFSolver =
+    Factory<PCMSolver, solverData>::TheFactory().registerObject(IEFSOLVER,
+                                                                createIEFSolver);
 }

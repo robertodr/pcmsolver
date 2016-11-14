@@ -27,10 +27,9 @@
 
 #include <iostream>
 
-
 #include <Eigen/Core>
 
-#include "bi_operators/CollocationIntegrator.hpp"
+#include "bi_operators/Collocation.hpp"
 #include "green/DerivativeTypes.hpp"
 #include "cavity/GePolCavity.hpp"
 #include "green/Vacuum.hpp"
@@ -39,57 +38,55 @@
 #include "TestingMolecules.hpp"
 
 SCENARIO("Test solver for the IEFPCM for a point charge outside a GePol cavity",
-         "[solver][iefpcm][iefpcm_gepol-outcharge][outcharge]")
-{
-    GIVEN("An isotropic environment and a point charge")
-    {
-        double permittivity = 78.39;
-        Vacuum<> gf_i;
-        UniformDielectric<> gf_o(permittivity);
-        bool symm = true;
+         "[solver][iefpcm][iefpcm_gepol-outcharge][outcharge]") {
+  GIVEN("An isotropic environment and a point charge") {
+    double permittivity = 78.39;
+    Vacuum<> gf_i;
+    UniformDielectric<> gf_o(permittivity);
+    bool symm = true;
 
-        double charge = 8.0;
-        double totalASC = - charge * (permittivity - 1) / permittivity;
+    integrator::Collocation op;
 
-        /*! \class IEFSolver
-         *  \test \b outchargeGePol tests IEFSolver using a point charge with a GePol cavity
-         *  The point charge is outside the cavity at (0, 0, z > r)
-         */
-        WHEN("the point charge is located above the cavity")
-        {
-            Molecule point = dummy<0>(2.929075493);
-            double area = 0.4;
-            double probeRadius = 0.0;
-            double minRadius = 100.0;
-            std::vector<Sphere> spheres(1);
-            Eigen::Vector3d chargePos(0.0, 0.0, 3.0);
-            spheres[0] = Sphere(Eigen::Vector3d::Zero(), 1.0);
-            GePolCavity cavity = GePolCavity(spheres, area, probeRadius, minRadius);
+    double charge = 8.0;
+    double totalASC = -charge * (permittivity - 1) / permittivity;
 
-            IEFSolver solver(symm);
-            solver.buildSystemMatrix(cavity, gf_i, gf_o);
+    /*! \class IEFSolver
+     *  \test \b outchargeGePol tests IEFSolver using a point charge with a GePol
+     * cavity
+     *  The point charge is outside the cavity at (0, 0, z > r)
+     */
+    WHEN("the point charge is located above the cavity") {
+      Molecule point = dummy<0>(2.929075493);
+      double area = 0.4;
+      double probeRadius = 0.0;
+      double minRadius = 100.0;
+      std::vector<Sphere> spheres(1);
+      Eigen::Vector3d chargePos(0.0, 0.0, 3.0);
+      spheres[0] = Sphere(Eigen::Vector3d::Zero(), 1.0);
+      GePolCavity cavity = GePolCavity(spheres, area, probeRadius, minRadius);
 
-            size_t size = cavity.size();
-            Eigen::VectorXd fake_mep = computeMEP(cavity.elements(), charge, chargePos);
-            Eigen::VectorXd fake_asc = Eigen::VectorXd::Zero(size);
-            fake_asc = solver.computeCharge(fake_mep);
+      IEFSolver solver(symm);
+      solver.buildSystemMatrix(cavity, gf_i, gf_o, op);
 
-            for (size_t i = 0; i < size; ++i) {
-                INFO("fake_mep(" << i << ") = " << fake_mep(i));
-            }
-            for (size_t i = 0; i < size; ++i) {
-                INFO("fake_asc(" << i << ") = " << fake_asc(i));
-            }
+      size_t size = cavity.size();
+      Eigen::VectorXd fake_mep = computeMEP(cavity.elements(), charge, chargePos);
+      Eigen::VectorXd fake_asc = Eigen::VectorXd::Zero(size);
+      fake_asc = solver.computeCharge(fake_mep);
 
-            double totalFakeASC = fake_asc.sum();
-            THEN("the apparent surface charge is")
-            {
-                CAPTURE(totalASC);
-                CAPTURE(totalFakeASC);
-                CAPTURE(totalASC - totalFakeASC);
-                REQUIRE(totalASC == Approx(totalFakeASC).epsilon(1.0e-03));
-            }
-        }
+      for (size_t i = 0; i < size; ++i) {
+        INFO("fake_mep(" << i << ") = " << fake_mep(i));
+      }
+      for (size_t i = 0; i < size; ++i) {
+        INFO("fake_asc(" << i << ") = " << fake_asc(i));
+      }
 
+      double totalFakeASC = fake_asc.sum();
+      THEN("the apparent surface charge is") {
+        CAPTURE(totalASC);
+        CAPTURE(totalFakeASC);
+        CAPTURE(totalASC - totalFakeASC);
+        REQUIRE(totalASC == Approx(totalFakeASC).epsilon(1.0e-03));
+      }
     }
+  }
 }

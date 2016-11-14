@@ -28,11 +28,9 @@
 #include <vector>
 #include <cmath>
 
-
 #include <Eigen/Core>
 
 #include "cavity/GePolCavity.hpp"
-#include "bi_operators/CollocationIntegrator.hpp"
 #include "green/DerivativeTypes.hpp"
 #include "green/Vacuum.hpp"
 #include "green/IonicLiquid.hpp"
@@ -40,10 +38,9 @@
 #include "utils/ChargeDistribution.hpp"
 #include "TestingMolecules.hpp"
 
-SCENARIO("Calculation of the Newton potential", "[utils][newton_potential][utils_newton-potential]")
-{
-  GIVEN("A classical charge distribution of monopoles")
-  {
+SCENARIO("Calculation of the Newton potential",
+         "[utils][newton_potential][utils_newton-potential]") {
+  GIVEN("A classical charge distribution of monopoles") {
     double area = 0.4;
     double probeRadius = 0.0;
     double minRadius = 100.0;
@@ -51,13 +48,11 @@ SCENARIO("Calculation of the Newton potential", "[utils][newton_potential][utils
     GePolCavity cavity = GePolCavity(molec, area, probeRadius, minRadius, "newton");
     ChargeDistribution dist = nuclearChargeDistribution(molec);
 
-    WHEN("the Newton potential is calculated in vacuum")
-    {
+    WHEN("the Newton potential is calculated in vacuum") {
       Vacuum<> gf;
-      Eigen::VectorXd newton = computeNewtonPotential(gf.exportKernelS(),
-          cavity.elementCenter(), dist);
-      THEN("comparison with the computeMEP method results in")
-      {
+      Eigen::VectorXd newton =
+          computeNewtonPotential(gf.exportKernelS(), cavity.elementCenter(), dist);
+      THEN("comparison with the computeMEP method results in") {
         Eigen::VectorXd mep = computeMEP(molec, cavity.elements());
         REQUIRE(newton.size() == mep.size());
         for (int i = 0; i < mep.size(); ++i) {
@@ -66,14 +61,12 @@ SCENARIO("Calculation of the Newton potential", "[utils][newton_potential][utils
       }
     }
 
-    AND_WHEN("the Newton potential is calculated in a uniform dielectric")
-    {
+    AND_WHEN("the Newton potential is calculated in a uniform dielectric") {
       double permittivity = 78.39;
       UniformDielectric<> gf(permittivity);
-      Eigen::VectorXd newton = computeNewtonPotential(gf.exportKernelS(),
-          cavity.elementCenter(), dist);
-      THEN("comparison with the computeMEP method results in")
-      {
+      Eigen::VectorXd newton =
+          computeNewtonPotential(gf.exportKernelS(), cavity.elementCenter(), dist);
+      THEN("comparison with the computeMEP method results in") {
         Eigen::VectorXd mep = computeMEP(molec, cavity.elements());
         mep /= permittivity;
         REQUIRE(newton.size() == mep.size());
@@ -83,15 +76,14 @@ SCENARIO("Calculation of the Newton potential", "[utils][newton_potential][utils
       }
     }
 
-    AND_WHEN("the Newton potential is calculated in an ionic liquid with kappa = 0.0")
-    {
+    AND_WHEN(
+        "the Newton potential is calculated in an ionic liquid with kappa = 0.0") {
       double permittivity = 78.39;
       double kappa = 0.0;
       IonicLiquid<> gf(permittivity, kappa);
-      Eigen::VectorXd newton = computeNewtonPotential(gf.exportKernelS(),
-          cavity.elementCenter(), dist);
-      THEN("comparison with the computeMEP method results in")
-      {
+      Eigen::VectorXd newton =
+          computeNewtonPotential(gf.exportKernelS(), cavity.elementCenter(), dist);
+      THEN("comparison with the computeMEP method results in") {
         Eigen::VectorXd mep = computeMEP(molec, cavity.elements());
         mep /= permittivity;
         REQUIRE(newton.size() == mep.size());

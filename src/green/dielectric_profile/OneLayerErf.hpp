@@ -1,7 +1,7 @@
 /* pcmsolver_copyright_start */
 /*
  *     PCMSolver, an API for the Polarizable Continuum Model
- *     Copyright (C) 2013-2015 Roberto Di Remigio, Luca Frediani and contributors
+ *     Copyright (C) 2013-2016 Roberto Di Remigio, Luca Frediani and contributors
  *
  *     This file is part of PCMSolver.
  *
@@ -19,7 +19,7 @@
  *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
  *
  *     For information on the complete list of contributors to the
- *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
+ *     PCMSolver API, see: <http://pcmsolver.readthedocs.io/>
  */
 /* pcmsolver_copyright_end */
 
@@ -42,62 +42,60 @@
  *  the constructor to keep consistency with \cite Frediani2004a
  */
 
-class OneLayerErf
-{
+class OneLayerErf {
 private:
-    /// Dielectric constant on the left of the interface
-    double epsilon1_;
-    /// Dielectric constant one the right of the interface
-    double epsilon2_;
-    /// Width of the transition layer
-    double width_;
-    /// Center of the transition layer
-    double center_;
-    /*! Returns value of dielectric profile at given point
-     *  \param[in] point where to evaluate the profile
-     */
-    double value(double point) const {
-        double epsPlus = (epsilon1_ + epsilon2_) / 2.0;
-        double epsMinus = (epsilon2_ - epsilon1_) / 2.0;
-        double val = boost::math::erf((point - center_) / width_);
-        return (epsPlus + epsMinus * val); //epsilon(r)
-    }
-    /*! Returns value of derivative of dielectric profile at given point
-     *  \param[in] point where to evaluate the derivative
-     */
-    double derivative(double point) const {
-        double factor = (epsilon2_ - epsilon1_) / (width_ * std::sqrt(M_PI));
-        double t = (point - center_) / width_;
-        double val = std::exp(-std::pow(t, 2));
-        return (factor * val); //first derivative of epsilon(r)
-    }
-    std::ostream & printObject(std::ostream & os)
-    {
-        os << "Profile functional form: erf" << std::endl;
-        os << "Permittivity inside  = " << epsilon1_ << std::endl;
-        os << "Permittivity outside = " << epsilon2_ << std::endl;
-        os << "Profile width        = " << width_    << " AU" << std::endl;
-        os << "Profile center       = " << center_   << " AU";
-        return os;
-    }
+  /// Dielectric constant on the left of the interface
+  double epsilon1_;
+  /// Dielectric constant one the right of the interface
+  double epsilon2_;
+  /// Width of the transition layer
+  double width_;
+  /// Center of the transition layer
+  double center_;
+  /*! Returns value of dielectric profile at given point
+   *  \param[in] point where to evaluate the profile
+   */
+  double value(double point) const {
+    double epsPlus = (epsilon1_ + epsilon2_) / 2.0;
+    double epsMinus = (epsilon2_ - epsilon1_) / 2.0;
+    double val = boost::math::erf((point - center_) / width_);
+    return (epsPlus + epsMinus * val); // epsilon(r)
+  }
+  /*! Returns value of derivative of dielectric profile at given point
+   *  \param[in] point where to evaluate the derivative
+   */
+  double derivative(double point) const {
+    double factor = (epsilon2_ - epsilon1_) / (width_ * std::sqrt(M_PI));
+    double t = (point - center_) / width_;
+    double val = std::exp(-std::pow(t, 2));
+    return (factor * val); // first derivative of epsilon(r)
+  }
+  std::ostream & printObject(std::ostream & os) {
+    os << "Profile functional form: erf" << std::endl;
+    os << "Permittivity inside  = " << epsilon1_ << std::endl;
+    os << "Permittivity outside = " << epsilon2_ << std::endl;
+    os << "Profile width        = " << width_ << " AU" << std::endl;
+    os << "Profile center       = " << center_ << " AU";
+    return os;
+  }
+
 public:
-    OneLayerErf() {}
-    OneLayerErf(double e1, double e2, double w, double c) :
-        epsilon1_(e1), epsilon2_(e2), width_(w/6.0), center_(c) {}
-    /*! Returns a tuple holding the permittivity and its derivative
-     *  \param[in]   r evaluation point
-     */
-    pcm::tuple<double, double> operator()(const double r) const
-    {
-        return pcm::make_tuple(value(r), derivative(r));
-    }
-    double epsilon1() const { return epsilon1_; }
-    double epsilon2() const { return epsilon2_; }
-    double width() const { return width_; }
-    double center() const { return center_; }
-    friend std::ostream & operator<<(std::ostream & os, OneLayerErf & th) {
-        return th.printObject(os);
-    }
+  OneLayerErf() {}
+  OneLayerErf(double e1, double e2, double w, double c)
+      : epsilon1_(e1), epsilon2_(e2), width_(w / 6.0), center_(c) {}
+  /*! Returns a tuple holding the permittivity and its derivative
+   *  \param[in]   r evaluation point
+   */
+  pcm::tuple<double, double> operator()(const double r) const {
+    return pcm::make_tuple(value(r), derivative(r));
+  }
+  double epsilon1() const { return epsilon1_; }
+  double epsilon2() const { return epsilon2_; }
+  double width() const { return width_; }
+  double center() const { return center_; }
+  friend std::ostream & operator<<(std::ostream & os, OneLayerErf & th) {
+    return th.printObject(os);
+  }
 };
 
 #endif // ONELAYERERF_HPP

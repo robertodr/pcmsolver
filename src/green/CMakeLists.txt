@@ -1,14 +1,14 @@
 # List of headers
 list(APPEND headers_list AnisotropicLiquid.hpp DerivativeTypes.hpp DerivativeUtils.hpp GreenData.hpp GreenUtils.hpp GreensFunction.hpp
                          IGreensFunction.hpp InterfacesImpl.hpp IonicLiquid.hpp
-                         RegisterGreensFunctionToFactory.hpp SphericalDiffuse.hpp
+                         SphericalDiffuse.hpp
                          SphericalSharp.hpp UniformDielectric.hpp Vacuum.hpp)
 
 # List of sources
-list(APPEND sources_list )
+list(APPEND sources_list Vacuum.cpp UniformDielectric.cpp IonicLiquid.cpp AnisotropicLiquid.cpp SphericalDiffuse.cpp)
 
 add_library(green OBJECT ${sources_list} ${headers_list})
-set_target_properties(green PROPERTIES POSITION_INDEPENDENT_CODE 1 INTERPROCEDURAL_OPTIMIZATION 1)
+set_target_properties(green PROPERTIES POSITION_INDEPENDENT_CODE 1 )
 add_dependencies(green generate-config-hpp)
 # Sets install directory for all the headers in the list
 foreach(_header ${headers_list})

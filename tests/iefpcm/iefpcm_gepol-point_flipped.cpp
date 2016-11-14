@@ -27,10 +27,9 @@
 
 #include <iostream>
 
-
 #include <Eigen/Core>
 
-#include "bi_operators/PurisimaIntegrator.hpp"
+#include "bi_operators/Purisima.hpp"
 #include "green/DerivativeTypes.hpp"
 #include "cavity/GePolCavity.hpp"
 #include "green/Vacuum.hpp"
@@ -39,142 +38,147 @@
 #include "utils/ChargeDistribution.hpp"
 #include "TestingMolecules.hpp"
 
-SCENARIO("Test a point charge and a GePol cavity in flipped environment (uniform dielectric inside, vacuum outside)", "[solver][iefpcm][iefpcm_gepol-point_flipped][flipped]")
-{
-    GIVEN("An isotropic environment inside the cavity and a point charge")
-    {
-        double permittivity = 80.00;
-        UniformDielectric<AD_directional, PurisimaIntegrator> gf_i(permittivity);
-        Vacuum<AD_directional, PurisimaIntegrator> gf_o;
-        bool symm = true;
+SCENARIO("Test a point charge and a GePol cavity in flipped environment (uniform "
+         "dielectric inside, vacuum outside)",
+         "[solver][iefpcm][iefpcm_gepol-point_flipped][flipped]") {
+  GIVEN("An isotropic environment inside the cavity and a point charge") {
+    double permittivity = 80.00;
+    UniformDielectric<> gf_i(permittivity);
+    Vacuum<> gf_o;
+    bool symm = true;
 
-        double charge = 1.0;
-        double totalASC = charge * (permittivity - 1) / permittivity;
+    integrator::Purisima op;
 
-        /*! \class IEFSolver
-         *  \test \b pointChargeGePolFlipped tests IEFSolver using a point charge with a GePol cavity and a flipped environment
-         *  We force also usage of the buildAnisotropicMatrix method.
-         *  The results are compared with Gauss' theorem and the results from the buildFlippedIsotropicMatrix method
-         *  The point charge is at the origin.
-         */
-        WHEN("the point charge is located at the origin")
-        {
-            Molecule point = dummy<0>(2.0);
-            double area = 0.4;
-            double probeRadius = 0.0;
-            double minRadius = 100.0;
-            GePolCavity cavity = GePolCavity(point, area, probeRadius, minRadius);
+    double charge = 1.0;
+    double totalASC = charge * (permittivity - 1) / permittivity;
 
-            IEFSolver aniso_solver(symm);
-            aniso_solver.buildAnisotropicMatrix(cavity, gf_i, gf_o);
+    /*! \class IEFSolver
+     *  \test \b pointChargeGePolFlipped tests IEFSolver using a point charge with a
+     * GePol cavity and a flipped environment
+     *  We force also usage of the buildAnisotropicMatrix method.
+     *  The results are compared with Gauss' theorem and the results from the
+     * buildFlippedIsotropicMatrix method
+     *  The point charge is at the origin.
+     */
+    WHEN("the point charge is located at the origin") {
+      Molecule point = dummy<0>(2.0);
+      double area = 0.4;
+      double probeRadius = 0.0;
+      double minRadius = 100.0;
+      GePolCavity cavity = GePolCavity(point, area, probeRadius, minRadius);
 
-            IEFSolver iso_solver(symm);
-            iso_solver.buildFlippedIsotropicMatrix(cavity, gf_i, gf_o);
+      IEFSolver aniso_solver(symm);
+      aniso_solver.buildAnisotropicMatrix(cavity, gf_i, gf_o, op);
 
-            size_t size = cavity.size();
-            // Newton potential for a uniform dielectric
-            Eigen::VectorXd newton = computeNewtonPotential(gf_i.exportKernelS(),
-                cavity.elementCenter(), nuclearChargeDistribution(point));
-            for (size_t i = 0; i < size; ++i) {
-                INFO("newton(" << i << ") = " << newton(i));
-                std::cout << "newton(" << i << ") = " << newton(i) << std::endl;
-            }
-            // Newton potential for vacuum
-            Eigen::VectorXd fake_mep = computeMEP(cavity.elements(), charge);
-            for (size_t i = 0; i < size; ++i) {
-                INFO("fake_mep(" << i << ") = " << fake_mep(i));
-                std::cout << "fake_mep(" << i << ") = " << fake_mep(i) << std::endl;
-            }
+      IEFSolver iso_solver(symm);
+      iso_solver.buildFlippedIsotropicMatrix(cavity, gf_i, gf_o, op);
 
-            THEN("the apparent surface charge is")
-            {
-              Eigen::VectorXd aniso_fake_asc = aniso_solver.computeCharge(newton);
-              // The RHS has the opposite sign for the flipped case
-              Eigen::VectorXd iso_fake_asc = iso_solver.computeCharge(fake_mep);
-              double totalAnisoASC = aniso_fake_asc.sum();
-              double totalIsoASC = iso_fake_asc.sum();
+      size_t size = cavity.size();
+      // Newton potential for a uniform dielectric
+      Eigen::VectorXd newton =
+          computeNewtonPotential(gf_i.exportKernelS(), cavity.elementCenter(),
+                                 nuclearChargeDistribution(point));
+      for (size_t i = 0; i < size; ++i) {
+        INFO("newton(" << i << ") = " << newton(i));
+        std::cout << "newton(" << i << ") = " << newton(i) << std::endl;
+      }
+      // Newton potential for vacuum
+      Eigen::VectorXd fake_mep = computeMEP(cavity.elements(), charge);
+      for (size_t i = 0; i < size; ++i) {
+        INFO("fake_mep(" << i << ") = " << fake_mep(i));
+        std::cout << "fake_mep(" << i << ") = " << fake_mep(i) << std::endl;
+      }
 
-              for (size_t i = 0; i < size; ++i) {
-                INFO("aniso_fake_asc(" << i << ") = " << aniso_fake_asc(i));
-              }
-              for (size_t i = 0; i < size; ++i) {
-                INFO("iso_fake_asc(" << i << ") = " << iso_fake_asc(i));
-                std::cout << "iso_fake_asc(" << i << ") = " << iso_fake_asc(i) << std::endl;
-              }
-              print_eigen_matrix(aniso_fake_asc, "aniso.log");
-              print_eigen_matrix(iso_fake_asc, "iso.log");
+      THEN("the apparent surface charge is") {
+        Eigen::VectorXd aniso_fake_asc = aniso_solver.computeCharge(newton);
+        // The RHS has the opposite sign for the flipped case
+        Eigen::VectorXd iso_fake_asc = iso_solver.computeCharge(fake_mep);
+        double totalAnisoASC = aniso_fake_asc.sum();
+        double totalIsoASC = iso_fake_asc.sum();
 
-              CAPTURE(totalASC);
-              CAPTURE(totalIsoASC);
-              CAPTURE(totalASC - totalIsoASC);
-              CHECK(totalASC == Approx(totalIsoASC).epsilon(1.0e-03));
-              CAPTURE(totalAnisoASC);
-              CAPTURE(totalASC - totalAnisoASC);
-              CHECK(totalASC == Approx(totalAnisoASC).epsilon(1.0e-03));
-              CAPTURE(totalIsoASC - totalAnisoASC);
-              CHECK(totalIsoASC == Approx(totalAnisoASC));
-            }
+        for (size_t i = 0; i < size; ++i) {
+          INFO("aniso_fake_asc(" << i << ") = " << aniso_fake_asc(i));
         }
-
-        /*! \class IEFSolver
-         *  \test \b pointChargeShiftedGePolFlipped tests IEFSolver using a point charge with a GePol cavity and a flipped environment
-         *  We force also usage of the buildAnisotropicMatrix method.
-         *  The results are compared with Gauss' theorem and the results from the buildFlippedIsotropicMatrix method
-         *  The point charge is away from the origin.
-         */
-        AND_WHEN("the point charge is located away from the origin")
-        {
-            Eigen::Vector3d origin = 100 * Eigen::Vector3d::Random();
-            Molecule point = dummy<0>(2.929075493, origin);
-            double area = 10.0;
-            double probeRadius = 0.0;
-            double minRadius = 100.0;
-            GePolCavity cavity = GePolCavity(point, area, probeRadius, minRadius);
-
-            IEFSolver aniso_solver(symm);
-            aniso_solver.buildAnisotropicMatrix(cavity, gf_i, gf_o);
-
-            IEFSolver iso_solver(symm);
-            iso_solver.buildFlippedIsotropicMatrix(cavity, gf_i, gf_o);
-
-            size_t size = cavity.size();
-            // Newton potential for a uniform dielectric
-            Eigen::VectorXd newton = computeNewtonPotential(gf_i.exportKernelS(),
-                cavity.elementCenter(), nuclearChargeDistribution(point));
-            for (size_t i = 0; i < size; ++i) {
-                INFO("newton(" << i << ") = " << newton(i));
-            }
-            // Newton potential for vacuum
-            Eigen::VectorXd fake_mep = computeMEP(cavity.elements(), charge, origin);
-            for (size_t i = 0; i < size; ++i) {
-                INFO("fake_mep(" << i << ") = " << fake_mep(i));
-            }
-
-            THEN("the apparent surface charge is")
-            {
-              Eigen::VectorXd aniso_fake_asc = aniso_solver.computeCharge(newton);
-              // The RHS has the opposite sign for the flipped case
-              Eigen::VectorXd iso_fake_asc = iso_solver.computeCharge(fake_mep);
-              double totalAnisoASC = aniso_fake_asc.sum();
-              double totalIsoASC = iso_fake_asc.sum();
-
-              for (size_t i = 0; i < size; ++i) {
-                INFO("aniso_fake_asc(" << i << ") = " << aniso_fake_asc(i));
-              }
-              for (size_t i = 0; i < size; ++i) {
-                INFO("iso_fake_asc(" << i << ") = " << iso_fake_asc(i));
-              }
-
-              CAPTURE(totalASC);
-              CAPTURE(totalIsoASC);
-              CAPTURE(totalASC - totalIsoASC);
-              CHECK(totalASC == Approx(totalIsoASC).epsilon(1.0e-03));
-              CAPTURE(totalAnisoASC);
-              CAPTURE(totalASC - totalAnisoASC);
-              CHECK(totalASC == Approx(totalAnisoASC).epsilon(1.0e-03));
-              CAPTURE(totalIsoASC - totalAnisoASC);
-              CHECK(totalIsoASC == Approx(totalAnisoASC));
-            }
+        for (size_t i = 0; i < size; ++i) {
+          INFO("iso_fake_asc(" << i << ") = " << iso_fake_asc(i));
+          std::cout << "iso_fake_asc(" << i << ") = " << iso_fake_asc(i)
+                    << std::endl;
         }
+        print_eigen_matrix(aniso_fake_asc, "aniso.log");
+        print_eigen_matrix(iso_fake_asc, "iso.log");
+
+        CAPTURE(totalASC);
+        CAPTURE(totalIsoASC);
+        CAPTURE(totalASC - totalIsoASC);
+        CHECK(totalASC == Approx(totalIsoASC).epsilon(1.0e-03));
+        CAPTURE(totalAnisoASC);
+        CAPTURE(totalASC - totalAnisoASC);
+        CHECK(totalASC == Approx(totalAnisoASC).epsilon(1.0e-03));
+        CAPTURE(totalIsoASC - totalAnisoASC);
+        CHECK(totalIsoASC == Approx(totalAnisoASC));
+      }
     }
+
+    /*! \class IEFSolver
+     *  \test \b pointChargeShiftedGePolFlipped tests IEFSolver using a point charge
+     * with a GePol cavity and a flipped environment
+     *  We force also usage of the buildAnisotropicMatrix method.
+     *  The results are compared with Gauss' theorem and the results from the
+     * buildFlippedIsotropicMatrix method
+     *  The point charge is away from the origin.
+     */
+    AND_WHEN("the point charge is located away from the origin") {
+      Eigen::Vector3d origin = 100 * Eigen::Vector3d::Random();
+      Molecule point = dummy<0>(2.929075493, origin);
+      double area = 10.0;
+      double probeRadius = 0.0;
+      double minRadius = 100.0;
+      GePolCavity cavity = GePolCavity(point, area, probeRadius, minRadius);
+
+      IEFSolver aniso_solver(symm);
+      aniso_solver.buildAnisotropicMatrix(cavity, gf_i, gf_o, op);
+
+      IEFSolver iso_solver(symm);
+      iso_solver.buildFlippedIsotropicMatrix(cavity, gf_i, gf_o, op);
+
+      size_t size = cavity.size();
+      // Newton potential for a uniform dielectric
+      Eigen::VectorXd newton =
+          computeNewtonPotential(gf_i.exportKernelS(), cavity.elementCenter(),
+                                 nuclearChargeDistribution(point));
+      for (size_t i = 0; i < size; ++i) {
+        INFO("newton(" << i << ") = " << newton(i));
+      }
+      // Newton potential for vacuum
+      Eigen::VectorXd fake_mep = computeMEP(cavity.elements(), charge, origin);
+      for (size_t i = 0; i < size; ++i) {
+        INFO("fake_mep(" << i << ") = " << fake_mep(i));
+      }
+
+      THEN("the apparent surface charge is") {
+        Eigen::VectorXd aniso_fake_asc = aniso_solver.computeCharge(newton);
+        // The RHS has the opposite sign for the flipped case
+        Eigen::VectorXd iso_fake_asc = iso_solver.computeCharge(fake_mep);
+        double totalAnisoASC = aniso_fake_asc.sum();
+        double totalIsoASC = iso_fake_asc.sum();
+
+        for (size_t i = 0; i < size; ++i) {
+          INFO("aniso_fake_asc(" << i << ") = " << aniso_fake_asc(i));
+        }
+        for (size_t i = 0; i < size; ++i) {
+          INFO("iso_fake_asc(" << i << ") = " << iso_fake_asc(i));
+        }
+
+        CAPTURE(totalASC);
+        CAPTURE(totalIsoASC);
+        CAPTURE(totalASC - totalIsoASC);
+        CHECK(totalASC == Approx(totalIsoASC).epsilon(1.0e-03));
+        CAPTURE(totalAnisoASC);
+        CAPTURE(totalASC - totalAnisoASC);
+        CHECK(totalASC == Approx(totalAnisoASC).epsilon(1.0e-03));
+        CAPTURE(totalIsoASC - totalAnisoASC);
+        CHECK(totalIsoASC == Approx(totalAnisoASC));
+      }
+    }
+  }
 }
