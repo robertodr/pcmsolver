@@ -92,7 +92,7 @@ SCENARIO("Test a point charge and a GePol cavity in flipped environment (uniform
       THEN("the apparent surface charge is") {
         Eigen::VectorXd aniso_fake_asc = aniso_solver.computeCharge(newton);
         // The RHS has the opposite sign for the flipped case
-        Eigen::VectorXd iso_fake_asc = iso_solver.computeCharge(fake_mep);
+        Eigen::VectorXd iso_fake_asc = iso_solver.computeCharge(newton);
         double totalAnisoASC = aniso_fake_asc.sum();
         double totalIsoASC = iso_fake_asc.sum();
 
@@ -158,7 +158,7 @@ SCENARIO("Test a point charge and a GePol cavity in flipped environment (uniform
       THEN("the apparent surface charge is") {
         Eigen::VectorXd aniso_fake_asc = aniso_solver.computeCharge(newton);
         // The RHS has the opposite sign for the flipped case
-        Eigen::VectorXd iso_fake_asc = iso_solver.computeCharge(fake_mep);
+        Eigen::VectorXd iso_fake_asc = iso_solver.computeCharge(newton);
         double totalAnisoASC = aniso_fake_asc.sum();
         double totalIsoASC = iso_fake_asc.sum();
 
