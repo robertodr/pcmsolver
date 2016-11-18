@@ -2,23 +2,23 @@
  * PCMSolver, an API for the Polarizable Continuum Model
  * Copyright (C) 2016 Roberto Di Remigio, Luca Frediani and collaborators.
  *
- *     This file is part of PCMSolver.
+ * This file is part of PCMSolver.
  *
- *     PCMSolver is free software: you can redistribute it and/or modify
- *     it under the terms of the GNU Lesser General Public License as published by
- *     the Free Software Foundation, either version 3 of the License, or
- *     (at your option) any later version.
+ * PCMSolver is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *     PCMSolver is distributed in the hope that it will be useful,
- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *     GNU Lesser General Public License for more details.
+ * PCMSolver is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
  *
- *     You should have received a copy of the GNU Lesser General Public License
- *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
  *
- *     For information on the complete list of contributors to the
- *     PCMSolver API, see: <http://pcmsolver.readthedocs.org/>
+ * For information on the complete list of contributors to the
+ * PCMSolver API, see: <http://pcmsolver.readthedocs.io/>
  */
 
 #ifndef ANISOTROPICLIQUID_HPP
@@ -70,10 +70,10 @@ private:
   virtual KernelS exportKernelS_impl() const __override;
   virtual KernelD exportKernelD_impl() const __override;
 
-  virtual double singleLayer_impl(const Element & /* e */,
-                                  double /* factor */) const __override;
-  virtual double doubleLayer_impl(const Element & /* e */,
-                                  double /* factor */) const __override;
+  __noreturn virtual double singleLayer_impl(const Element & /* e */,
+                                             double /* factor */) const __override;
+  __noreturn virtual double doubleLayer_impl(const Element & /* e */,
+                                             double /* factor */) const __override;
 
   virtual std::ostream & printObject(std::ostream & os) __override;
 };
