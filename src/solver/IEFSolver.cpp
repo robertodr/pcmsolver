@@ -105,11 +105,11 @@ void IEFSolver::buildRegularIsotropicMatrix(const Cavity & cav,
 
 void IEFSolver::buildFlippedIsotropicMatrix(const Cavity & cav,
                                             const IGreensFunction & gf_i,
-                                            const IGreensFunction & gf_o,
+                                            const IGreensFunction & /* gf_o */,
                                             const BoundaryIntegralOperator & op) {
   Tepsilon_ = solver::flippedIsotropicTEpsilon(
-      cav, gf_o, profiles::epsilon(gf_i.permittivity()), op);
-  Rinfinity_ = -solver::isotropicRinfinity(cav, gf_o, op);
+      cav, gf_i, profiles::epsilon(gf_i.permittivity()), op);
+  Rinfinity_ = -solver::isotropicRinfinity(cav, gf_i, op);
 
   // Pack into a block diagonal matrix
   // The number of irreps in the group

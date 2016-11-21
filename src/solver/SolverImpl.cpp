@@ -41,6 +41,7 @@ namespace solver {
 Eigen::MatrixXd anisotropicTEpsilon(const Cavity & cav, const IGreensFunction & gf_i,
                                     const IGreensFunction & gf_o,
                                     const BoundaryIntegralOperator & op) {
+
   TIMER_ON("Computing SI");
   Eigen::MatrixXd SI = op.computeS(cav, gf_i);
   TIMER_OFF("Computing SI");
@@ -54,7 +55,13 @@ Eigen::MatrixXd anisotropicTEpsilon(const Cavity & cav, const IGreensFunction & 
   Eigen::MatrixXd DE = op.computeD(cav, gf_o);
   TIMER_OFF("Computing DE");
 
+  cnpy::custom::npy_save("anisoSI.npy", SI);
+  cnpy::custom::npy_save("anisoDI.npy", DI);
+  cnpy::custom::npy_save("anisoSE.npy", SE);
+  cnpy::custom::npy_save("anisoDE.npy", DE);
+
   Eigen::MatrixXd a = cav.elementArea().asDiagonal();
+  cnpy::custom::npy_save("area.npy", a);
   Eigen::MatrixXd Id = Eigen::MatrixXd::Identity(cav.size(), cav.size());
 
   TIMER_ON("Assemble T matrix");
@@ -74,6 +81,9 @@ Eigen::MatrixXd isotropicTEpsilon(const Cavity & cav, const IGreensFunction & gf
   TIMER_ON("Computing DI");
   Eigen::MatrixXd DI = op.computeD(cav, gf_i);
   TIMER_OFF("Computing DI");
+
+  cnpy::custom::npy_save("isoSI.npy", SI);
+  cnpy::custom::npy_save("isoDI.npy", DI);
 
   Eigen::MatrixXd a = cav.elementArea().asDiagonal();
   Eigen::MatrixXd Id = Eigen::MatrixXd::Identity(cav.size(), cav.size());
@@ -96,6 +106,9 @@ Eigen::MatrixXd flippedIsotropicTEpsilon(const Cavity & cav,
   TIMER_ON("Computing DI");
   Eigen::MatrixXd DI = op.computeD(cav, gf_i);
   TIMER_OFF("Computing DI");
+
+  cnpy::custom::npy_save("flippedIsoSI.npy", SI);
+  cnpy::custom::npy_save("flippedIsoDI.npy", DI);
 
   Eigen::MatrixXd a = cav.elementArea().asDiagonal();
   Eigen::MatrixXd Id = Eigen::MatrixXd::Identity(cav.size(), cav.size());
