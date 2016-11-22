@@ -7,13 +7,14 @@ cache:
   ccache: true
   directories:
   - "$HOME/.ccache"
+python:
+  - "2.7"
 env:
   global:
   - USE_CCACHE=1
   - CCACHE_COMPRESS=1
   - CCACHE_MAXSIZE=200M
   - CCACHE_CPP2=1
-  - PYTHON_PACKAGES="pip pep8 cpp-coveralls"
 matrix:
   include:
   - os: linux
@@ -237,12 +238,12 @@ install:
 - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
 - mkdir -p ${DEPS_DIR} && cd ${DEPS_DIR}
 - |
-  if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
-    pip install --upgrade ${PYTHON_PACKAGES} --user `whoami`
-  elif [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
+  virtualenv venv
+  source venv/bin/activate
+  if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
     brew install cmake boost python gcc
-    pip install --upgrade ${PYTHON_PACKAGES}
   fi
+  pip install --upgrade -r .travis_requirements.txt
 before_script:
 - cd ${TRAVIS_BUILD_DIR}
 - export CXX=${CXX_COMPILER}
