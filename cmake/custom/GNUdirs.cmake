@@ -22,9 +22,4 @@
 #     - "'-DCMAKE_INSTALL_INCLUDEDIR={0}'.format(arguments['--includedir'])"
 #     - "'-DCMAKE_INSTALL_DATADIR={0}'.format(arguments['--datadir'])"
 
-message("CMAKE_INSTALL_BINDIR : ${CMAKE_INSTALL_BINDIR}")
-message("CMAKE_INSTALL_LIBDIR : ${CMAKE_INSTALL_LIBDIR}")
-message("CMAKE_INSTALL_INCLUDEDIR : ${CMAKE_INSTALL_INCLUDEDIR}")
-message("CMAKE_INSTALL_DATADIR : ${CMAKE_INSTALL_DATADIR}")
-
 include(GNUInstallDirs)
