@@ -95,11 +95,6 @@ typedef enum {
  *  \param[in] message_length length of the passed message
  *  This function **must** be defined by the host program
  */
-#ifdef _WIN32
-#if defined(PCMSOLVER_BUILD_SHARED) /* build dll */
-__declspec(dllimport)
-#endif
-#endif
 void host_writer(const char * message, int message_length);
 
 /*! \brief Creates a new PCM context object
