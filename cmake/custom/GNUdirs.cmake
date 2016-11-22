@@ -22,8 +22,9 @@
 #     - "'-DCMAKE_INSTALL_INCLUDEDIR={0}'.format(arguments['--includedir'])"
 #     - "'-DCMAKE_INSTALL_DATADIR={0}'.format(arguments['--datadir'])"
 
-if("${${CMAKE_INSTALL_LIBDIR}}" STREQUAL "" OR NOT DEFINED ${CMAKE_INSTALL_LIBDIR})
-  set(${CMAKE_INSTALL_LIBDIR} lib CACHE STRING "Directory to which libraries are installed" FORCE)
-endif()
+message("CMAKE_INSTALL_BINDIR : ${CMAKE_INSTALL_BINDIR}")
+message("CMAKE_INSTALL_LIBDIR : ${CMAKE_INSTALL_LIBDIR}")
+message("CMAKE_INSTALL_INCLUDEDIR : ${CMAKE_INSTALL_INCLUDEDIR}")
+message("CMAKE_INSTALL_DATADIR : ${CMAKE_INSTALL_DATADIR}")
 
 include(GNUInstallDirs)
