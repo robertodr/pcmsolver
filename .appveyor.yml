@@ -8,7 +8,7 @@
 # Where "ps:" is used commands are executed in PowerShell
 
 # build version format: 1, 2, ...
-version: {build}-{branch}
+version: '{build}-{branch}'
 
 # branches to build
 branches:
