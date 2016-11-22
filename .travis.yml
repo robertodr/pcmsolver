@@ -235,8 +235,6 @@ matrix:
     env: CXX_COMPILER='g++-5' C_COMPILER='gcc-5' Fortran_COMPILER='gfortran-5' BUILD_TYPE='debug'
       COVERAGE=true
 install:
-- DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
-- mkdir -p ${DEPS_DIR} && cd ${DEPS_DIR}
 - |
   virtualenv venv
   source venv/bin/activate
