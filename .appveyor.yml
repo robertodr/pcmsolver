@@ -10,7 +10,7 @@
 # build version format: 1, 2, ...
 version: '{build}'
 
-os: Visual Studio 2015
+os: Windows Server 2012 R2
 
 platform: x86
 
@@ -65,6 +65,7 @@ before_build:
 build_script:
   - python setup.py --generator="%GENERATOR%" --cmake-options="-DENABLE_FORTRAN_API=ON"
   - cd build
+  - set PATH=%PATH:C:\Program Files\Git\usr\bin=%
   - cmake --build . -- %BUILDFLAGS%
 
 test_script:
