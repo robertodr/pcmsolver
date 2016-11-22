@@ -7,8 +7,6 @@ cache:
   ccache: true
   directories:
   - "$HOME/.ccache"
-python:
-  - "2.7"
 env:
   global:
   - USE_CCACHE=1
@@ -32,6 +30,7 @@ matrix:
         - clang-3.5
         - libboost1.55-all-dev
         - gfortran
+        - python-virtualenv
     env: CXX_COMPILER='clang++-3.5' C_COMPILER='clang-3.5' Fortran_COMPILER='gfortran'
       BUILD_TYPE='release'
   - os: linux
@@ -54,6 +53,7 @@ matrix:
         - clang-3.6
         - libboost1.55-all-dev
         - gfortran
+        - python-virtualenv
     env: CXX_COMPILER='clang++-3.6' C_COMPILER='clang-3.6' Fortran_COMPILER='gfortran'
       BUILD_TYPE='release'
   - os: linux
@@ -98,6 +98,7 @@ matrix:
         - clang-3.8
         - libboost1.55-all-dev
         - gfortran
+        - python-virtualenv
     env: CXX_COMPILER='clang++-3.8' C_COMPILER='clang-3.8' Fortran_COMPILER='gfortran'
       BUILD_TYPE='release'
   - os: linux
@@ -142,6 +143,7 @@ matrix:
         - gcc-4.7
         - libboost1.55-all-dev
         - gfortran-4.7
+        - python-virtualenv
     env: CXX_COMPILER='g++-4.7' C_COMPILER='gcc-4.7' Fortran_COMPILER='gfortran-4.7'
       BUILD_TYPE='release'
   - os: linux
@@ -164,6 +166,7 @@ matrix:
         - gcc-4.8
         - libboost1.55-all-dev
         - gfortran-4.8
+        - python-virtualenv
     env: CXX_COMPILER='g++-4.8' C_COMPILER='gcc-4.8' Fortran_COMPILER='gfortran-4.8'
       BUILD_TYPE='release'
   - os: linux
@@ -186,6 +189,7 @@ matrix:
         - gcc-4.9
         - libboost1.55-all-dev
         - gfortran-4.9
+        - python-virtualenv
     env: CXX_COMPILER='g++-4.9' C_COMPILER='gcc-4.9' Fortran_COMPILER='gfortran-4.9'
       BUILD_TYPE='release'
   - os: linux
@@ -208,6 +212,7 @@ matrix:
         - gcc-5
         - libboost1.55-all-dev
         - gfortran-5
+        - python-virtualenv
     env: CXX_COMPILER='g++-5' C_COMPILER='gcc-5' Fortran_COMPILER='gfortran-5' BUILD_TYPE='release'
   - os: linux
     compiler: gcc
@@ -236,11 +241,11 @@ matrix:
       COVERAGE=true
 install:
 - |
+  if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
+    brew install cmake boost python gcc pyenv-virtualenv
+  fi
   virtualenv venv
   source venv/bin/activate
-  if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
-    brew install cmake boost python gcc
-  fi
   pip install --upgrade -r .travis_requirements.txt
 before_script:
 - cd ${TRAVIS_BUILD_DIR}
