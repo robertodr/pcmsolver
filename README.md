@@ -60,12 +60,12 @@ Magnum CI runs debug builds.
 
 - Mac OS X 10.12 with Python 2.7.12, CMake 3.6.1 and Boost 1.61.0
   this is the environment offered by [Travis CI](https://travis-ci.org)
-  with their Xcode 8gm image.
+  with their Xcode 8.1 image.
   The following compilers are used:
 
-  1. Apple LLVM 8.0.0 and GFortran 5.4.0
+  1. Apple LLVM 8.1.0 and GFortran 5.4.0
   2. GCC 5.4.0
-  3. Apple LLVM 8.0.0 and GFortran 6.2.0
+  3. Apple LLVM 8.1.0 and GFortran 6.2.0
   4. GCC 6.2.0
 
 The build needed for submission to [Coverity scan](https://scan.coverity.com/)
