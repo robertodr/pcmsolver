@@ -48,7 +48,7 @@ Magnum CI runs debug builds.
   8. Clang 3.7 and GFortran 4.6
   9. Clang 3.8 and GFortran 4.6
 
-- Mac OS X 10.10 with Python 2.7.10, CMake 3.2.3 and Boost 1.58.0
+- Mac OS X 10.10 with Python 2.7.12, CMake 3.2.2 and Boost 1.58.0
   this is the environment offered by [Travis CI](https://travis-ci.org)
   with their Xcode 6.4 image.
   The following compilers are used:
@@ -56,21 +56,21 @@ Magnum CI runs debug builds.
   1. Clang and GFortran 5.2
   2. GCC 5.2
 
-- Mac OS X 10.11 with Python 2.7.10, CMake 3.2.3 and Boost 1.58.0
+- Mac OS X 10.11 with Python 2.7.12, CMake 3.6.2 and Boost 1.61.0
   this is the environment offered by [Travis CI](https://travis-ci.org)
   with their Xcode 7.3.1 image.
   The following compilers are used:
 
-  1. Clang and GFortran 5.2
-  2. GCC 5.2
+  1. Clang and GFortran 6.2
+  2. GCC 6.2
 
-- Mac OS X 10.12 with Python 2.7.10, CMake 3.2.3 and Boost 1.58.0
+- Mac OS X 10.12 with Python 2.7.12, CMake 3.6.1 and Boost 1.61.0
   this is the environment offered by [Travis CI](https://travis-ci.org)
   with their Xcode 8gm image.
   The following compilers are used:
 
-  1. Clang and GFortran 5.2
-  2. GCC 5.2
+  1. Clang and GFortran 6.2
+  2. GCC 6.2
 
 The build needed for submission to [Coverity scan](https://scan.coverity.com/)
 is triggered by pushes to the `coverity_scan` branch. It is run on
