@@ -53,9 +53,9 @@ Magnum CI runs debug builds.
   with their Xcode 7.3.1 image.
   The following compilers are used:
 
-  1. Clang and GFortran 5.4.0
+  1. Apple LLVM 7.3.0 and GFortran 5.4.0
   2. GCC 5.4.0
-  3. Clang and GFortran 6.2.0
+  3. Apple LLVM 7.3.0 and GFortran 6.2.0
   4. GCC 6.2.0
 
 - Mac OS X 10.12 with Python 2.7.12, CMake 3.6.1 and Boost 1.61.0
@@ -63,9 +63,9 @@ Magnum CI runs debug builds.
   with their Xcode 8gm image.
   The following compilers are used:
 
-  1. Clang and GFortran 5.4.0
+  1. Apple LLVM 8.0.0 and GFortran 5.4.0
   2. GCC 5.4.0
-  3. Clang and GFortran 6.2.0
+  3. Apple LLVM 8.0.0 and GFortran 6.2.0
   4. GCC 6.2.0
 
 The build needed for submission to [Coverity scan](https://scan.coverity.com/)
