@@ -38,7 +38,9 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/format.hpp>
 
+#include "interface/Input.hpp"
 #include "interface/Meddle.hpp"
+#include "utils/Molecule.hpp"
 
 std::ofstream pcmsolver_out;
 
