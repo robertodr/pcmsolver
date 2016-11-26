@@ -29,6 +29,7 @@
 
 #include <Eigen/Core>
 
+#include "bi_operators/Collocation.hpp"
 #include "bi_operators/Purisima.hpp"
 #include "green/DerivativeTypes.hpp"
 #include "cavity/GePolCavity.hpp"
@@ -43,12 +44,12 @@ SCENARIO("Test a point charge and a GePol cavity in flipped environment (uniform
          "dielectric inside, vacuum outside)",
          "[solver][iefpcm][iefpcm_gepol-point_flipped][flipped]") {
   GIVEN("An isotropic environment inside the cavity and a point charge") {
-    double permittivity = 80.00;
+    double permittivity = 2.00;
     UniformDielectric<> gf_i(permittivity);
     Vacuum<> gf_o;
     bool symm = true;
 
-    integrator::Purisima op;
+    integrator::Collocation op;
 
     double charge = 1.0;
     double totalASC = charge * (permittivity - 1) / permittivity;
@@ -67,6 +68,7 @@ SCENARIO("Test a point charge and a GePol cavity in flipped environment (uniform
       double probeRadius = 0.0;
       double minRadius = 100.0;
       GePolCavity cavity = GePolCavity(point, area, probeRadius, minRadius);
+      cavity.saveCavity("point.npz");
 
       IEFSolver aniso_solver(symm);
       aniso_solver.buildAnisotropicMatrix(cavity, gf_i, gf_o, op);
@@ -96,7 +98,8 @@ SCENARIO("Test a point charge and a GePol cavity in flipped environment (uniform
       }
 
       THEN("the apparent surface charge is") {
-        Eigen::VectorXd aniso_fake_asc = aniso_solver.computeCharge(newton);  // permittivity;
+        Eigen::VectorXd aniso_fake_asc =
+            aniso_solver.computeCharge(newton); // permittivity;
         // The RHS has the opposite sign for the flipped case
         Eigen::VectorXd iso_fake_asc = iso_solver.computeCharge(newton);
         double totalAnisoASC = aniso_fake_asc.sum();

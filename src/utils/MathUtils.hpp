@@ -347,7 +347,8 @@ inline void npy_save(const std::string & fname,
   unsigned int rows = static_cast<unsigned int>(obj.rows());
   unsigned int cols = static_cast<unsigned int>(obj.cols());
   const unsigned int shape[] = {rows, cols};
-  cnpy::npy_save(fname, obj.data(), shape, 2, "w", obj.IsRowMajor);
+  bool colMajor = obj.IsRowMajor ? false : true;
+  cnpy::npy_save(fname, obj.data(), shape, 2, "w", colMajor);
 }
 
 /*! \brief Save Eigen object to a compressed NumPy file
@@ -365,9 +366,10 @@ inline void npz_save(const std::string & fname, const std::string & name,
                      bool overwrite = false) {
   unsigned int rows = static_cast<unsigned int>(obj.rows());
   unsigned int cols = static_cast<unsigned int>(obj.cols());
+  bool colMajor = obj.IsRowMajor ? false : true;
   const unsigned int shape[] = {rows, cols};
   std::string mode = overwrite ? "w" : "a";
-  cnpy::npz_save(fname, name, obj.data(), shape, 2, mode, obj.IsRowMajor);
+  cnpy::npz_save(fname, name, obj.data(), shape, 2, mode, colMajor);
 }
 
 /*! \brief Load NpyArray object into Eigen object
