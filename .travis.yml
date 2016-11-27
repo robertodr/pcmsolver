@@ -13,9 +13,6 @@ env:
   - CCACHE_COMPRESS=1
   - CCACHE_MAXSIZE=200M
   - CCACHE_CPP2=1
-branches:
-  except:
-    - /*(?i:appveyor)*/
 matrix:
   include:
   - os: linux
