@@ -13,6 +13,9 @@ env:
   - CCACHE_COMPRESS=1
   - CCACHE_MAXSIZE=200M
   - CCACHE_CPP2=1
+branches:
+  except:
+    - fix-appveyor
 matrix:
   include:
   - os: linux
