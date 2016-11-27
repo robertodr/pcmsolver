@@ -219,6 +219,8 @@ matrix:
 install:
 - |
   if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
+    brew update
+    brew search gcc
     brew install cmake boost python gcc5 gcc6 pyenv-virtualenv
   fi
   virtualenv venv
