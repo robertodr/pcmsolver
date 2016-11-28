@@ -105,7 +105,7 @@ matrix:
   - os: osx
     osx_image: xcode7.3
     compiler: gcc
-    env: CXX_COMPILER='g++-4.9' C_COMPILER='gcc-4.9' Fortran_COMPILER='gfortran' BUILD_TYPE='release' HOMEBREW_GCC='gfortran'
+    env: CXX_COMPILER='g++-4.9' C_COMPILER='gcc-4.9' Fortran_COMPILER='gfortran-4.9' BUILD_TYPE='release' HOMEBREW_GCC='gcc49'
   - os: linux
     compiler: gcc
     addons: &5
@@ -213,11 +213,12 @@ matrix:
     env: CXX_COMPILER='g++-5' C_COMPILER='gcc-5' Fortran_COMPILER='gfortran-5' BUILD_TYPE='release'
   - os: linux
     compiler: gcc
-    addons: *9
-    env: CXX_COMPILER='g++-5' C_COMPILER='gcc-5' Fortran_COMPILER='gfortran-5' BUILD_TYPE='release' COVERAGE=true
+    addons: *8
+    env: CXX_COMPILER='g++-4.9' C_COMPILER='gcc-4.9' Fortran_COMPILER='gfortran-4.9' BUILD_TYPE='release' COVERAGE=true
 install:
 - |
   if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
+    brew search ${HOMEBREW_GCC}
     brew install cmake boost python ${HOMEBREW_GCC} pyenv-virtualenv
   fi
   virtualenv venv
@@ -240,7 +241,7 @@ before_script:
   fi
 - cd build
 script:
-- ctest --parallel 2 --output-on-failure --verbose --dashboard Experimental --track TravisCI
+- ctest --parallel 2 --output-on-failure --verbose --track TravisCI
 after_success:
 - |
   if [[ "${COVERAGE}" = true ]]; then
