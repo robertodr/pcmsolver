@@ -39,7 +39,7 @@ matrix:
   - os: osx
     osx_image: xcode7.3
     compiler: clang
-    env: CXX_COMPILER='clang++' C_COMPILER='clang' Fortran_COMPILER='gfortran-5' BUILD_TYPE='release'
+    env: CXX_COMPILER='clang++' C_COMPILER='clang' Fortran_COMPILER='gfortran-5' BUILD_TYPE='release' HOMEBREW_GCC='homebrew/versions/gcc5'
   - os: linux
     compiler: clang
     addons: &2
@@ -61,7 +61,7 @@ matrix:
   - os: osx
     osx_image: xcode7.3
     compiler: gcc
-    env: CXX_COMPILER='g++-5' C_COMPILER='gcc-5' Fortran_COMPILER='gfortran-5' BUILD_TYPE='release'
+    env: CXX_COMPILER='g++-4.8' C_COMPILER='gcc-4.8' Fortran_COMPILER='gfortran-4.8' BUILD_TYPE='release' HOMEBREW_GCC='homebrew/versions/gcc48'
   - os: linux
     compiler: clang
     addons: &3
@@ -83,7 +83,7 @@ matrix:
   - os: osx
     osx_image: xcode7.3
     compiler: clang
-    env: CXX_COMPILER='clang++' C_COMPILER='clang' Fortran_COMPILER='gfortran-6' BUILD_TYPE='release'
+    env: CXX_COMPILER='clang++' C_COMPILER='clang' Fortran_COMPILER='gfortran-5' BUILD_TYPE='release' HOMEBREW_GCC='homebrew/versions/gcc5'
   - os: linux
     compiler: clang
     addons: &4
@@ -105,7 +105,7 @@ matrix:
   - os: osx
     osx_image: xcode7.3
     compiler: gcc
-    env: CXX_COMPILER='g++-6' C_COMPILER='gcc-6' Fortran_COMPILER='gfortran-6' BUILD_TYPE='release'
+    env: CXX_COMPILER='g++-4.9' C_COMPILER='gcc-4.9' Fortran_COMPILER='gfortran-4.9' BUILD_TYPE='release' HOMEBREW_GCC='homebrew/versions/gcc49'
   - os: linux
     compiler: gcc
     addons: &5
@@ -125,9 +125,9 @@ matrix:
     env: CXX_COMPILER='g++-4.6' C_COMPILER='gcc-4.6' Fortran_COMPILER='gfortran-4.6'
       BUILD_TYPE='release'
   - os: osx
-    osx_image: xcode8.2
+    osx_image: xcode7.3
     compiler: clang
-    env: CXX_COMPILER='clang++' C_COMPILER='clang' Fortran_COMPILER='gfortran-5' BUILD_TYPE='release'
+    env: CXX_COMPILER='clang++' C_COMPILER='clang' Fortran_COMPILER='gfortran-5' BUILD_TYPE='release' HOMEBREW_GCC='homebrew/versions/gcc5'
   - os: linux
     compiler: gcc
     addons: &6
@@ -147,9 +147,9 @@ matrix:
     env: CXX_COMPILER='g++-4.7' C_COMPILER='gcc-4.7' Fortran_COMPILER='gfortran-4.7'
       BUILD_TYPE='release'
   - os: osx
-    osx_image: xcode8.2
+    osx_image: xcode7.3
     compiler: gcc
-    env: CXX_COMPILER='g++-5' C_COMPILER='gcc-5' Fortran_COMPILER='gfortran-5' BUILD_TYPE='release'
+    env: CXX_COMPILER='g++-5' C_COMPILER='gcc-5' Fortran_COMPILER='gfortran-5' BUILD_TYPE='release' HOMEBREW_GCC='homebrew/versions/gcc5'
   - os: linux
     compiler: gcc
     addons: &7
@@ -169,9 +169,9 @@ matrix:
     env: CXX_COMPILER='g++-4.8' C_COMPILER='gcc-4.8' Fortran_COMPILER='gfortran-4.8'
       BUILD_TYPE='release'
   - os: osx
-    osx_image: xcode8.2
+    osx_image: xcode7.3
     compiler: clang
-    env: CXX_COMPILER='clang++' C_COMPILER='clang' Fortran_COMPILER='gfortran-6' BUILD_TYPE='release'
+    env: CXX_COMPILER='clang++' C_COMPILER='clang' Fortran_COMPILER='gfortran-5' BUILD_TYPE='release' HOMEBREW_GCC='homebrew/versions/gcc5'
   - os: linux
     compiler: gcc
     addons: &8
@@ -191,9 +191,9 @@ matrix:
     env: CXX_COMPILER='g++-4.9' C_COMPILER='gcc-4.9' Fortran_COMPILER='gfortran-4.9'
       BUILD_TYPE='release'
   - os: osx
-    osx_image: xcode8.2
+    osx_image: xcode7.3
     compiler: gcc
-    env: CXX_COMPILER='g++-6' C_COMPILER='gcc-6' Fortran_COMPILER='gfortran-6' BUILD_TYPE='release'
+    env: CXX_COMPILER='g++-6' C_COMPILER='gcc-6' Fortran_COMPILER='gfortran-6' BUILD_TYPE='release' HOMEBREW_GCC='homebrew/versions/gcc6'
   - os: linux
     compiler: gcc
     addons: &9
@@ -214,12 +214,11 @@ matrix:
   - os: linux
     compiler: gcc
     addons: *9
-    env: CXX_COMPILER='g++-5' C_COMPILER='gcc-5' Fortran_COMPILER='gfortran-5' BUILD_TYPE='release'
-      COVERAGE=true
+    env: CXX_COMPILER='g++-5' C_COMPILER='gcc-5' Fortran_COMPILER='gfortran-5' BUILD_TYPE='release' COVERAGE=true
 install:
 - |
   if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
-    brew install cmake boost python homebrew/versions/gcc5 homebrew/versions/gcc6 pyenv-virtualenv
+    brew install cmake boost python ${HOMEBREW_GCC} pyenv-virtualenv
   fi
   virtualenv venv
   source venv/bin/activate
