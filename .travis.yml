@@ -241,7 +241,7 @@ before_script:
   fi
 - cd build
 script:
-- ctest --parallel 2 --output-on-failure --verbose --track TravisCI
+- ctest --parallel 2 --output-on-failure --verbose --track TravisCI --dashboard Experimental
 after_success:
 - |
   if [[ "${COVERAGE}" = true ]]; then
