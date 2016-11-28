@@ -218,6 +218,9 @@ matrix:
 install:
 - |
   if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
+    type -P gcc
+    type -P g++
+    type -P gfortran
     brew search ${HOMEBREW_GCC}
     brew install cmake boost python ${HOMEBREW_GCC} pyenv-virtualenv
   fi
