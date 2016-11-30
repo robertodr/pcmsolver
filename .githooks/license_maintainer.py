@@ -43,7 +43,6 @@ def add_header(filepath, header, YEAR, AUTHORS):
         # Check if header is already present
         present = re.compile('PCMSolver, an API for the Polarizable Continuum Model')
         if filter(present.search, inpt):
-            print('Skipping {}'.format(filepath))
             # Check if year and authors in current file are up to date
             toupdate = re.compile(r'{0} (?!{1} {2}).*\n'.format('Copyright \(C\)', YEAR, AUTHORS))
             if filter(toupdate.search, inpt):
