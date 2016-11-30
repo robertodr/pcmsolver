@@ -17,30 +17,6 @@ branches:
   except:
     - fix-appveyor
 matrix:
-  allow_failures:
-    - os: linux
-      compiler: gcc
-      addons: &9
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - boost-latest
-            - george-edison55-precise-backports
-          packages:
-            - cmake
-            - cmake-data
-            - g++-5
-            - gcc-5
-            - libboost1.55-all-dev
-            - gfortran-5
-            - python-virtualenv
-      env:
-        - CXX_COMPILER='g++-5'
-        - C_COMPILER='gcc-5'
-        - Fortran_COMPILER='gfortran-5'
-        - BUILD_TYPE='release'
-        - COVERAGE=true
-
   include:
     - os: linux
       compiler: clang
@@ -284,12 +260,44 @@ matrix:
         - HOMEBREW_GCC='homebrew/versions/gcc6'
     - os: linux
       compiler: gcc
+      addons: &9
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - boost-latest
+            - george-edison55-precise-backports
+          packages:
+            - cmake
+            - cmake-data
+            - g++-5
+            - gcc-5
+            - libboost1.55-all-dev
+            - gfortran-5
+            - python-virtualenv
+      env:
+        - CXX_COMPILER='g++-5'
+        - C_COMPILER='gcc-5'
+        - Fortran_COMPILER='gfortran-5'
+        - BUILD_TYPE='release'
+    - os: linux
+      compiler: gcc
       addons: *9
       env:
         - CXX_COMPILER='g++-5'
         - C_COMPILER='gcc-5'
         - Fortran_COMPILER='gfortran-5'
         - BUILD_TYPE='release'
+        - COVERAGE=true
+  allow_failures:
+    - os: linux
+      compiler: gcc
+      addons: *9
+      env:
+        - CXX_COMPILER='g++-5'
+        - C_COMPILER='gcc-5'
+        - Fortran_COMPILER='gfortran-5'
+        - BUILD_TYPE='release'
+        - COVERAGE=true
 install:
 - |
   if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
