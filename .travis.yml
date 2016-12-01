@@ -45,9 +45,9 @@ matrix:
       env:
         - CXX_COMPILER='clang++'
         - C_COMPILER='clang'
-        - Fortran_COMPILER='gfortran-5'
+        - Fortran_COMPILER='gfortran-4.8'
         - BUILD_TYPE='release'
-        - HOMEBREW_GCC='homebrew/versions/gcc5'
+        - HOMEBREW_GCC='homebrew/versions/gcc48'
     - os: linux
       compiler: clang
       addons: &2
@@ -105,9 +105,9 @@ matrix:
       env:
         - CXX_COMPILER='clang++'
         - C_COMPILER='clang'
-        - Fortran_COMPILER='gfortran-5'
+        - Fortran_COMPILER='gfortran-4.9'
         - BUILD_TYPE='release'
-        - HOMEBREW_GCC='homebrew/versions/gcc5'
+        - HOMEBREW_GCC='homebrew/versions/gcc49'
     - os: linux
       compiler: clang
       addons: &4
@@ -225,9 +225,9 @@ matrix:
       env:
         - CXX_COMPILER='clang++'
         - C_COMPILER='clang'
-        - Fortran_COMPILER='gfortran-5'
+        - Fortran_COMPILER='gfortran-6'
         - BUILD_TYPE='release'
-        - HOMEBREW_GCC='homebrew/versions/gcc5'
+        - HOMEBREW_GCC='homebrew/versions/gcc6'
     - os: linux
       compiler: gcc
       addons: &8
@@ -324,7 +324,7 @@ before_script:
   fi
 - cd build
 script:
-- ctest --parallel 2 --output-on-failure --verbose --track TravisCI --dashboard Experimental
+- ctest --parallel 2 --output-on-failure --verbose --dashboard Experimental --track TravisCI
 after_success:
 - |
   if [[ "${COVERAGE}" = true ]]; then
