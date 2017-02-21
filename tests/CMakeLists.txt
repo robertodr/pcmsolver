@@ -26,6 +26,7 @@ add_subdirectory(green)
 add_subdirectory(bi_operators)
 add_subdirectory(cpcm)
 add_subdirectory(iefpcm)
+add_subdirectory(td_solver)
 add_subdirectory(utils)
 add_subdirectory(benchmark)
 

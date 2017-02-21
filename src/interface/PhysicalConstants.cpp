@@ -70,3 +70,7 @@ double angstrom2ToBohr2() { return (1.0 / bohr2ToAngstrom2()); }
 double bohr3ToAngstrom3() { return std::pow(bohrToAngstrom(), 3); }
 
 double angstrom3ToBohr3() { return (1.0 / bohr3ToAngstrom3()); }
+
+double secondsToAU() { return 2.418884326509e-17; }
+
+double AUToFemtoseconds() { return (secondsToAU() / 1.0e-15); }

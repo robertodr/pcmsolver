@@ -45,6 +45,10 @@ src/pedra/pedra_dlapack.f90 !licensefile
 src/solver/*.hpp licensefile=.githooks/LICENSE-C++
 src/solver/*.cpp licensefile=.githooks/LICENSE-C++
 
+# td_solver
+src/td_solver/*.hpp licensefile=.githooks/LICENSE-C++
+src/td_solver/*.cpp licensefile=.githooks/LICENSE-C++
+
 # utils
 src/utils/*.hpp           licensefile=.githooks/LICENSE-C++
 src/utils/*.cpp           licensefile=.githooks/LICENSE-C++

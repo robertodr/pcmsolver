@@ -1,6 +1,6 @@
-/*
+/**
  * PCMSolver, an API for the Polarizable Continuum Model
- * Copyright (C) 2018 Roberto Di Remigio, Luca Frediani and contributors.
+ * Copyright (C) 2017 Roberto Di Remigio, Luca Frediani and collaborators.
  *
  * This file is part of PCMSolver.
  *
@@ -21,36 +21,27 @@
  * PCMSolver API, see: <http://pcmsolver.readthedocs.io/>
  */
 
-#pragma once
+#include "ITDSolver.hpp"
 
-#include <cmath>
+#include <string>
+#include <sstream>
 
-/*! \file PhysicalConstants.hpp
- *  \brief This header file contains physical constants to be used throughout the
- * module.
- *  \author Roberto Di Remigio
- *  \date 2013
- */
+#include "Config.hpp"
 
-struct LengthConversion {
-  double operator()() { return BOHR_TO_ANGSTROM; }
-  double BOHR_TO_ANGSTROM;
-};
+#include "Debye.hpp"
 
-extern LengthConversion bohrToAngstrom;
+namespace pcm {
+using td_solver::Debye;
+ITDSolver::ITDSolver(double es, double ed, double t)
+    : permittivity_(Debye(es, ed, t)), built_(false) {}
 
-void initBohrToAngstrom(LengthConversion & conversion, int year = 2010);
-
-double angstromToBohr();
-
-double bohr2ToAngstrom2();
-
-double angstrom2ToBohr2();
-
-double bohr3ToAngstrom3();
-
-double angstrom3ToBohr3();
-
-double secondsToAU();
-
-double AUToFemtoseconds();
+std::string ITDSolver::printEnvironment() {
+  std::stringstream tmp;
+  tmp << ".... Inside " << std::endl;
+  tmp << "Green's function type: vacuum" << std::endl;
+  tmp << ".... Outside " << std::endl;
+  tmp << "Green's function type: uniform dielectric" << std::endl;
+  tmp << permittivity_;
+  return tmp.str();
+}
+} // namespace pcm

@@ -39,6 +39,7 @@ add_subdirectory(metal)
 add_subdirectory(bi_operators)
 add_subdirectory(pedra)
 add_subdirectory(solver)
+add_subdirectory(td_solver)
 add_subdirectory(utils)
 
 if(NOT STATIC_LIBRARY_ONLY)
@@ -83,7 +84,7 @@ if(NOT STATIC_LIBRARY_ONLY)
 endif()
 
 if(NOT SHARED_LIBRARY_ONLY)
-  add_library(pcm-static STATIC $<TARGET_OBJECTS:pcm-objlib>)
+  add_library(pcm-static STATIC ${_objects})
   target_compile_definitions(pcm-static
     PUBLIC
       PCMSolver_STATIC_DEFINE

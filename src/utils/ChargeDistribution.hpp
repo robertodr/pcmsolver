@@ -34,11 +34,8 @@
 
 namespace pcm {
 class Molecule;
-} // namespace pcm
-
-namespace pcm {
 namespace utils {
-/*!  \struct ChargeDistribution
+/*! \struct ChargeDistribution
  *  \brief POD representing a classical charge distribution
  *  \author Roberto Di Remigio
  *  \date 2016
