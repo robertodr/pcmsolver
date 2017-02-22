@@ -39,6 +39,7 @@
 #include "interface/Meddle.hpp"
 #include "utils/ChargeDistribution.hpp"
 #include "utils/Molecule.hpp"
+#include "utils/ChargeDistribution.hpp"
 
 std::ofstream pcmsolver_out;
 
@@ -92,6 +93,39 @@ int main(int argc, char * argv[]) {
                 << std::setprecision(std::numeric_limits<long double>::digits10)
                 << context_.computePolarizationEnergy("MEP", "ASC") << std::endl;
   pcmsolver_out << "DONE!" << std::endl;
+
+  if (input.isTD()) {
+    pcmsolver_out << "~~~~~~~~~~ Real-time time-evolution of the ASC" << std::endl;
+    context_.initializePropagation(
+        "MEP", "ASC", "MEP_t", "ASC_t", "MEP_tdt", "ASC_tdt", irrep);
+    double dt = input.timeStep();
+    double total_time = input.totalTime();
+    int steps = int(total_time / dt) + 1;
+    pcmsolver_out << "Total simulation time = " << total_time * AUToFemtoseconds()
+                  << " fs" << std::endl;
+    pcmsolver_out << "Time step = " << dt * AUToFemtoseconds() << " fs" << std::endl;
+    pcmsolver_out << "Number of steps = " << steps << std::endl;
+    double energy = context_.computePolarizationEnergy("MEP_t", "ASC_t");
+    double t_0 = 0.0, t = 0.0;
+    pcmsolver_out << " t (fs)            U_pol (a.u.)            mu_x (a.u.)        "
+                     "    mu_y (a.u.)            mu_z (a.u.)            mu (a.u.) "
+                  << std::endl;
+    pcmsolver_out << "--------------------------------------------------------------"
+                     "------------------------------------------------------------"
+                  << std::endl;
+    Eigen::Vector3d asc_dipole = Eigen::Vector3d::Zero();
+    double mu = context_.getASCDipole("ASC_tdt", asc_dipole.data());
+    for (int i = 0; i < steps; ++i) {
+      t = t_0 + i * dt;
+      pcmsolver_out
+          << boost::format(
+                 "%10.6f    %20.12f    %20.12f    %20.12f    %20.12f    %20.12f\n") %
+                 (t * AUToFemtoseconds()) % energy % asc_dipole(0) % asc_dipole(1) %
+                 asc_dipole(2) % mu;
+      energy =
+          context_.propagateASC("MEP_t", "ASC_t", "MEP_tdt", "ASC_tdt", dt, irrep);
+    }
+  }
 
   pcmsolver_out.close();
   // Write timings out

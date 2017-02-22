@@ -43,6 +43,7 @@ struct BIOperatorData;
 struct CavityData;
 struct GreenData;
 struct SolverData;
+struct TDSolverData;
 } // namespace pcm
 
 #include "utils/ChargeDistribution.hpp"
@@ -116,6 +117,10 @@ public:
   bool hermitivitize() const { return hermitivitize_; }
   bool isDynamic() const { return isDynamic_; }
   double integratorScaling() const { return integratorScaling_; }
+  std::string TDsolverType() const { return TDsolverType_; }
+  bool isTD() const { return isTD_; }
+  double timeStep() const { return timeStep_; }
+  double totalTime() const { return totalTime_; }
   /// @}
 
   /// Keeps track of who did the parsing: the API or the host program
@@ -128,6 +133,7 @@ public:
   GreenData outsideDynamicGreenParams() const;
   SolverData solverParams() const;
   BIOperatorData integratorParams() const;
+  TDSolverData TDSolverParams() const;
   /// @}
 
   ChargeDistribution multipoles() const { return multipoles_; }
@@ -241,6 +247,22 @@ private:
   std::vector<double> origin_;
   /// Molecular geometry
   std::vector<double> geometry_;
+  /// The TD solver type
+  std::string TDsolverType_;
+  /// Whether to initialize time-evolution with the static or dynamic ASC
+  bool initWithDynamic_;
+  /// Whether this is a real-time time-evolution run in the delayed formulation
+  bool isTD_;
+  /// Solvent relaxation time (in a.u.)
+  double tau_;
+  /// Solver relaxation time (in a.u.)
+  double tauIEF_;
+  /// Whether to use Cholesky decomposition in TDIEF solver
+  bool cholesky_;
+  /// Time step for the real-time time-evolution (in a.u.)
+  double timeStep_;
+  /// Total time for the real-time time-evolution (in a.u.)
+  double totalTime_;
   /// Whether to calculate the MEP from the molecular geometry
   bool MEPfromMolecule_;
   /// Classical charge distribution of point multipoles

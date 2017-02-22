@@ -327,6 +327,44 @@ def setup_keywords():
     green_part = deepcopy(green)
     green.add_sect(green_part)
 
+    # Time-evolution section
+    realtime = getkw.Section('REALTIME', callback = verify_realtime)
+    # Type of time-dependent solver
+    # Valid values: TDIEF, TDCPCM, TDSINGLEIEF, TDONSAGERIEF, EQUILIBRIUM
+    # Default: EQUILIBRIUM
+    # Notes: When EQUILIBRIUM is chosen, time-evolution will be carried out in
+    # the instantaneous solvent equilibrium regime. The permittivity used will
+    # be static or dynamic based on the setting for the Nonequilibrium keyword
+    # in the Solver section. All other options will calculate a delayed ASC
+    realtime.add_kw('TDTYPE', 'STR', 'EQUILIBRIUM')
+    # Initial value for the ASC time-evolution
+    # Valid for: TDIEF, TDCPCM, TDSINGLEIEF, TDONSAGERIEF
+    # Valid values: STATIC, DYNAMIC
+    # Default: STATIC
+    realtime.add_kw('INITIALVALUE', 'STR', 'STATIC')
+    # Use Cholesky decomposition instead of Lowdin
+    # Valid for: TDIEF
+    # Valid values: boolean
+    # Default: False
+    realtime.add_kw('CHOLESKY',   'BOOL', False)
+    # Debye relaxation time for the solvent
+    # Valid for: TDIEF, TDCPCM, TDSINGLEIEF and TDONSAGERIEF
+    # Valid values: double
+    # Default: 1.0 au
+    realtime.add_kw('TAU', 'DBL', 1.0)
+    # Single relaxation time for the solver
+    # Valid for: TDSINGLEIEF
+    # Valid values: double
+    # Default: 1.0 au
+    realtime.add_kw('TAUIEF', 'DBL', 1.0)
+    # Time step for the integration of the equation of motion for the ASC
+    # Default: 0.1 au
+    realtime.add_kw('TIMESTEP', 'DBL', 0.1)
+    # Total length of the time-evolution
+    # Default: 100 au
+    realtime.add_kw('TOTALTIME', 'DBL', 100)
+    top.add_sect(realtime)
+
     # Molecule section
     molecule = Section('MOLECULE')
     # List of geometry and classical point charges
@@ -529,6 +567,19 @@ def verify_green(section):
         sys.exit(1)
 
 
+def verify_realtime(section):
+    allowed_types = ('TDIEF', 'TDCPCM', 'TDSINGLEIEF', 'TDONSAGERIEF', 'EQUILIBRIUM')
+    if (section.get('TDTYPE').get() not in allowed_types):
+        print('Allowed time-evolution solvers are: {}'.format(allowed_types))
+        sys.exit(1)
+    allowed_init = ('STATIC', 'DYNAMIC')
+    if (section.get('INITIALVALUE').get() not in allowed_init):
+        print('Allowed initial values are: {}'.format(allowed_init))
+        sys.exit(1)
+    convert_time_scalar(section.get('TAU'))
+    convert_time_scalar(section.get('TAUIEF'))
+
+
 def check_array(name, array, offset):
     dim = len(array)
     if (dim % offset != 0):
@@ -574,6 +625,11 @@ def convert_length_array(keyword):
 def convert_length_scalar(keyword):
     if (isAngstrom):
         keyword[0] /= CODATAdict[CODATAyear].ToAngstrom
+
+
+def convert_time_scalar(keyword):
+    if (isAngstrom):
+        keyword[0] /= CODATAdict[CODATAyear].ToFemtosecond
 
 
 def convert_area_scalar(keyword):

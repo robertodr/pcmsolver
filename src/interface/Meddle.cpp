@@ -44,6 +44,8 @@
 #include "green/GreenData.hpp"
 #include "solver/Solver.hpp"
 #include "solver/SolverData.hpp"
+#include "td_solver/TDSolverData.hpp"
+#include "td_solver/TDSolver.hpp"
 
 #include "Citation.hpp"
 #include "VersionInfo.hpp"
@@ -122,6 +124,12 @@ void Meddle::CTORBody() {
     initDynamicSolver();
     TIMER_OFF("Meddle::initDynamicSolver");
   }
+
+  if (input_.isTD()) {
+    TIMER_ON("Meddle::initTDSolver");
+    initTDSolver();
+    TIMER_OFF("Meddle::initTDolver");
+  }
 }
 
 Meddle::Meddle(const Input & input, const HostWriter & write)
@@ -130,7 +138,9 @@ Meddle::Meddle(const Input & input, const HostWriter & write)
       cavity_(__nullptr),
       K_0_(__nullptr),
       K_d_(__nullptr),
-      hasDynamic_(false) {
+      hasDynamic_(false),
+      TD_K_(__nullptr),
+      hasTD_(false) {
   input_.initMolecule();
   CTORBody();
 }
@@ -141,7 +151,9 @@ Meddle::Meddle(const std::string & inputFileName, const HostWriter & write)
       cavity_(__nullptr),
       K_0_(__nullptr),
       K_d_(__nullptr),
-      hasDynamic_(false) {
+      hasDynamic_(false),
+      TD_K_(__nullptr),
+      hasTD_(false) {
   input_.initMolecule();
   CTORBody();
 }
@@ -157,7 +169,9 @@ Meddle::Meddle(int nr_nuclei,
       cavity_(__nullptr),
       K_0_(__nullptr),
       K_d_(__nullptr),
-      hasDynamic_(false) {
+      hasDynamic_(false),
+      TD_K_(__nullptr),
+      hasTD_(false) {
   TIMER_ON("Meddle::initInput");
   initInput(nr_nuclei, charges, coordinates, symmetry_info);
   TIMER_OFF("Meddle::initInput");
@@ -176,7 +190,9 @@ Meddle::Meddle(int nr_nuclei,
       cavity_(__nullptr),
       K_0_(__nullptr),
       K_d_(__nullptr),
-      hasDynamic_(false) {
+      hasDynamic_(false), 
+      TD_K_(__nullptr),
+      hasTD_(false) {
   TIMER_ON("Meddle::initInput");
   initInput(nr_nuclei, charges, coordinates, symmetry_info);
   TIMER_OFF("Meddle::initInput");
@@ -195,6 +211,8 @@ pcm::Meddle::~Meddle() {
   delete K_0_;
   if (hasDynamic_)
     delete K_d_;
+  if (hasTD_)
+    delete TD_K_;
 }
 
 PCMSolverIndex pcmsolver_get_cavity_size(pcmsolver_context_t * context) {
@@ -326,6 +344,108 @@ void pcm::Meddle::computeResponseASC(const std::string & mep_name,
   }
 }
 
+void pcmsolver_initialize_propagation(pcmsolver_context_t * context,
+                                      const char * mep_0,
+                                      const char * asc_0,
+                                      const char * mep_t,
+                                      const char * asc_t,
+                                      const char * mep_tdt,
+                                      const char * asc_tdt,
+                                      int irrep) {
+  TIMER_ON("pcmsolver_initialize_propagation");
+  AS_TYPE(pcm::Meddle, context)
+      ->initializePropagation(mep_0, asc_0, mep_t, asc_t, mep_tdt, asc_tdt, irrep);
+  TIMER_OFF("pcmsolver_initialize_propagation");
+}
+void pcm::Meddle::initializePropagation(const char * mep_0,
+                                        const char * asc_0,
+                                        const char * mep_t,
+                                        const char * asc_t,
+                                        const char * mep_tdt,
+                                        const char * asc_tdt,
+                                        int irrep) const {
+  std::string MEP_0(mep_0);
+  std::string MEP_current(mep_tdt);
+  std::string MEP_previous(mep_t);
+  // Set previous and current MEP to the values at time t = 0
+  Eigen::VectorXd MEP_t = functions_[MEP_0];
+  functions_.insert(std::make_pair(MEP_previous, MEP_t));
+  functions_.insert(std::make_pair(MEP_current, MEP_t));
+
+  std::string ASC_0(asc_0);
+  std::string ASC_current(asc_tdt);
+  std::string ASC_previous(asc_t);
+
+  if (hasTD_) {
+    // Initialize delayed propagation of the ASC
+    if (input_.TDSolverParams().initWithDynamic) {
+      // Set previous and current ASC to the dynamic values from converged SCF
+      // The initialValueASC function uses the dynamic matrix to calculate charges
+      Eigen::VectorXd dyn_asc = TD_K_->initialValueASC(functions_[MEP_0]);
+      functions_.insert(std::make_pair(ASC_previous, dyn_asc));
+      functions_.insert(std::make_pair(ASC_current, dyn_asc));
+    } else {
+      // Set previous and current ASC to the static values from converged SCF
+      if (functions_.count(ASC_0) == 1) { // Key in map already
+        Eigen::VectorXd ASC_t = functions_[ASC_0];
+        functions_.insert(std::make_pair(ASC_previous, ASC_t));
+        functions_.insert(std::make_pair(ASC_current, ASC_t));
+      } else { // Create key-value pair
+        Eigen::VectorXd ASC_t = K_0_->computeCharge(MEP_t, irrep);
+        functions_.insert(std::make_pair(ASC_previous, ASC_t));
+        functions_.insert(std::make_pair(ASC_current, ASC_t));
+      }
+    }
+  } else {
+    // Initialize instantaneous equilibrium propagation of the ASC
+    if (hasDynamic_) {
+      // Set previous and current ASC to the dynamic values from converged SCF
+      Eigen::VectorXd dyn_asc = K_d_->computeCharge(functions_[MEP_0], irrep);
+      functions_.insert(std::make_pair(ASC_previous, dyn_asc));
+      functions_.insert(std::make_pair(ASC_current, dyn_asc));
+    } else {
+      // Set previous and current ASC to the static values from converged SCF
+      if (functions_.count(ASC_0) == 1) { // Key in map already
+        Eigen::VectorXd ASC_t = functions_[ASC_0];
+        functions_.insert(std::make_pair(ASC_previous, ASC_t));
+        functions_.insert(std::make_pair(ASC_current, ASC_t));
+      } else { // Create key-value pair
+        Eigen::VectorXd ASC_t = K_0_->computeCharge(MEP_t, irrep);
+        functions_.insert(std::make_pair(ASC_previous, ASC_t));
+        functions_.insert(std::make_pair(ASC_current, ASC_t));
+      }
+    }
+  }
+}
+
+double pcmsolver_propagate_asc(pcmsolver_context_t * context,
+                               const char * mep_t,
+                               const char * asc_t,
+                               const char * mep_tdt,
+                               const char * asc_tdt,
+                               double dt,
+                               int irrep) {
+  TIMER_ON("pcmsolver_propagate_asc");
+  return (AS_TYPE(pcm::Meddle, context)
+              ->propagateASC(mep_t, asc_t, mep_tdt, asc_tdt, dt, irrep));
+  TIMER_OFF("pcmsolver_propagate_asc");
+}
+double pcm::Meddle::propagateASC(const char * mep_t,
+                                 const char * asc_t,
+                                 const char * mep_tdt,
+                                 const char * asc_tdt,
+                                 double dt,
+                                 int irrep) const {
+  double energy = 0.0;
+  if (input_.isTD()) {
+    energy = delayedASC(mep_t, asc_t, mep_tdt, asc_tdt, dt, irrep);
+  } else {
+    computeResponseASC(mep_tdt, asc_tdt, irrep);
+    energy = computePolarizationEnergy(mep_tdt, asc_tdt);
+  }
+  return energy;
+}
+
 void pcmsolver_get_surface_function(pcmsolver_context_t * context,
                                     PCMSolverIndex size,
                                     double values[],
@@ -454,6 +574,46 @@ Molecule Meddle::molecule() const { return input_.molecule(); }
 
 Eigen::Matrix3Xd Meddle::getCenters() const { return cavity_->elementCenter(); }
 
+double Meddle::delayedASC(const char * mep_t,
+                          const char * asc_t,
+                          const char * mep_tdt,
+                          const char * asc_tdt,
+                          double dt,
+                          int /* irrep */) const {
+  std::string MEP_current(mep_tdt);
+  std::string MEP_previous(mep_t);
+  std::string ASC_current(asc_tdt);
+  std::string ASC_previous(asc_t);
+
+  // Get the proper iterators
+  SurfaceFunctionMapConstIter iter_mep_tdt = functions_.find(MEP_current);
+  // Iterators to MEP and ASC at time t
+  // They are non-const as we will overwrite their contents with those of MEP_current
+  // and ASC_current
+  // after propagation
+  SurfaceFunctionMapIter iter_mep_t = functions_.find(MEP_previous);
+  SurfaceFunctionMapIter iter_asc_t = functions_.find(ASC_previous);
+  SurfaceFunctionMapIter iter_asc_tdt = functions_.find(ASC_current);
+  Eigen::VectorXd ASC_tdt = TD_K_->propagateASC(
+      dt, iter_mep_tdt->second, iter_mep_t->second, iter_asc_t->second);
+
+  // Renormalization of charges: divide by the number of symmetry operations in the
+  // group
+  ASC_tdt /= double(cavity_->pointGroup().nrIrrep());
+  // Insert it into the map
+  if (functions_.count(ASC_current) == 1) { // Key in map already
+    functions_[ASC_current] = ASC_tdt;
+  } else { // Create key-value pair
+    functions_.insert(std::make_pair(ASC_current, ASC_tdt));
+  }
+  // Update contents of MEP_previous and ASC_previous surface functions
+  (iter_mep_t->second) = (iter_mep_tdt->second);
+  (iter_asc_t->second) = (iter_asc_tdt->second);
+
+  double energy = (iter_mep_tdt->second).dot(iter_asc_tdt->second);
+  return (0.5 * energy);
+}
+
 void Meddle::initInput(int nr_nuclei,
                        double charges[],
                        double coordinates[],
@@ -522,6 +682,23 @@ void Meddle::initDynamicSolver() {
   mediumInfo(gf_i, gf_o);
   delete gf_o;
   delete gf_i;
+}
+
+void Meddle::initTDSolver() {
+  TD_K_ = td_solver::bootstrapFactory().create(input_.TDsolverType(),
+                                               input_.TDSolverParams());
+
+  IGreensFunction * gf_i = green::bootstrapFactory().create(
+      input_.greenInsideType(), input_.insideGreenParams());
+
+  IBoundaryIntegralOperator * biop = bi_operators::bootstrapFactory().create(
+      input_.integratorType(), input_.integratorParams());
+  TD_K_->buildSystemMatrix(*cavity_, *gf_i, *biop);
+  hasTD_ = true;
+  delete biop;
+  delete gf_i;
+
+  infoStream_ << *TD_K_ << std::endl;
 }
 
 void Meddle::mediumInfo(IGreensFunction * gf_i, IGreensFunction * gf_o) {

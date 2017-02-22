@@ -182,6 +182,29 @@ interface pcmsolver_get_asc_dipole
   end function
 end interface
 
+interface pcmsolver_initialize_propagation
+  subroutine pcmsolver_initialize_propagation(context, mep_0, asc_0, mep_t, asc_t, mep_tdt, asc_tdt, irrep) bind(C)
+    import
+    type(c_ptr), value :: context
+    character(kind=c_char, len=1), intent(in) :: mep_0(*), asc_0(*)
+    character(kind=c_char, len=1), intent(in) :: mep_t(*), asc_t(*)
+    character(kind=c_char, len=1), intent(in) :: mep_tdt(*), asc_tdt(*)
+    integer(c_int), value, intent(in) :: irrep
+  end subroutine
+end interface
+
+interface pcmsolver_propagate_asc
+  function pcmsolver_propagate_asc(context, mep_t, asc_t, mep_tdt, asc_tdt, dt, irrep) result(energy) bind (C)
+    import
+    type(c_ptr), value :: context
+    character(kind=c_char, len=1), intent(in) :: mep_t(*), asc_t(*)
+    character(kind=c_char, len=1), intent(in) :: mep_tdt(*), asc_tdt(*)
+    real(c_double), value, intent(in) :: dt
+    integer(c_int), value, intent(in) :: irrep
+    real(c_double)  :: energy
+  end function
+end interface
+
 interface pcmsolver_get_surface_function
   subroutine pcmsolver_get_surface_function(context, f_size, values, name) bind(C)
     import

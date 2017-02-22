@@ -36,6 +36,7 @@ namespace pcm {
 class ICavity;
 class IGreensFunction;
 class ISolver;
+class ITDSolver;
 } // namespace pcm
 struct PCMInput;
 
@@ -199,6 +200,44 @@ public:
    */
   double getASCDipole(const std::string & asc_name, double dipole[]) const;
 
+  /*! \brief Initializes the time propagation of the ASC.
+        *  \param[in] mep_0   label of the MEP surface function at time 0
+        *  \param[in] asc_0   label of the ASC surface function at time 0
+        *  \param[in] mep_t   label of the MEP surface function at time t
+        *  \param[in] asc_t   label of the ASC surface function at time t
+        *  \param[in] mep_tdt label of the MEP surface function at time t+dt
+        *  \param[in] asc_tdt label of the ASC surface function at time t+dt
+        *  \param[in] irrep index of the desired irreducible representation
+        *  This function initializes the time-evolution algorithm described in
+        *  \cite Corni2014
+        *  Labels are set in the internal surface function map. The surface function
+        *  values are initialized to their values to those at time 0
+        */
+  void initializePropagation(const char * mep_0,
+                             const char * asc_0,
+                             const char * mep_t,
+                             const char * asc_t,
+                             const char * mep_tdt,
+                             const char * asc_tdt,
+                             int irrep) const;
+  /*! \brief Time propagation of the ASC
+   *  \param[in] mep_t    label of the MEP surface function at time t
+   *  \param[in] asc_t    label of the ASC surface function at time t
+   *  \param[in] mep_tdt label of the MEP surface function at time t+dt
+   *  \param[in] asc_tdt label of the ASC surface function at time t+dt
+   *  \param[in] dt   propagation time-step
+   *  \param[in] irrep index of the desired irreducible representation
+   *  \return the polarization energy at time t+dt
+   *  Based on user input, switches between the delayed or equilibrium ASC
+   * formalisms.
+   */
+  double propagateASC(const char * mep_t,
+                      const char * asc_t,
+                      const char * mep_tdt,
+                      const char * asc_tdt,
+                      double dt,
+                      int irrep) const;
+
   /*! \brief Retrieves data wrapped in a given surface function
    *  \param[in] size the size of the surface function
    *  \param[in] values the values wrapped in the surface function
@@ -275,10 +314,14 @@ private:
   ISolver * K_0_;
   /*! Solver with dynamic permittivity */
   ISolver * K_d_;
-  /*! Whether K_d_ was initialized */
-  bool hasDynamic_;
+  /*! Time-dependent solver */
+  ITDSolver * TD_K_;
   /*! PCMSolver set up information */
   std::ostringstream infoStream_;
+  /*! Whether K_d_ was initialized */
+  bool hasDynamic_;
+  /*! Whether TD_K_ was initialized */
+  bool hasTD_;
   /*! SurfaceFunction map */
   SurfaceFunctionMap functions_;
   /*! Common implemenation for the CTOR-s */
@@ -301,5 +344,20 @@ private:
   void initDynamicSolver();
   /*! Collect info on medium */
   void mediumInfo(IGreensFunction * gf_i, IGreensFunction * gf_o);
+  /*! Initialize TD solver */
+  void initTDSolver();
+  /*! Delayed propagation of ASC
+   *  \param[in] mep_t    label of the MEP surface function at time t
+   *  \param[in] asc_t    label of the ASC surface function at time t
+   *  \param[in] mep_tdt label of the MEP surface function at time t+dt
+   *  \param[in] asc_tdt label of the ASC surface function at time t+dt
+   *  \return the polarization energy at time t+dt
+   */
+  double delayedASC(const char * mep_t,
+                    const char * asc_t,
+                    const char * mep_tdt,
+                    const char * asc_tdt,
+                    double dt,
+                    int irrep) const;
 };
 } // namespace pcm

@@ -55,3 +55,35 @@ set_tests_properties(pcmsolver_standalone-explicit
   LABELS "pcmsolver;standalone;explicit"
   ENVIRONMENT PYTHONPATH=${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/${PYMOD_INSTALL_LIBDIR}:$ENV{PYTHONPATH}
   )
+
+add_test(
+  NAME
+    pcmsolver_standalone-tdsolver
+  COMMAND
+    ${PYTHON_EXECUTABLE} ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/go_pcm.py
+      --exe=${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}
+      --inp=standalone_tdsolver.pcm
+  WORKING_DIRECTORY
+    ${CMAKE_CURRENT_BINARY_DIR}
+  )
+set_tests_properties(pcmsolver_standalone-tdsolver
+  PROPERTIES
+  LABELS "pcmsolver;standalone;explicit"
+  ENVIRONMENT PYTHONPATH=${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/${PYMOD_INSTALL_LIBDIR}:$ENV{PYTHONPATH}
+  )
+
+add_test(
+  NAME
+    pcmsolver_standalone-onsager_tdsolver
+  COMMAND
+    ${PYTHON_EXECUTABLE} ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/go_pcm.py
+      --exe=${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}
+      --inp=onsager_tdsolver.pcm
+  WORKING_DIRECTORY
+    ${CMAKE_CURRENT_BINARY_DIR}
+  )
+set_tests_properties(pcmsolver_standalone-onsager_tdsolver
+  PROPERTIES
+  LABELS "pcmsolver;standalone;onsager_tdsolver"
+  ENVIRONMENT PYTHONPATH=${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/${PYMOD_INSTALL_LIBDIR}:$ENV{PYTHONPATH}
+  )

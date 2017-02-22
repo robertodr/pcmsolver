@@ -1,4 +1,4 @@
-/*
+/**
  * PCMSolver, an API for the Polarizable Continuum Model
  * Copyright (C) 2018 Roberto Di Remigio, Luca Frediani and contributors.
  *
@@ -40,6 +40,7 @@
 #include "cavity/CavityData.hpp"
 #include "green/GreenData.hpp"
 #include "solver/SolverData.hpp"
+#include "td_solver/TDSolverData.hpp"
 #include "utils/Factory.hpp"
 #include "utils/Solvent.hpp"
 #include "utils/Sphere.hpp"
@@ -159,6 +160,20 @@ void Input::reader(const std::string & filename) {
   hermitivitize_ = medium.getBool("MATRIXSYMM");
   isDynamic_ = medium.getBool("NONEQUILIBRIUM");
 
+  // Get the contents of the RealTime section
+  const Section & realtime = input_.getSect("REALTIME");
+  isTD_ = false;
+  if (realtime.isDefined()) {
+    TDsolverType_ = realtime.getStr("TDTYPE");
+    isTD_ = (TDsolverType_ == "EQUILIBRIUM") ? false : true;
+    initWithDynamic_ = (realtime.getStr("INITIALVALUE") == "STATIC") ? false : true;
+    tau_ = realtime.getDbl("TAU");
+    tauIEF_ = realtime.getDbl("TAUIEF");
+    cholesky_ = realtime.getBool("CHOLESKY");
+    timeStep_ = realtime.getDbl("TIMESTEP");
+    totalTime_ = realtime.getDbl("TOTALTIME");
+  }
+
   const Section & chgdist = input_.getSect("CHARGEDISTRIBUTION");
   if (chgdist.isDefined()) {
     // Set monopoles
@@ -264,6 +279,7 @@ void Input::reader(const PCMInput & host_input) {
   correction_ = host_input.correction;
   hermitivitize_ = true;
   isDynamic_ = false;
+  isTD_ = false;
 
   providedBy_ = std::string("host-side");
 }
@@ -381,6 +397,16 @@ SolverData Input::solverParams() const {
 
 BIOperatorData Input::integratorParams() const {
   return BIOperatorData(integratorType_, integratorScaling_);
+}
+
+TDSolverData Input::TDSolverParams() const {
+  return TDSolverData(epsilonStaticOutside_,
+                      epsilonDynamicOutside_,
+                      tau_,
+                      correction_,
+                      tauIEF_,
+                      initWithDynamic_,
+                      cholesky_);
 }
 
 namespace detail {

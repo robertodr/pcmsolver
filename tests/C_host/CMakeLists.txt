@@ -46,3 +46,49 @@ set_tests_properties(fail-C_host
     LABELS "api;C_host;fail"
     WILL_FAIL TRUE
   )
+
+add_executable(TD-C_host TD-C_host.c)
+target_include_directories(td-C_host
+  PRIVATE
+    ${PROJECT_SOURCE_DIR}/tests/C_host
+    ${PROJECT_SOURCE_DIR}/api
+  )
+target_link_libraries(td-C_host PCMSolver)
+target_link_libraries(td-C_host m)
+set_target_properties(td-C_host
+  PROPERTIES
+    LINKER_LANGUAGE C
+  )
+file(
+  COPY 
+    tdsolver.pcm 
+  DESTINATION 
+    ${CMAKE_CURRENT_BINARY_DIR}
+  )
+add_test(
+  NAME 
+    parse-tdsolver 
+  COMMAND 
+    ${PYTHON_EXECUTABLE} ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/go_pcm.py
+      --inp=tdsolver.pcm
+  WORKING_DIRECTORY 
+    ${CMAKE_CURRENT_BINARY_DIR}
+  )
+set_tests_properties(parse-tdsolver 
+  PROPERTIES 
+  LABELS "parser_script"
+  ENVIRONMENT PYTHONPATH=${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/${PYMOD_INSTALL_LIBDIR}:$ENV{PYTHONPATH}
+  )
+add_test(
+  NAME
+    td-C_host
+  COMMAND
+    td-C_host
+  WORKING_DIRECTORY
+    ${CMAKE_CURRENT_BINARY_DIR}
+  )
+set_tests_properties(td-C_host
+  PROPERTIES
+    LABELS "api;C_host;td_solver"
+    DEPENDS parse-tdsolver
+  )
