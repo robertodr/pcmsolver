@@ -30,6 +30,7 @@
  *  @brief Contains all data defined from user input in the solver section.
  */
 
+namespace pcm {
 struct TDSolverData {
   /*! Static permittivity */
   double epsilonStatic;
@@ -66,5 +67,6 @@ struct TDSolverData {
     empty = false;
   }
 };
+} // namespace pcm
 
 #endif // SOLVERDATA_HPP

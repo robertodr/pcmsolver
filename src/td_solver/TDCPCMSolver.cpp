@@ -23,7 +23,6 @@
 
 #include "TDCPCMSolver.hpp"
 
-#include <fstream>
 #include <iostream>
 #include <string>
 
@@ -32,29 +31,29 @@
 #include <Eigen/Cholesky>
 #include <Eigen/Core>
 
-#include "bi_operators/BoundaryIntegralOperator.hpp"
-#include "cavity/Cavity.hpp"
-#include "cavity/Element.hpp"
+#include "bi_operators/IBoundaryIntegralOperator.hpp"
+#include "cavity/ICavity.hpp"
 #include "green/IGreensFunction.hpp"
 #include "utils/MathUtils.hpp"
 #include "TDSolverData.hpp"
-#include "utils/Factory.hpp"
 #include "Debye.hpp"
 
+namespace pcm {
+namespace td_solver {
 TDCPCMSolver::TDCPCMSolver(double es, double ed, double t, double corr)
-    : TDPCMSolver(es, ed, t), correction_(corr) {}
+    : ITDSolver(es, ed, t), correction_(corr) {}
 
-void TDCPCMSolver::buildSystemMatrix_impl(const Cavity & cavity,
+void TDCPCMSolver::buildSystemMatrix_impl(const ICavity & cavity,
                                           const IGreensFunction & gf_i,
-                                          const BoundaryIntegralOperator & op) {
+                                          const IBoundaryIntegralOperator & op) {
   // Compute SI on the whole cavity, regardless of symmetry
   double f_d = permittivity_.dynamicOnsager(correction_);
   A_ = f_d * op.computeS(cavity, gf_i).partialPivLu().inverse();
-  hermitivitize(A_);
+  utils::hermitivitize(A_);
 
   double f_0 = permittivity_.staticOnsager(correction_);
   B_ = f_0 * op.computeS(cavity, gf_i).partialPivLu().inverse();
-  hermitivitize(B_);
+  utils::hermitivitize(B_);
 
   built_ = true;
 }
@@ -82,14 +81,9 @@ std::ostream & TDCPCMSolver::printSolver(std::ostream & os) {
   return os;
 }
 
-namespace {
-TDPCMSolver * createTDCPCMSolver(const TDSolverData & data) {
+ITDSolver * createTDCPCMSolver(const TDSolverData & data) {
   return new TDCPCMSolver(
       data.epsilonStatic, data.epsilonDynamic, data.tau, data.correction);
 }
-const std::string TDCPCMSOLVER("TDCPCM");
-const bool registeredTDCPCMSolver =
-    Factory<TDPCMSolver, TDSolverData>::TheFactory().registerObject(
-        TDCPCMSOLVER,
-        createTDCPCMSolver);
-}
+} // namespace td_solver
+} // namespace pcm

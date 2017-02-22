@@ -43,7 +43,13 @@
 #include "utils/cnpy.hpp"
 #include "utils/MathUtils.hpp"
 
-using integrator::Collocation;
+using namespace pcm;
+using bi_operators::Collocation;
+using cavity::GePolCavity;
+using green::Vacuum;
+using green::UniformDielectric;
+using solver::IEFSolver;
+using td_solver::TDIEFSolver;
 
 SCENARIO("Test time-dependent solver for the IEFPCM for a point dipole and a GePol "
          "cavity",

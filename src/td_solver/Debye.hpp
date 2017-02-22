@@ -29,13 +29,14 @@
 
 #include "Config.hpp"
 
+namespace pcm {
+namespace td_solver {
 /*! \file Debye.hpp
  *  \struct Debye
  *  \brief A time-dependent Debye-type dielectric profile
  *  \author Roberto Di Remigio
  *  \date 2015
  */
-
 struct Debye {
   Debye() {}
   Debye(double es, double ed, double t)
@@ -66,5 +67,7 @@ struct Debye {
     return os;
   }
 };
+} // namespace td_solver
+} // namespace pcm
 
 #endif // DEBYE_HPP

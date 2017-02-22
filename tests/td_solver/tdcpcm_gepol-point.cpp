@@ -43,7 +43,13 @@
 #include "solver/CPCMSolver.hpp"
 #include "PhysicalConstants.hpp"
 
-using integrator::Collocation;
+using namespace pcm;
+using bi_operators::Collocation;
+using cavity::GePolCavity;
+using green::Vacuum;
+using green::UniformDielectric;
+using solver::CPCMSolver;
+using td_solver::TDCPCMSolver;
 
 SCENARIO(
     "Test time-dependent solver for the CPCM for a point dipole and a GePol cavity",

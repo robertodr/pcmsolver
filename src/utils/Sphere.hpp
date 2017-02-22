@@ -32,15 +32,14 @@
 
 #include <Eigen/Core>
 
+namespace pcm {
+namespace utils {
 /*! \file Sphere.hpp
  *  \struct Sphere
  *  \brief POD describing a sphere.
  *  \author Roberto Di Remigio
  *  \date 2011, 2016
  */
-
-namespace pcm {
-namespace utils {
 struct Sphere {
   Sphere() {}
   Sphere(const Eigen::Vector3d & c, double r) : center(c), radius(r) {}

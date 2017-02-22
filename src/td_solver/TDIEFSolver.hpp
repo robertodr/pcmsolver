@@ -30,20 +30,25 @@
 
 #include <Eigen/Core>
 
-class Cavity;
+namespace pcm {
+class ICavity;
 class IGreensFunction;
-class BoundaryIntegralOperator;
+class IBoundaryIntegralOperator;
+struct TDSolverData;
+} // namespace pcm
 
-#include "TDPCMSolver.hpp"
+#include "ITDSolver.hpp"
 
 /*! \file TDIEFSolver.hpp
  *  \class TDIEFSolver
  *  \brief Time-dependent solver for the isotropic IEF model
  *  \author Roberto Di Remigio
- *  \date 2015
+ *  \date 2015-2017
  */
 
-class TDIEFSolver : public TDPCMSolver {
+namespace pcm {
+namespace td_solver {
+class TDIEFSolver : public ITDSolver {
 public:
   TDIEFSolver() {}
   /*! \brief Construct time-dependent solver
@@ -107,26 +112,26 @@ private:
    *  \param[in] gf_i   Green's function inside the cavity
    *  \param[in] op integrator strategy for the single and double layer operators
    */
-  virtual void buildSystemMatrix_impl(const Cavity & cavity,
+  virtual void buildSystemMatrix_impl(const ICavity & cavity,
                                       const IGreensFunction & gf_i,
-                                      const BoundaryIntegralOperator & op)
+                                      const IBoundaryIntegralOperator & op)
       __override;
   /*! \brief Calculation of the PCM matrix, using Lowdin symmetric orthogonalization
    *  \param[in] cavity the cavity to be used
    *  \param[in] gf_i   Green's function inside the cavity
    *  \param[in] op integrator strategy for the single and double layer operators
    */
-  void systemMatrix_Lowdin(const Cavity & cavity,
+  void systemMatrix_Lowdin(const ICavity & cavity,
                            const IGreensFunction & gf_i,
-                           const BoundaryIntegralOperator & op);
+                           const IBoundaryIntegralOperator & op);
   /*! \brief Calculation of the PCM matrix, using Cholesky orthogonalization
    *  \param[in] cavity the cavity to be used
    *  \param[in] gf_i   Green's function inside the cavity
    *  \param[in] op integrator strategy for the single and double layer operators
    */
-  void systemMatrix_Cholesky(const Cavity & cavity,
+  void systemMatrix_Cholesky(const ICavity & cavity,
                              const IGreensFunction & gf_i,
-                             const BoundaryIntegralOperator & op);
+                             const IBoundaryIntegralOperator & op);
   /*! \brief Returns the ASC at time (t + dt) using a simple Euler integrator
    *  \param[in] dt the time step for the Euler integrator
    *  \param[in] MEP_current the vector containing the MEP at cavity points, at time
@@ -149,5 +154,40 @@ private:
       __override;
   virtual std::ostream & printSolver(std::ostream & os) __override;
 };
+
+ITDSolver * createTDIEFSolver(const TDSolverData & data);
+
+namespace detail {
+/*! \brief Calculates the diagonalized IEF matrix
+ *  \param[in] Lambda Diagonal form of the S^-1/2DAS^1/2 matrix
+ *  \param[in] factor frequency-dependent permittivity factor
+ */
+Eigen::VectorXd K(const Eigen::VectorXd & Lambda, double factor);
+
+/*! \brief Calculates the relaxation times (diagonal) matrix
+ *  \param[in] Lambda Diagonal form of the S^-1/2DAS^1/2 matrix
+ *  \param[in] e_d dynaminc permittivity
+ *  \param[in] e_0 static permittivity
+ *  \param[in] tau_D Debye relaxation time
+ */
+Eigen::VectorXd tau(const Eigen::VectorXd & Lambda,
+                    double e_d,
+                    double e_0,
+                    double tau_D);
+
+/*! \brief Calculates the inverse of the relaxation times (diagonal) matrix
+ *  \param[in] Lambda Diagonal form of the S^-1/2DAS^1/2 matrix
+ *  \param[in] e_d dynaminc permittivity
+ *  \param[in] e_0 static permittivity
+ *  \param[in] tau_D Debye relaxation time
+ *  \return
+ */
+Eigen::VectorXd tauInverse(const Eigen::VectorXd & Lambda,
+                           double e_d,
+                           double e_0,
+                           double tau_D);
+} // namespace detail
+} // namespace td_solver
+} // namespace pcm
 
 #endif // TDIEFSOLVER_HPP

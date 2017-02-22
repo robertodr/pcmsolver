@@ -30,20 +30,25 @@
 
 #include <Eigen/Core>
 
-class Cavity;
+namespace pcm {
+class ICavity;
 class IGreensFunction;
-class BoundaryIntegralOperator;
+class IBoundaryIntegralOperator;
+struct TDSolverData;
+} // namespace pcm
 
-#include "TDPCMSolver.hpp"
+#include "ITDSolver.hpp"
 
 /*! \file TDSingleIEFSolver.hpp
  *  \class TDSingleIEFSolver
  *  \brief Time-dependent solver for isotropic IEF with a single relaxation time
  *  \author Roberto Di Remigio
- *  \date 2015, 2016
+ *  \date 2015-2017
  */
 
-class TDSingleIEFSolver : public TDPCMSolver {
+namespace pcm {
+namespace td_solver {
+class TDSingleIEFSolver : public ITDSolver {
 public:
   TDSingleIEFSolver() {}
   /*! \brief Construct solver from two Green's functions
@@ -68,9 +73,9 @@ private:
    *  \param[in] gf_i   Green's function inside the cavity
    *  \param[in] op integrator strategy for the single and double layer operators
    */
-  virtual void buildSystemMatrix_impl(const Cavity & cavity,
+  virtual void buildSystemMatrix_impl(const ICavity & cavity,
                                       const IGreensFunction & gf_i,
-                                      const BoundaryIntegralOperator & op)
+                                      const IBoundaryIntegralOperator & op)
       __override;
   /*! \brief Returns the ASC at time (t + dt) using a simple Euler integrator
    *  \param[in] dt the time step for the Euler integrator
@@ -94,5 +99,10 @@ private:
       __override;
   virtual std::ostream & printSolver(std::ostream & os) __override;
 };
+
+ITDSolver * createTDSingleIEFSolver(const TDSolverData & data);
+ITDSolver * createTDOnsagerIEFSolver(const TDSolverData & data);
+} // namespace td_solver
+} // namespace pcm
 
 #endif // TDSINGLEIEFSOLVER_HPP

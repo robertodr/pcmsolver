@@ -42,9 +42,17 @@
 #include "utils/MathUtils.hpp"
 #include "green/Vacuum.hpp"
 
+using namespace pcm;
+using bi_operators::Collocation;
+using cavity::GePolCavity;
+using green::Vacuum;
+using td_solver::TDCPCMSolver;
+using td_solver::TDIEFSolver;
+using td_solver::TDSingleIEFSolver;
+
 void save_tdief_lowdin_collocation(const GePolCavity &,
                                    const IGreensFunction &,
-                                   const BoundaryIntegralOperator &,
+                                   const Collocation &,
                                    double,
                                    double,
                                    double,
@@ -52,7 +60,7 @@ void save_tdief_lowdin_collocation(const GePolCavity &,
                                    double);
 void save_tdcpcm_collocation(const GePolCavity &,
                              const IGreensFunction &,
-                             const BoundaryIntegralOperator &,
+                             const Collocation &,
                              double,
                              double,
                              double,
@@ -60,7 +68,7 @@ void save_tdcpcm_collocation(const GePolCavity &,
                              double);
 void save_tdsingleief_collocation(const GePolCavity &,
                                   const IGreensFunction &,
-                                  const BoundaryIntegralOperator &,
+                                  const Collocation &,
                                   double,
                                   double,
                                   double,
@@ -68,7 +76,7 @@ void save_tdsingleief_collocation(const GePolCavity &,
                                   double);
 void save_tdonsagerief_collocation(const GePolCavity &,
                                    const IGreensFunction &,
-                                   const BoundaryIntegralOperator &,
+                                   const Collocation &,
                                    double,
                                    double,
                                    double,
@@ -85,7 +93,7 @@ int main() {
   GePolCavity cavity(point, area, probeRadius, minRadius);
 
   Vacuum<> gfInside;
-  integrator::Collocation biop;
+  Collocation biop;
 
   double e_0 = 35.69;
   double e_d = 1.807;
@@ -106,7 +114,7 @@ int main() {
 
 void save_tdief_lowdin_collocation(const GePolCavity & cavity,
                                    const IGreensFunction & gfInside,
-                                   const BoundaryIntegralOperator & biop,
+                                   const Collocation & biop,
                                    double e_0,
                                    double e_d,
                                    double tau,
@@ -152,7 +160,7 @@ void save_tdief_lowdin_collocation(const GePolCavity & cavity,
 
 void save_tdcpcm_collocation(const GePolCavity & cavity,
                              const IGreensFunction & gfInside,
-                             const BoundaryIntegralOperator & biop,
+                             const Collocation & biop,
                              double e_0,
                              double e_d,
                              double tau,
@@ -190,7 +198,7 @@ void save_tdcpcm_collocation(const GePolCavity & cavity,
 
 void save_tdsingleief_collocation(const GePolCavity & cavity,
                                   const IGreensFunction & gfInside,
-                                  const BoundaryIntegralOperator & biop,
+                                  const Collocation & biop,
                                   double e_0,
                                   double e_d,
                                   double tau,
@@ -229,7 +237,7 @@ void save_tdsingleief_collocation(const GePolCavity & cavity,
 
 void save_tdonsagerief_collocation(const GePolCavity & cavity,
                                    const IGreensFunction & gfInside,
-                                   const BoundaryIntegralOperator & biop,
+                                   const Collocation & biop,
                                    double e_0,
                                    double e_d,
                                    double tau,

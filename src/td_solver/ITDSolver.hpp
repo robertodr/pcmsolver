@@ -21,8 +21,8 @@
  * PCMSolver API, see: <http://pcmsolver.readthedocs.io/>
  */
 
-#ifndef TDPCMSOLVER_HPP
-#define TDPCMSOLVER_HPP
+#ifndef ITDSOLVER_HPP
+#define ITDSOLVER_HPP
 
 #include <iosfwd>
 
@@ -30,39 +30,43 @@
 
 #include <Eigen/Core>
 
-class Cavity;
+namespace pcm {
+class ICavity;
 class IGreensFunction;
-class BoundaryIntegralOperator;
+class IBoundaryIntegralOperator;
+} // namespace pcm
 
 #include "Debye.hpp"
 
-/*! \file TDPCMSolver.hpp
- *  \class TDPCMSolver
+/*! \file ITDSolver.hpp
+ *  \class ITDSolver
  *  \brief Abstract Base Class for time-dependent solvers inheritance hierarchy.
  *  \author Roberto Di Remigio
- *  \date 2015, 2016
+ *  \date 2017
  *  We use the Non-Virtual Interface idiom.
  */
 
-class TDPCMSolver {
+namespace pcm {
+using td_solver::Debye;
+class ITDSolver {
 public:
-  TDPCMSolver() {}
+  ITDSolver() {}
   /*! \brief Construct solver from two Green's functions
    *  \param[in] es static permittivity
    *  \param[in] ed dynamic permittivity
    *  \param[in] t  relaxation time
    */
-  TDPCMSolver(double es, double ed, double t);
-  virtual ~TDPCMSolver() {}
+  ITDSolver(double es, double ed, double t);
+  virtual ~ITDSolver() {}
 
   /*! \brief Calculation of the PCM matrix
    *  \param[in] cavity the cavity to be used
    *  \param[in] gf_i   Green's function inside the cavity
    *  \param[in] op integrator strategy for the single and double layer operators
    */
-  void buildSystemMatrix(const Cavity & cavity,
+  void buildSystemMatrix(const ICavity & cavity,
                          const IGreensFunction & gf_i,
-                         const BoundaryIntegralOperator & op) {
+                         const IBoundaryIntegralOperator & op) {
     buildSystemMatrix_impl(cavity, gf_i, op);
   }
   /*! \brief Returns the ASC at time (t + dt) using a simple Euler integrator
@@ -79,7 +83,7 @@ public:
                                const Eigen::VectorXd & MEP_previous,
                                const Eigen::VectorXd & ASC_previous) const {
     if (!built_)
-      PCMSOLVER_ERROR("PCM matrix not calculated yet", BOOST_CURRENT_FUNCTION);
+      PCMSOLVER_ERROR("PCM matrix not calculated yet");
     return propagateASC_impl(dt, MEP_current, MEP_previous, ASC_previous);
   }
   /*! \brief Returns the ASC at initial time
@@ -88,12 +92,12 @@ public:
    */
   Eigen::VectorXd initialValueASC(const Eigen::VectorXd & MEP) const {
     if (!built_)
-      PCMSOLVER_ERROR("PCM matrix not calculated yet", BOOST_CURRENT_FUNCTION);
+      PCMSOLVER_ERROR("PCM matrix not calculated yet");
     return initialValueASC_impl(MEP);
   }
   std::string printEnvironment();
 
-  friend std::ostream & operator<<(std::ostream & os, TDPCMSolver & solver) {
+  friend std::ostream & operator<<(std::ostream & os, ITDSolver & solver) {
     return solver.printSolver(os);
   }
 
@@ -112,9 +116,9 @@ protected:
    *  \param[in] gf_i   Green's function inside the cavity
    *  \param[in] op integrator strategy for the single and double layer operators
    */
-  virtual void buildSystemMatrix_impl(const Cavity & cavity,
+  virtual void buildSystemMatrix_impl(const ICavity & cavity,
                                       const IGreensFunction & gf_i,
-                                      const BoundaryIntegralOperator & op) = 0;
+                                      const IBoundaryIntegralOperator & op) = 0;
   /*! \brief Returns the ASC at time (t + dt) using a simple Euler integrator
    *  \param[in] dt the time step for the Euler integrator
    *  \param[in] MEP_current the vector containing the MEP at cavity points, at time
@@ -137,5 +141,6 @@ protected:
       const Eigen::VectorXd & MEP) const = 0;
   virtual std::ostream & printSolver(std::ostream & os) = 0;
 };
+} // namespace pcm
 
-#endif // TDPCMSOLVER_HPP
+#endif // ITDSOLVER_HPP

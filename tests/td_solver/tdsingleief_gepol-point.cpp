@@ -43,7 +43,13 @@
 #include "solver/IEFSolver.hpp"
 #include "PhysicalConstants.hpp"
 
-using integrator::Collocation;
+using namespace pcm;
+using bi_operators::Collocation;
+using cavity::GePolCavity;
+using green::Vacuum;
+using green::UniformDielectric;
+using solver::IEFSolver;
+using td_solver::TDSingleIEFSolver;
 
 /*! \class TDSingleIEFSolver
  *  \test \b pointDipoleGePol tests TDSingleIEFSolver using a point dipole with a

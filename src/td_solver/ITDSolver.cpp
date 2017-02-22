@@ -21,7 +21,7 @@
  * PCMSolver API, see: <http://pcmsolver.readthedocs.io/>
  */
 
-#include "TDPCMSolver.hpp"
+#include "ITDSolver.hpp"
 
 #include <string>
 #include <sstream>
@@ -30,10 +30,12 @@
 
 #include "Debye.hpp"
 
-TDPCMSolver::TDPCMSolver(double es, double ed, double t)
+namespace pcm {
+using td_solver::Debye;
+ITDSolver::ITDSolver(double es, double ed, double t)
     : permittivity_(Debye(es, ed, t)), built_(false) {}
 
-std::string TDPCMSolver::printEnvironment() {
+std::string ITDSolver::printEnvironment() {
   std::stringstream tmp;
   tmp << ".... Inside " << std::endl;
   tmp << "Green's function type: vacuum" << std::endl;
@@ -42,3 +44,4 @@ std::string TDPCMSolver::printEnvironment() {
   tmp << permittivity_;
   return tmp.str();
 }
+} // namespace pcm

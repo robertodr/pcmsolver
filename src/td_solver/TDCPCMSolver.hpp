@@ -30,20 +30,25 @@
 
 #include <Eigen/Core>
 
-class Cavity;
+namespace pcm {
+class ICavity;
 class IGreensFunction;
-class BoundaryIntegralOperator;
+class IBoundaryIntegralOperator;
+struct TDSolverData;
+} // namespace pcm
 
-#include "TDPCMSolver.hpp"
+#include "ITDSolver.hpp"
 
 /*! \file TDCPCMSolver.hpp
  *  \class TDCPCMSolver
  *  \brief Time-dependent solver for conductor-like approximation: C-PCM (COSMO)
  *  \author Roberto Di Remigio
- *  \date 2015
+ *  \date 2015-2017
  */
 
-class TDCPCMSolver : public TDPCMSolver {
+namespace pcm {
+namespace td_solver {
+class TDCPCMSolver : public ITDSolver {
 public:
   TDCPCMSolver() {}
   /*! \brief Construct solver from two Green's functions
@@ -65,9 +70,9 @@ private:
   /*! \brief Calculation of the PCM matrix
    *  \param[in] cavity the cavity to be used
    */
-  virtual void buildSystemMatrix_impl(const Cavity & cavity,
+  virtual void buildSystemMatrix_impl(const ICavity & cavity,
                                       const IGreensFunction & gf_i,
-                                      const BoundaryIntegralOperator & op)
+                                      const IBoundaryIntegralOperator & op)
       __override;
   /*! \brief Returns the ASC at time (t + dt) using a simple Euler integrator
    *  \param[in] dt the time step for the Euler integrator
@@ -91,5 +96,9 @@ private:
       __override;
   virtual std::ostream & printSolver(std::ostream & os) __override;
 };
+
+ITDSolver * createTDCPCMSolver(const TDSolverData & data);
+} // namespace td_solver
+} // namespace pcm
 
 #endif // TDCPCMSOLVER_HPP

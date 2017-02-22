@@ -34,30 +34,29 @@
 #include <Eigen/Core>
 #include <Eigen/Eigenvalues>
 
-#include "bi_operators/BoundaryIntegralOperator.hpp"
-#include "cavity/Cavity.hpp"
-#include "cavity/Element.hpp"
+#include "bi_operators/IBoundaryIntegralOperator.hpp"
+#include "cavity/ICavity.hpp"
 #include "green/IGreensFunction.hpp"
 #include "utils/MathUtils.hpp"
 #include "TDSolverData.hpp"
-#include "utils/Factory.hpp"
 #include "Debye.hpp"
-#include "TDSolverHelperFunctions.hpp"
-#include "TDPCMSolver.hpp"
+#include "ITDSolver.hpp"
 
+namespace pcm {
+namespace td_solver {
 TDIEFSolver::TDIEFSolver(double es, double ed, double t, bool cholesky)
-    : TDPCMSolver(es, ed, t), useCholesky_(cholesky) {}
+    : ITDSolver(es, ed, t), useCholesky_(cholesky) {}
 
-void TDIEFSolver::buildSystemMatrix_impl(const Cavity & cavity,
+void TDIEFSolver::buildSystemMatrix_impl(const ICavity & cavity,
                                          const IGreensFunction & gf_i,
-                                         const BoundaryIntegralOperator & op) {
+                                         const IBoundaryIntegralOperator & op) {
   useCholesky_ ? systemMatrix_Cholesky(cavity, gf_i, op)
                : systemMatrix_Lowdin(cavity, gf_i, op);
 }
 
-void TDIEFSolver::systemMatrix_Lowdin(const Cavity & cavity,
+void TDIEFSolver::systemMatrix_Lowdin(const ICavity & cavity,
                                       const IGreensFunction & gf_i,
-                                      const BoundaryIntegralOperator & op) {
+                                      const IBoundaryIntegralOperator & op) {
   using namespace td_solver;
   // The total size of the cavity
   int cavitySize = cavity.size();
@@ -73,29 +72,29 @@ void TDIEFSolver::systemMatrix_Lowdin(const Cavity & cavity,
   // Compute D on whole cavity, regardless of symmetry
   Eigen::MatrixXd D = op.computeD(cavity, gf_i);
   // Make sure S is symmetric (might be unnecessary)
-  hermitivitize(S);
+  utils::hermitivitize(S);
   // Compute S^1/2 and S^-1/2
   Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> S_eigen(S);
   Eigen::MatrixXd S_sqrt = S_eigen.operatorSqrt();
   Eigen::MatrixXd S_invsqrt = S_eigen.operatorInverseSqrt();
   // Compute S^-1/2DAS^1/2 and symmetrize it
   D = S_invsqrt * D * A * S_sqrt;
-  hermitivitize(D);
+  utils::hermitivitize(D);
   // Diagonalize S^-1/2DAS^1/2
   Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> D_eigen(D);
   // Get Lambda and the transformation matrix
   Lambda_ = D_eigen.eigenvalues();
   Eigen::MatrixXd T = D_eigen.eigenvectors();
   // Form tau^-1 (relaxation times matrix)
-  tau_ = td_solver::tau(Lambda_, e_d, e_0, permittivity_.tau);
-  Eigen::VectorXd tau_inv = tauInverse(Lambda_, e_d, e_0, permittivity_.tau);
+  tau_ = detail::tau(Lambda_, e_d, e_0, permittivity_.tau);
+  Eigen::VectorXd tau_inv = detail::tauInverse(Lambda_, e_d, e_0, permittivity_.tau);
   // Form A_ (the dynamic matrix)
   double f_d = (e_d + 1.0) / (e_d - 1.0);
-  K_d_ = K(Lambda_, f_d);
+  K_d_ = detail::K(Lambda_, f_d);
   A_ = -S_invsqrt * T * K_d_.asDiagonal() * T.adjoint().eval() * S_invsqrt;
   // Form B_ (the stati matrix)
   double f_0 = (e_0 + 1.0) / (e_0 - 1.0);
-  K_0_ = K(Lambda_, f_0);
+  K_0_ = detail::K(Lambda_, f_0);
   B_ = -S_invsqrt * T * tau_inv.asDiagonal() * K_0_.asDiagonal() *
        T.adjoint().eval() * S_invsqrt;
   // Form C_ (the relaxation times matrix)
@@ -106,9 +105,9 @@ void TDIEFSolver::systemMatrix_Lowdin(const Cavity & cavity,
   built_ = true;
 }
 
-void TDIEFSolver::systemMatrix_Cholesky(const Cavity & /* cavity */,
+void TDIEFSolver::systemMatrix_Cholesky(const ICavity & /* cavity */,
                                         const IGreensFunction & /* gf_i */,
-                                        const BoundaryIntegralOperator & /* op */) {
+                                        const IBoundaryIntegralOperator & /* op */) {
   /*
   using namespace td_solver;
   // The total size of the cavity
@@ -126,7 +125,7 @@ void TDIEFSolver::systemMatrix_Cholesky(const Cavity & /* cavity */,
   // Compute D on whole cavity, regardless of symmetry
   Eigen::MatrixXd D = gf_i.doubleLayer(cavity.elements());
   // Make sure S is symmetric (might be unnecessary)
-  hermitivitize(S);
+  utils::hermitivitize(S);
   // Compute Cholesky decomposition of S = LVL^t
   Eigen::LDLT<Eigen::MatrixXd> S_lvlt(S);
   Eigen::MatrixXd L = S_lvlt.matrixL();
@@ -136,7 +135,7 @@ void TDIEFSolver::systemMatrix_Cholesky(const Cavity & /* cavity */,
   Eigen::MatrixXd V_inv = V.inverse();
   // Compute L^-1DAL and symmetrize it
   D = L.inverse() * D * A * L;
-  //hermitivitize(D);
+  //utils::hermitivitize(D);
   // Diagonalize L^-1DAL
   Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> D_eigen(D);
   // Get Lambda and the transformation matrix
@@ -144,17 +143,19 @@ void TDIEFSolver::systemMatrix_Cholesky(const Cavity & /* cavity */,
   std::cout << D_eigen.eigenvalues() << std::endl;
   Eigen::MatrixXd T = D_eigen.eigenvectors();
   // Form tau^-1 (relaxation times matrix)
-  Eigen::MatrixXd tau_inv = tauInverse(Lambda, e_d, e_0, permittivity_.tau);
+  Eigen::MatrixXd tau_inv = detail::tauInverse(Lambda, e_d, e_0, permittivity_.tau);
   // Form A_ (the dynamic matrix)
   double f_d = (e_d + 1.0) / (e_d - 1.0);
-  A_ = - Lt_inv * T * K(Lambda, f_d) * T.adjoint().eval() * V_inv * L_inv;
+  A_ = - Lt_inv * T * detail::K(Lambda, f_d) * T.adjoint().eval() * V_inv * L_inv;
   // Form B_ (the static matrix)
   double f_0 = (e_0 + 1.0) / (e_0 - 1.0);
-  B_ = - Lt_inv * T * tau_inv * K(Lambda, f_0) * T.adjoint().eval() * V_inv * L_inv;
+  B_ = - Lt_inv * T * tau_inv * detail::K(Lambda, f_0) * T.adjoint().eval() * V_inv *
+  L_inv;
   // Form C_ (the relaxation times matrix)
   C_ = Lt_inv * T * tau_inv * T.adjoint().eval() * L * V;
   // Form PCMMatrix_ (needed to form the initial value of the ASC)
-  PCMMatrix_ = - Lt_inv * T * K(Lambda, f_d) * T.adjoint().eval() * V_inv * L_inv;
+  PCMMatrix_ = - Lt_inv * T * detail::K(Lambda, f_d) * T.adjoint().eval() * V_inv *
+  L_inv;
 
   built_ = true;
   */
@@ -180,14 +181,45 @@ std::ostream & TDIEFSolver::printSolver(std::ostream & os) {
   return os;
 }
 
-namespace {
-TDPCMSolver * createTDIEFSolver(const TDSolverData & data) {
+ITDSolver * createTDIEFSolver(const TDSolverData & data) {
   return new TDIEFSolver(
       data.epsilonStatic, data.epsilonDynamic, data.tau, data.cholesky);
 }
-const std::string TDIEFSOLVER("TDIEF");
-const bool registeredTDIEFSolver =
-    Factory<TDPCMSolver, TDSolverData>::TheFactory().registerObject(
-        TDIEFSOLVER,
-        createTDIEFSolver);
+
+namespace detail {
+Eigen::VectorXd K(const Eigen::VectorXd & Lambda, double factor) {
+  Eigen::VectorXd K = Eigen::VectorXd::Zero(Lambda.size());
+  for (int i = 0; i < Lambda.size(); ++i) {
+    K(i) = (2 * M_PI - Lambda(i)) / (2 * M_PI * factor - Lambda(i));
+  }
+  return K;
 }
+
+Eigen::VectorXd tau(const Eigen::VectorXd & Lambda,
+                    double e_d,
+                    double e_0,
+                    double tau_D) {
+  Eigen::VectorXd tau = Eigen::VectorXd::Zero(Lambda.size());
+  for (int i = 0; i < Lambda.size(); ++i) {
+    double num = (2 * M_PI - Lambda(i)) * e_d + 2 * M_PI + Lambda(i);
+    double denom = (2 * M_PI - Lambda(i)) * e_0 + 2 * M_PI + Lambda(i);
+    tau(i) = tau_D * num / denom;
+  }
+  return tau;
+}
+
+Eigen::VectorXd tauInverse(const Eigen::VectorXd & Lambda,
+                           double e_d,
+                           double e_0,
+                           double tau_D) {
+  Eigen::VectorXd tau_inv = Eigen::VectorXd::Zero(Lambda.size());
+  for (int i = 0; i < Lambda.size(); ++i) {
+    double num = (2 * M_PI - Lambda(i)) * e_d + 2 * M_PI + Lambda(i);
+    double denom = (2 * M_PI - Lambda(i)) * e_0 + 2 * M_PI + Lambda(i);
+    tau_inv(i) = denom / (tau_D * num);
+  }
+  return tau_inv;
+}
+} // namespace detail
+} // namespace td_solver
+} // namespace pcm
