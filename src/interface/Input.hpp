@@ -33,13 +33,23 @@
 
 struct PCMInput;
 
-#include "bi_operators/BIOperatorData.hpp"
-#include "cavity/CavityData.hpp"
-#include "green/GreenData.hpp"
-#include "solver/SolverData.hpp"
+namespace pcm {
+struct BIOperatorData;
+struct CavityData;
+struct GreenData;
+struct SolverData;
+struct TDSolverData;
+} // namespace pcm
+
+#include "utils/ChargeDistribution.hpp"
 #include "utils/Molecule.hpp"
 #include "utils/Solvent.hpp"
 #include "utils/Sphere.hpp"
+
+namespace pcm {
+using utils::ChargeDistribution;
+using utils::Solvent;
+using utils::Sphere;
 
 /*! \file Input.hpp
  *  \class Input
@@ -60,11 +70,6 @@ struct PCMInput;
  *rule
  *  should be carefully considered.
  */
-
-namespace pcm {
-using utils::Sphere;
-using utils::Solvent;
-
 class Input {
 public:
   /// Default constructor
@@ -112,6 +117,10 @@ public:
   bool isDynamic() const { return isDynamic_; }
   std::string integratorType() const { return integratorType_; }
   double integratorScaling() const { return integratorScaling_; }
+  std::string TDsolverType() const { return TDsolverType_; }
+  bool isTD() const { return isTD_; }
+  double timeStep() const { return timeStep_; }
+  double totalTime() const { return totalTime_; }
   /// @}
 
   /// Green's function section input
@@ -123,14 +132,16 @@ public:
   std::string providedBy() const { return providedBy_; }
 
   /// Get-ters for input wrapping structs
-  CavityData cavityParams();
-  GreenData insideGreenParams();
-  GreenData outsideStaticGreenParams();
-  GreenData outsideDynamicGreenParams();
-  SolverData solverParams();
-  BIOperatorData integratorParams();
+  CavityData cavityParams() const;
+  GreenData insideGreenParams() const;
+  GreenData outsideStaticGreenParams() const;
+  GreenData outsideDynamicGreenParams() const;
+  SolverData solverParams() const;
+  BIOperatorData integratorParams() const;
+  TDSolverData TDSolverParams() const;
   /// @}
 
+  ChargeDistribution multipoles() const { return multipoles_; }
   bool MEPfromMolecule() { return MEPfromMolecule_; }
 
   /// Operators
@@ -263,22 +274,28 @@ private:
   std::vector<double> origin_;
   /// Molecular geometry
   std::vector<double> geometry_;
+  /// The TD solver type
+  std::string TDsolverType_;
+  /// Whether to initialize time-evolution with the static or dynamic ASC
+  bool initWithDynamic_;
+  /// Whether this is a real-time time-evolution run in the delayed formulation
+  bool isTD_;
+  /// Solvent relaxation time (in a.u.)
+  double tau_;
+  /// Solver relaxation time (in a.u.)
+  double tauIEF_;
+  /// Whether to use Cholesky decomposition in TDIEF solver
+  bool cholesky_;
+  /// Time step for the real-time time-evolution (in a.u.)
+  double timeStep_;
+  /// Total time for the real-time time-evolution (in a.u.)
+  double totalTime_;
   /// Whether to calculate the MEP from the molecular geometry
   bool MEPfromMolecule_;
+  /// Classical charge distribution of point multipoles
+  ChargeDistribution multipoles_;
   /// Who performed the syntactic input parsing
   std::string providedBy_;
-  /// Input wrapping struct for the cavity
-  CavityData cavData_;
-  /// Input wrapping struct for the Green's function inside
-  GreenData insideGreenData_;
-  /// Input wrapping struct for the Green's function outside (static permittivity)
-  GreenData outsideStaticGreenData_;
-  /// Input wrapping struct for the Green's function outside (dynamic permittivity)
-  GreenData outsideDynamicGreenData_;
-  /// Input wrapping struct for the solver
-  SolverData SolverData_;
-  /// Input wrapping struct for the integrator
-  BIOperatorData integratorData_;
 };
 
 namespace detail {

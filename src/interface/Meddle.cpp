@@ -34,10 +34,16 @@
 
 #include <boost/foreach.hpp>
 
+#include "bi_operators/BIOperatorData.hpp"
 #include "bi_operators/BoundaryIntegralOperator.hpp"
+#include "cavity/CavityData.hpp"
 #include "cavity/Cavity.hpp"
+#include "green/GreenData.hpp"
 #include "green/Green.hpp"
+#include "solver/SolverData.hpp"
 #include "solver/Solver.hpp"
+#include "td_solver/TDSolverData.hpp"
+#include "td_solver/TDSolver.hpp"
 
 #include "utils/Atom.hpp"
 #include "Citation.hpp"
@@ -70,129 +76,9 @@ pcmsolver_context_t * pcmsolver_new(pcmsolver_reader_t input_reading,
                                  *host_input,
                                  write));
 }
-
-void pcmsolver_delete(pcmsolver_context_t * context) {
-  if (!context)
-    return;
-  delete AS_TYPE(pcm::Meddle, context);
-}
-
-bool pcmsolver_is_compatible_library(void) {
-  unsigned int major = (pcm::pcmsolver_get_version() >> 16);
-  return (major == PROJECT_VERSION_MAJOR);
-}
-
-void pcmsolver_print(pcmsolver_context_t * context) {
-  AS_TYPE(pcm::Meddle, context)->printInfo();
-}
-
-PCMSolverIndex pcmsolver_get_cavity_size(pcmsolver_context_t * context) {
-  return (AS_TYPE(pcm::Meddle, context)->getCavitySize());
-}
-
-PCMSolverIndex pcmsolver_get_irreducible_cavity_size(pcmsolver_context_t * context) {
-  return (AS_TYPE(pcm::Meddle, context)->getIrreducibleCavitySize());
-}
-
-void pcmsolver_get_centers(pcmsolver_context_t * context, double centers[]) {
-  TIMER_ON("pcmsolver_get_centers");
-  AS_TYPE(pcm::Meddle, context)->getCenters(centers);
-  TIMER_OFF("pcmsolver_get_centers");
-}
-
-void pcmsolver_get_center(pcmsolver_context_t * context, int its, double center[]) {
-  AS_TYPE(pcm::Meddle, context)->getCenter(its, center);
-}
-
-void pcmsolver_get_areas(pcmsolver_context_t * context, double areas[]) {
-  AS_TYPE(pcm::Meddle, context)->getAreas(areas);
-}
-
-void pcmsolver_compute_asc(pcmsolver_context_t * context,
-                           const char * mep_name,
-                           const char * asc_name,
-                           int irrep) {
-  TIMER_ON("pcmsolver_compute_asc");
-  AS_TYPE(pcm::Meddle, context)->computeASC(mep_name, asc_name, irrep);
-  TIMER_OFF("pcmsolver_compute_asc");
-}
-
-void pcmsolver_compute_response_asc(pcmsolver_context_t * context,
-                                    const char * mep_name,
-                                    const char * asc_name,
-                                    int irrep) {
-  TIMER_ON("pcmsolver_compute_response_asc");
-  AS_TYPE(pcm::Meddle, context)->computeResponseASC(mep_name, asc_name, irrep);
-  TIMER_OFF("pcmsolver_compute_response_asc");
-}
-
-double pcmsolver_compute_polarization_energy(pcmsolver_context_t * context,
-                                             const char * mep_name,
-                                             const char * asc_name) {
-  return (
-      AS_TYPE(pcm::Meddle, context)->computePolarizationEnergy(mep_name, asc_name));
-}
-
-double pcmsolver_get_asc_dipole(pcmsolver_context_t * context,
-                                const char * asc_name,
-                                double dipole[]) {
-  return (AS_TYPE(pcm::Meddle, context)->getASCDipole(asc_name, dipole));
-}
-
-void pcmsolver_get_surface_function(pcmsolver_context_t * context,
-                                    PCMSolverIndex size,
-                                    double values[],
-                                    const char * name) {
-  TIMER_ON("pcmsolver_get_surface_function");
-  AS_TYPE(pcm::Meddle, context)->getSurfaceFunction(size, values, name);
-  TIMER_OFF("pcmsolver_get_surface_function");
-}
-
-void pcmsolver_set_surface_function(pcmsolver_context_t * context,
-                                    PCMSolverIndex size,
-                                    double values[],
-                                    const char * name) {
-  TIMER_ON("pcmsolver_set_surface_function");
-  AS_TYPE(pcm::Meddle, context)->setSurfaceFunction(size, values, name);
-  TIMER_OFF("pcmsolver_set_surface_function");
-}
-
-void pcmsolver_print_surface_function(pcmsolver_context_t * context,
-                                      const char * name) {
-  AS_TYPE(pcm::Meddle, context)->printSurfaceFunction(name);
-}
-
-void pcmsolver_save_surface_functions(pcmsolver_context_t * context) {
-  AS_TYPE(pcm::Meddle, context)->saveSurfaceFunctions();
-}
-
-void pcmsolver_save_surface_function(pcmsolver_context_t * context,
-                                     const char * name) {
-  AS_TYPE(pcm::Meddle, context)->saveSurfaceFunction(name);
-}
-
-void pcmsolver_load_surface_function(pcmsolver_context_t * context,
-                                     const char * name) {
-  AS_TYPE(pcm::Meddle, context)->loadSurfaceFunction(name);
-}
-
-void pcmsolver_write_timings(pcmsolver_context_t * context) {
-  AS_TYPE(pcm::Meddle, context)->writeTimings();
-}
-
 namespace pcm {
-void Printer::operator()(const std::string & message) { writer_(message.c_str()); }
-
-void Printer::operator()(const std::ostringstream & stream) {
-  writer_(stream.str().c_str());
-}
-
-Printer hostWriter;
-
-Meddle::Meddle(const std::string & inputFileName, const HostWriter & write)
-    : input_(Input(inputFileName)), hasDynamic_(false) {
-  input_.initMolecule();
-  hostWriter.writer_ = write;
+void Meddle::CTORBody() {
+  // Write PCMSolver output header
   infoStream_ << std::endl;
   infoStream_ << "~~~~~~~~~~ PCMSolver ~~~~~~~~~~" << std::endl;
   infoStream_ << "Using CODATA " << input_.CODATAyear() << " set of constants."
@@ -213,8 +99,26 @@ Meddle::Meddle(const std::string & inputFileName, const HostWriter & write)
     TIMER_OFF("Meddle::initDynamicSolver");
   }
 
-  // Reserve space for Tot-MEP/ASC, Nuc-MEP/ASC and Ele-MEP/ASC
-  functions_.reserve(12);
+  if (input_.isTD()) {
+    TIMER_ON("Meddle::initTDSolver");
+    initTDSolver();
+    TIMER_OFF("Meddle::initTDolver");
+  }
+}
+
+Meddle::Meddle(const Input & input, const HostWriter & write)
+    : hostWriter_(write), input_(input), hasDynamic_(false), hasTD_(false) {
+  input_.initMolecule();
+  CTORBody();
+}
+
+Meddle::Meddle(const std::string & inputFileName, const HostWriter & write)
+    : hostWriter_(write),
+      input_(Input(inputFileName)),
+      hasDynamic_(false),
+      hasTD_(false) {
+  input_.initMolecule();
+  CTORBody();
 }
 
 Meddle::Meddle(pcmsolver_reader_t input_reading,
@@ -224,72 +128,88 @@ Meddle::Meddle(pcmsolver_reader_t input_reading,
                int symmetry_info[],
                const PCMInput & host_input,
                const HostWriter & write)
-    : hasDynamic_(false) {
-  hostWriter.writer_ = write;
+    : hostWriter_(write), hasDynamic_(false), hasTD_(false) {
   TIMER_ON("Meddle::initInput");
   initInput(
       input_reading, nr_nuclei, charges, coordinates, symmetry_info, host_input);
-  radiiSetName_ = input_.radiiSetName();
   TIMER_OFF("Meddle::initInput");
 
-  TIMER_ON("Meddle::initCavity");
-  initCavity();
-  TIMER_OFF("Meddle::initCavity");
-
-  TIMER_ON("Meddle::initStaticSolver");
-  initStaticSolver();
-  TIMER_OFF("Meddle::initStaticSolver");
-
-  if (input_.isDynamic()) {
-    TIMER_ON("Meddle::initDynamicSolver");
-    initDynamicSolver();
-    TIMER_OFF("Meddle::initDynamicSolver");
-  }
-  // Reserve space for Tot-MEP/ASC, Nuc-MEP/ASC and Ele-MEP/ASC
-  functions_.reserve(12);
+  CTORBody();
 }
+} // namespace pcm
 
-Meddle::~Meddle() {
+void pcmsolver_delete(pcmsolver_context_t * context) {
+  if (!context)
+    return;
+  delete AS_TYPE(pcm::Meddle, context);
+}
+pcm::Meddle::~Meddle() {
   delete cavity_;
   delete K_0_;
   if (hasDynamic_)
     delete K_d_;
+  if (hasTD_)
+    delete TD_K_;
 }
 
-Molecule Meddle::molecule() const { return input_.molecule(); }
+PCMSolverIndex pcmsolver_get_cavity_size(pcmsolver_context_t * context) {
+  return (AS_TYPE(pcm::Meddle, context)->getCavitySize());
+}
+PCMSolverIndex pcm::Meddle::getCavitySize() const { return cavity_->size(); }
 
-PCMSolverIndex Meddle::getCavitySize() const { return cavity_->size(); }
-
-PCMSolverIndex Meddle::getIrreducibleCavitySize() const {
+PCMSolverIndex pcmsolver_get_irreducible_cavity_size(pcmsolver_context_t * context) {
+  return (AS_TYPE(pcm::Meddle, context)->getIrreducibleCavitySize());
+}
+PCMSolverIndex pcm::Meddle::getIrreducibleCavitySize() const {
   return cavity_->irreducible_size();
 }
 
-void Meddle::getCenters(double centers[]) const {
+void pcmsolver_get_centers(pcmsolver_context_t * context, double centers[]) {
+  TIMER_ON("pcmsolver_get_centers");
+  AS_TYPE(pcm::Meddle, context)->getCenters(centers);
+  TIMER_OFF("pcmsolver_get_centers");
+}
+void pcm::Meddle::getCenters(double centers[]) const {
   TIMER_ON("Meddle::getCenters");
   Eigen::Map<Eigen::Matrix3Xd>(centers, 3, cavity_->size()) =
       cavity_->elementCenter();
   TIMER_OFF("Meddle::getCenters");
 }
 
-Eigen::Matrix3Xd Meddle::getCenters() const { return cavity_->elementCenter(); }
-
-void Meddle::getCenter(int its, double center[]) const {
+void pcmsolver_get_center(pcmsolver_context_t * context, int its, double center[]) {
+  AS_TYPE(pcm::Meddle, context)->getCenter(its, center);
+}
+void pcm::Meddle::getCenter(int its, double center[]) const {
   Eigen::Map<Eigen::Vector3d>(center, 3, 1) = cavity_->elementCenter(its - 1);
 }
 
-void Meddle::getAreas(double areas[]) const {
+void pcmsolver_get_areas(pcmsolver_context_t * context, double areas[]) {
+  AS_TYPE(pcm::Meddle, context)->getAreas(areas);
+}
+void pcm::Meddle::getAreas(double areas[]) const {
   Eigen::Map<Eigen::VectorXd>(areas, cavity_->size(), 1) = cavity_->elementArea();
 }
 
-double Meddle::computePolarizationEnergy(const char * mep_name,
-                                         const char * asc_name) const {
+double pcmsolver_compute_polarization_energy(pcmsolver_context_t * context,
+                                             const char * mep_name,
+                                             const char * asc_name) {
+  return (
+      AS_TYPE(pcm::Meddle, context)->computePolarizationEnergy(mep_name, asc_name));
+}
+double pcm::Meddle::computePolarizationEnergy(const char * mep_name,
+                                              const char * asc_name) const {
   // Dot product of MEP and ASC surface function
   double energy =
       functions_[std::string(mep_name)].dot(functions_[std::string(asc_name)]);
   return (energy / 2.0);
 }
 
-double Meddle::getASCDipole(const char * asc_name, double dipole[]) const {
+double pcmsolver_get_asc_dipole(pcmsolver_context_t * context,
+                                const char * asc_name,
+                                double dipole[]) {
+  return (AS_TYPE(pcm::Meddle, context)->getASCDipole(asc_name, dipole));
+}
+double pcm::Meddle::getASCDipole(const char * asc_name, double dipole[]) const {
   Eigen::Vector3d asc_dipole =
       cavity_->elementCenter() * functions_[std::string(asc_name)];
   // Bind to host-allocated array
@@ -297,9 +217,17 @@ double Meddle::getASCDipole(const char * asc_name, double dipole[]) const {
   return asc_dipole.norm();
 }
 
-void Meddle::computeASC(const char * mep_name,
-                        const char * asc_name,
-                        int irrep) const {
+void pcmsolver_compute_asc(pcmsolver_context_t * context,
+                           const char * mep_name,
+                           const char * asc_name,
+                           int irrep) {
+  TIMER_ON("pcmsolver_compute_asc");
+  AS_TYPE(pcm::Meddle, context)->computeASC(mep_name, asc_name, irrep);
+  TIMER_OFF("pcmsolver_compute_asc");
+}
+void pcm::Meddle::computeASC(const char * mep_name,
+                             const char * asc_name,
+                             int irrep) const {
   std::string MEP(mep_name);
   std::string ASC(asc_name);
 
@@ -316,9 +244,17 @@ void Meddle::computeASC(const char * mep_name,
   }
 }
 
-void Meddle::computeResponseASC(const char * mep_name,
-                                const char * asc_name,
-                                int irrep) const {
+void pcmsolver_compute_response_asc(pcmsolver_context_t * context,
+                                    const char * mep_name,
+                                    const char * asc_name,
+                                    int irrep) {
+  TIMER_ON("pcmsolver_compute_response_asc");
+  AS_TYPE(pcm::Meddle, context)->computeResponseASC(mep_name, asc_name, irrep);
+  TIMER_OFF("pcmsolver_compute_response_asc");
+}
+void pcm::Meddle::computeResponseASC(const char * mep_name,
+                                     const char * asc_name,
+                                     int irrep) const {
   std::string MEP(mep_name);
   std::string ASC(asc_name);
 
@@ -339,9 +275,119 @@ void Meddle::computeResponseASC(const char * mep_name,
   }
 }
 
-void Meddle::getSurfaceFunction(PCMSolverIndex size,
-                                double values[],
-                                const char * name) const {
+void pcmsolver_initialize_propagation(pcmsolver_context_t * context,
+                                      const char * mep_0,
+                                      const char * asc_0,
+                                      const char * mep_t,
+                                      const char * asc_t,
+                                      const char * mep_tdt,
+                                      const char * asc_tdt,
+                                      int irrep) {
+  TIMER_ON("pcmsolver_initialize_propagation");
+  AS_TYPE(pcm::Meddle, context)
+      ->initializePropagation(mep_0, asc_0, mep_t, asc_t, mep_tdt, asc_tdt, irrep);
+  TIMER_OFF("pcmsolver_initialize_propagation");
+}
+void pcm::Meddle::initializePropagation(const char * mep_0,
+                                        const char * asc_0,
+                                        const char * mep_t,
+                                        const char * asc_t,
+                                        const char * mep_tdt,
+                                        const char * asc_tdt,
+                                        int irrep) const {
+  std::string MEP_0(mep_0);
+  std::string MEP_current(mep_tdt);
+  std::string MEP_previous(mep_t);
+  // Set previous and current MEP to the values at time t = 0
+  Eigen::VectorXd MEP_t = functions_[MEP_0];
+  functions_.insert(std::make_pair(MEP_previous, MEP_t));
+  functions_.insert(std::make_pair(MEP_current, MEP_t));
+
+  std::string ASC_0(asc_0);
+  std::string ASC_current(asc_tdt);
+  std::string ASC_previous(asc_t);
+
+  if (hasTD_) {
+    // Initialize delayed propagation of the ASC
+    if (input_.TDSolverParams().initWithDynamic) {
+      // Set previous and current ASC to the dynamic values from converged SCF
+      // The initialValueASC function uses the dynamic matrix to calculate charges
+      Eigen::VectorXd dyn_asc = TD_K_->initialValueASC(functions_[MEP_0]);
+      functions_.insert(std::make_pair(ASC_previous, dyn_asc));
+      functions_.insert(std::make_pair(ASC_current, dyn_asc));
+    } else {
+      // Set previous and current ASC to the static values from converged SCF
+      if (functions_.count(ASC_0) == 1) { // Key in map already
+        Eigen::VectorXd ASC_t = functions_[ASC_0];
+        functions_.insert(std::make_pair(ASC_previous, ASC_t));
+        functions_.insert(std::make_pair(ASC_current, ASC_t));
+      } else { // Create key-value pair
+        Eigen::VectorXd ASC_t = K_0_->computeCharge(MEP_t, irrep);
+        functions_.insert(std::make_pair(ASC_previous, ASC_t));
+        functions_.insert(std::make_pair(ASC_current, ASC_t));
+      }
+    }
+  } else {
+    // Initialize instantaneous equilibrium propagation of the ASC
+    if (hasDynamic_) {
+      // Set previous and current ASC to the dynamic values from converged SCF
+      Eigen::VectorXd dyn_asc = K_d_->computeCharge(functions_[MEP_0], irrep);
+      functions_.insert(std::make_pair(ASC_previous, dyn_asc));
+      functions_.insert(std::make_pair(ASC_current, dyn_asc));
+    } else {
+      // Set previous and current ASC to the static values from converged SCF
+      if (functions_.count(ASC_0) == 1) { // Key in map already
+        Eigen::VectorXd ASC_t = functions_[ASC_0];
+        functions_.insert(std::make_pair(ASC_previous, ASC_t));
+        functions_.insert(std::make_pair(ASC_current, ASC_t));
+      } else { // Create key-value pair
+        Eigen::VectorXd ASC_t = K_0_->computeCharge(MEP_t, irrep);
+        functions_.insert(std::make_pair(ASC_previous, ASC_t));
+        functions_.insert(std::make_pair(ASC_current, ASC_t));
+      }
+    }
+  }
+}
+
+double pcmsolver_propagate_asc(pcmsolver_context_t * context,
+                               const char * mep_t,
+                               const char * asc_t,
+                               const char * mep_tdt,
+                               const char * asc_tdt,
+                               double dt,
+                               int irrep) {
+  TIMER_ON("pcmsolver_propagate_asc");
+  return (AS_TYPE(pcm::Meddle, context)
+              ->propagateASC(mep_t, asc_t, mep_tdt, asc_tdt, dt, irrep));
+  TIMER_OFF("pcmsolver_propagate_asc");
+}
+double pcm::Meddle::propagateASC(const char * mep_t,
+                                 const char * asc_t,
+                                 const char * mep_tdt,
+                                 const char * asc_tdt,
+                                 double dt,
+                                 int irrep) const {
+  double energy = 0.0;
+  if (input_.isTD()) {
+    energy = delayedASC(mep_t, asc_t, mep_tdt, asc_tdt, dt, irrep);
+  } else {
+    computeResponseASC(mep_tdt, asc_tdt, irrep);
+    energy = computePolarizationEnergy(mep_tdt, asc_tdt);
+  }
+  return energy;
+}
+
+void pcmsolver_get_surface_function(pcmsolver_context_t * context,
+                                    PCMSolverIndex size,
+                                    double values[],
+                                    const char * name) {
+  TIMER_ON("pcmsolver_get_surface_function");
+  AS_TYPE(pcm::Meddle, context)->getSurfaceFunction(size, values, name);
+  TIMER_OFF("pcmsolver_get_surface_function");
+}
+void pcm::Meddle::getSurfaceFunction(PCMSolverIndex size,
+                                     double values[],
+                                     const char * name) const {
   std::string functionName(name);
   if (cavity_->size() != size)
     PCMSOLVER_ERROR("The " + functionName +
@@ -354,9 +400,17 @@ void Meddle::getSurfaceFunction(PCMSolverIndex size,
   Eigen::Map<Eigen::VectorXd>(values, size, 1) = iter->second;
 }
 
-void Meddle::setSurfaceFunction(PCMSolverIndex size,
-                                double values[],
-                                const char * name) const {
+void pcmsolver_set_surface_function(pcmsolver_context_t * context,
+                                    PCMSolverIndex size,
+                                    double values[],
+                                    const char * name) {
+  TIMER_ON("pcmsolver_set_surface_function");
+  AS_TYPE(pcm::Meddle, context)->setSurfaceFunction(size, values, name);
+  TIMER_OFF("pcmsolver_set_surface_function");
+}
+void pcm::Meddle::setSurfaceFunction(PCMSolverIndex size,
+                                     double values[],
+                                     const char * name) const {
   std::string functionName(name);
   if (cavity_->size() != size)
     PCMSOLVER_ERROR("The " + functionName +
@@ -370,20 +424,27 @@ void Meddle::setSurfaceFunction(PCMSolverIndex size,
   }
 }
 
-void Meddle::printSurfaceFunction(const char * name) const {
+void pcmsolver_print_surface_function(pcmsolver_context_t * context,
+                                      const char * name) {
+  AS_TYPE(pcm::Meddle, context)->printSurfaceFunction(name);
+}
+void pcm::Meddle::printSurfaceFunction(const char * name) const {
   std::string functionName(name);
   if (functions_.count(functionName) == 1) { // Key in map already
     std::ostringstream print_sf;
     Eigen::IOFormat fmt(Eigen::FullPrecision);
     print_sf << functions_[functionName].format(fmt) << std::endl;
-    hostWriter(print_sf);
+    hostWriter_(print_sf);
   } else {
     PCMSOLVER_ERROR("You are trying to print a nonexistent SurfaceFunction!");
   }
 }
 
-void Meddle::saveSurfaceFunctions() const {
-  hostWriter("\nDumping surface functions to .npy files");
+void pcmsolver_save_surface_functions(pcmsolver_context_t * context) {
+  AS_TYPE(pcm::Meddle, context)->saveSurfaceFunctions();
+}
+void pcm::Meddle::saveSurfaceFunctions() const {
+  hostWriter_("\nDumping surface functions to .npy files");
   BOOST_FOREACH (SurfaceFunctionPair pair, functions_) {
     unsigned int dim = static_cast<unsigned int>(pair.second.size());
     const unsigned int shape[] = {dim};
@@ -392,7 +453,11 @@ void Meddle::saveSurfaceFunctions() const {
   }
 }
 
-void Meddle::saveSurfaceFunction(const char * name) const {
+void pcmsolver_save_surface_function(pcmsolver_context_t * context,
+                                     const char * name) {
+  AS_TYPE(pcm::Meddle, context)->saveSurfaceFunction(name);
+}
+void pcm::Meddle::saveSurfaceFunction(const char * name) const {
   std::string functionName(name);
   std::string fname = functionName + ".npy";
 
@@ -402,9 +467,13 @@ void Meddle::saveSurfaceFunction(const char * name) const {
   cnpy::npy_save(fname, it->second.data(), shape, 1, "w", true);
 }
 
-void Meddle::loadSurfaceFunction(const char * name) const {
+void pcmsolver_load_surface_function(pcmsolver_context_t * context,
+                                     const char * name) {
+  AS_TYPE(pcm::Meddle, context)->loadSurfaceFunction(name);
+}
+void pcm::Meddle::loadSurfaceFunction(const char * name) const {
   std::string functionName(name);
-  hostWriter("\nLoading surface function " + functionName + " from .npy file");
+  hostWriter_("\nLoading surface function " + functionName + " from .npy file");
   std::string fname = functionName + ".npy";
   Eigen::VectorXd values = cnpy::custom::npy_load<double>(fname);
   if (values.size() != cavity_->size())
@@ -418,7 +487,70 @@ void Meddle::loadSurfaceFunction(const char * name) const {
   }
 }
 
-void Meddle::writeTimings() const { TIMER_DONE("pcmsolver.timer.dat"); }
+void pcmsolver_write_timings(pcmsolver_context_t * context) {
+  AS_TYPE(pcm::Meddle, context)->writeTimings();
+}
+void pcm::Meddle::writeTimings() const { TIMER_DONE("pcmsolver.timer.dat"); }
+
+void pcmsolver_print(pcmsolver_context_t * context) {
+  AS_TYPE(pcm::Meddle, context)->printInfo();
+}
+void pcm::Meddle::printInfo() const {
+  hostWriter_(citation_message());
+  hostWriter_(version_info());
+  hostWriter_(infoStream_);
+}
+
+bool pcmsolver_is_compatible_library(void) {
+  unsigned int major = (pcm::pcmsolver_get_version() >> 16);
+  return (major == PROJECT_VERSION_MAJOR);
+}
+unsigned int pcm::pcmsolver_get_version(void) { return PCMSOLVER_VERSION; }
+
+namespace pcm {
+Molecule Meddle::molecule() const { return input_.molecule(); }
+
+Eigen::Matrix3Xd Meddle::getCenters() const { return cavity_->elementCenter(); }
+
+double Meddle::delayedASC(const char * mep_t,
+                          const char * asc_t,
+                          const char * mep_tdt,
+                          const char * asc_tdt,
+                          double dt,
+                          int /* irrep */) const {
+  std::string MEP_current(mep_tdt);
+  std::string MEP_previous(mep_t);
+  std::string ASC_current(asc_tdt);
+  std::string ASC_previous(asc_t);
+
+  // Get the proper iterators
+  SurfaceFunctionMapConstIter iter_mep_tdt = functions_.find(MEP_current);
+  // Iterators to MEP and ASC at time t
+  // They are non-const as we will overwrite their contents with those of MEP_current
+  // and ASC_current
+  // after propagation
+  SurfaceFunctionMapIter iter_mep_t = functions_.find(MEP_previous);
+  SurfaceFunctionMapIter iter_asc_t = functions_.find(ASC_previous);
+  SurfaceFunctionMapIter iter_asc_tdt = functions_.find(ASC_current);
+  Eigen::VectorXd ASC_tdt = TD_K_->propagateASC(
+      dt, iter_mep_tdt->second, iter_mep_t->second, iter_asc_t->second);
+
+  // Renormalization of charges: divide by the number of symmetry operations in the
+  // group
+  ASC_tdt /= double(cavity_->pointGroup().nrIrrep());
+  // Insert it into the map
+  if (functions_.count(ASC_current) == 1) { // Key in map already
+    functions_[ASC_current] = ASC_tdt;
+  } else { // Create key-value pair
+    functions_.insert(std::make_pair(ASC_current, ASC_tdt));
+  }
+  // Update contents of MEP_previous and ASC_previous surface functions
+  (iter_mep_t->second) = (iter_mep_tdt->second);
+  (iter_asc_t->second) = (iter_asc_tdt->second);
+
+  double energy = (iter_mep_tdt->second).dot(iter_asc_tdt->second);
+  return (0.5 * energy);
+}
 
 void Meddle::initInput(pcmsolver_reader_t input_reading,
                        int nr_nuclei,
@@ -437,18 +569,10 @@ void Meddle::initInput(pcmsolver_reader_t input_reading,
   Eigen::Matrix3Xd centers = Eigen::Map<Eigen::Matrix3Xd>(coordinates, 3, nr_nuclei);
 
   if (input_.mode() != "EXPLICIT") {
-    Molecule molec;
     Symmetry pg = buildGroup(
         symmetry_info[0], symmetry_info[1], symmetry_info[2], symmetry_info[3]);
-    initMolecule(input_, pg, nr_nuclei, chg, centers, molec);
-    input_.molecule(molec);
+    input_.molecule(detail::initMolecule(input_, pg, nr_nuclei, chg, centers));
   }
-
-  infoStream_ << std::endl;
-  infoStream_ << "~~~~~~~~~~ PCMSolver ~~~~~~~~~~" << std::endl;
-  infoStream_ << "Using CODATA " << input_.CODATAyear() << " set of constants."
-              << std::endl;
-  infoStream_ << "Input parsing done " << input_.providedBy() << std::endl;
 }
 
 void Meddle::initCavity() {
@@ -457,7 +581,7 @@ void Meddle::initCavity() {
   cavity_->saveCavity();
 
   infoStream_ << "========== Cavity " << std::endl;
-  infoStream_ << "Atomic radii set: " << radiiSetName_ << std::endl;
+  infoStream_ << "Atomic radii set: " << input_.radiiSetName() << std::endl;
   infoStream_ << *cavity_;
 }
 
@@ -504,6 +628,23 @@ void Meddle::initDynamicSolver() {
   delete gf_i;
 }
 
+void Meddle::initTDSolver() {
+  TD_K_ = td_solver::bootstrapFactory().create(input_.TDsolverType(),
+                                               input_.TDSolverParams());
+
+  IGreensFunction * gf_i = green::bootstrapFactory().create(
+      input_.greenInsideType(), input_.insideGreenParams());
+
+  IBoundaryIntegralOperator * biop = bi_operators::bootstrapFactory().create(
+      input_.integratorType(), input_.integratorParams());
+  TD_K_->buildSystemMatrix(*cavity_, *gf_i, *biop);
+  hasTD_ = true;
+  delete biop;
+  delete gf_i;
+
+  infoStream_ << *TD_K_ << std::endl;
+}
+
 void Meddle::mediumInfo(IGreensFunction * gf_i, IGreensFunction * gf_o) const {
   using utils::Solvent;
   infoStream_ << "============ Medium " << std::endl;
@@ -519,27 +660,20 @@ void Meddle::mediumInfo(IGreensFunction * gf_i, IGreensFunction * gf_o) const {
   tmp << *gf_o;
   infoStream_ << tmp.str() << std::endl;
 }
-
-void Meddle::printInfo() const {
-  hostWriter(citation_message());
-  hostWriter(version_info());
-  hostWriter(infoStream_);
-}
-
-void initMolecule(const Input & inp,
-                  const Symmetry & pg,
-                  int nuclei,
-                  const Eigen::VectorXd & charges,
-                  const Eigen::Matrix3Xd & centers,
-                  Molecule & molecule) {
+namespace detail {
+Molecule initMolecule(const Input & inp,
+                      const Symmetry & pg,
+                      int nuclei,
+                      const Eigen::VectorXd & charges,
+                      const Eigen::Matrix3Xd & centers) {
   bool scaling = inp.scaling();
   std::string set = inp.radiiSet();
   std::vector<Atom> radiiSet;
   std::vector<Atom> atoms;
-  atoms.reserve(nuclei);
   // FIXME Code duplication in function initMolecule in interface/Input.cpp
   tie(ignore, radiiSet) = utils::bootstrapRadiiSet().create(set);
   std::vector<Sphere> spheres;
+  atoms.reserve(nuclei);
   spheres.reserve(nuclei);
   for (int i = 0; i < charges.size(); ++i) {
     int index = int(charges(i)) - 1;
@@ -561,18 +695,20 @@ void initMolecule(const Input & inp,
   }
 
   // OK, now get molecule
-  molecule = Molecule(nuclei, charges, masses, centers, atoms, spheres, pg);
+  Molecule molecule(nuclei, charges, masses, centers, atoms, spheres, pg);
   // Check that all atoms have a radius attached
   std::vector<Atom>::const_iterator res =
       std::find_if(atoms.begin(), atoms.end(), invalid);
   if (res != atoms.end()) {
-    std::ostringstream print_mol;
-    print_mol << molecule << std::endl;
-    hostWriter(print_mol);
-    PCMSOLVER_ERROR("Some atoms do not have a radius attached. Please specify a "
-                    "radius for all atoms (see "
-                    "http://pcmsolver.readthedocs.org/en/latest/users/input.html)!");
+    std::ostringstream errmsg;
+    errmsg << "In the molecule:\n" << molecule << std::endl;
+    errmsg << "Some atoms do not have a radius attached." << std::endl;
+    errmsg << "Please specify a radius for all atoms!" << std::endl;
+    errmsg << " See http://pcmsolver.readthedocs.org/en/latest/users/input.html"
+           << std::endl;
+    PCMSOLVER_ERROR(errmsg.str());
   }
+  return molecule;
 }
 
 void initSpheresAtoms(const Input & inp,
@@ -586,8 +722,6 @@ void initSpheresAtoms(const Input & inp,
     spheres_[index] = Sphere(sphereCenter_.col(index), inp.radii(i));
   }
 }
-
-unsigned int pcmsolver_get_version(void) { return PCMSOLVER_VERSION; }
 
 void print(const PCMInput & inp) {
   std::cout << "cavity type " << std::string(inp.cavity_type) << std::endl;
@@ -609,4 +743,5 @@ void print(const PCMInput & inp) {
   std::cout << "outside type " << std::string(inp.outside_type) << std::endl;
   std::cout << "epsilon outside " << inp.outside_epsilon << std::endl;
 }
+} // namespace detail
 } // namespace pcm

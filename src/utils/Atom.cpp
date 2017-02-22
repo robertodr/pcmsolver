@@ -23,6 +23,7 @@
 
 #include "Atom.hpp"
 
+#include <iostream>
 #include <vector>
 
 #include "Config.hpp"

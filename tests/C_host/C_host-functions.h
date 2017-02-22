@@ -33,14 +33,16 @@
 
 #if (defined(__STDC__) && (__STDC_VERSION__ < 199901L)) && !defined(__cplusplus)
 typedef enum { false, true } bool;
-#else /* (defined(__STDC__) || (__STDC_VERSION__ < 199901L)) && !defined(__cplusplus) */
+#else /* (defined(__STDC__) || (__STDC_VERSION__ < 199901L)) &&                     \
+         !defined(__cplusplus) */
 #include <stdbool.h>
-#endif /* (defined(__STDC__) || (__STDC_VERSION__ < 199901L)) && !defined(__cplusplus) */
+#endif /* (defined(__STDC__) || (__STDC_VERSION__ < 199901L)) &&                    \
+          !defined(__cplusplus) */
 
 #ifdef __GNUC__
-#  define UNUSED(x) UNUSED_ ## x __attribute__((__unused__))
+#define UNUSED(x) UNUSED_##x __attribute__((__unused__))
 #else
-#  define UNUSED(x) UNUSED_ ## x
+#define UNUSED(x) UNUSED_##x
 #endif
 
 #ifdef __GNUC__
@@ -49,7 +51,7 @@ typedef enum { false, true } bool;
 #define UNUSED_FUNCTION(x) UNUSED_##x
 #endif
 
-void host_writer(const char * message);
+#define M_PI 3.14159265358979323846
 
 struct PCMInput pcmsolver_input();
 
@@ -65,9 +67,49 @@ struct PCMInput pcmsolver_input();
  *  \return the nuclear MEP
  *  \warning Caller deallocats returned array
  */
-double * nuclear_mep(int nr_nuclei, double charges[nr_nuclei],
-                     double coordinates[3 * nr_nuclei], int grid_size,
+double * nuclear_mep(int nr_nuclei,
+                     double charges[nr_nuclei],
+                     double coordinates[3 * nr_nuclei],
+                     int grid_size,
                      double grid[3 * grid_size]);
+
+/*! \brief Onsager reaction field for a point-like dipole in a spherical cavity
+ *  \param[in] radius radius of the cavity
+ *  \param[in] eps_0 static solvent permittivity
+ *  \param[in] eps_d dynamic solvent permittivity
+ *  \param[in] tau solvent relaxation time
+ *  \param[in] t time step
+ *  \note In \cite Corni2014 there's a typo in Eq. (50)
+ */
+double reactionField(double radius,
+                     double eps_0,
+                     double eps_d,
+                     double tau,
+                     double t);
+
+/**@{ Analytic expressions for a spherical cavity as in \cite Corni2014 */
+/*! \brief Analytic Lambda matrix for spherical cavity
+ *  \param[in] l angular momentum
+ *  \note Eq. (15) in \cite Corni2014
+ */
+double Lambda_lm(int l);
+
+/*! \brief Analytic K matrix for spherical cavity
+ *  \param[in] eps solvent permittivity
+ *  \param[in] l angular momentum
+ *  \note Eq. (16) in \cite Corni2014. It is related to the field factors in the
+ * multipolar models.
+ */
+double K_lm(double eps, int l);
+
+/*! \brief Analytic form of the relaxation times matrix
+ *  \param[in] eps_0 static solvent permittivity
+ *  \param[in] eps_d dynamic solvent permittivity
+ *  \param[in] tau Debye relaxation time
+ *  \param[in] l angular momentum
+ *  \note Eq. (33) in \cite Corni2014
+ */
+double tau_lm(double eps_0, double eps_d, double tau, int l);
 
 /*! \brief Compares calculated and reference values within a threshold
  *  \author Roberto Di Remigio
@@ -80,9 +122,13 @@ double * nuclear_mep(int nr_nuclei, double charges[nr_nuclei],
  */
 bool check_unsigned_error(double calculated, double reference, double threshold);
 
-int test_surface_functions(FILE * fp, int grid_size, double mep[grid_size],
-                           double asc_Ag[grid_size], double asc_B3g[grid_size],
-                           double asc_neq_B3g[grid_size], double areas[grid_size]);
+int test_surface_functions(FILE * fp,
+                           int grid_size,
+                           double mep[grid_size],
+                           double asc_Ag[grid_size],
+                           double asc_B3g[grid_size],
+                           double asc_neq_B3g[grid_size],
+                           double areas[grid_size]);
 
 double mep_reference(int i);
 double asc_Ag_reference(int i);
@@ -120,8 +166,10 @@ struct PCMInput pcmsolver_input() {
   return host_input;
 }
 
-double * nuclear_mep(int nr_nuclei, double charges[nr_nuclei],
-                     double coordinates[3 * nr_nuclei], int grid_size,
+double * nuclear_mep(int nr_nuclei,
+                     double charges[nr_nuclei],
+                     double coordinates[3 * nr_nuclei],
+                     int grid_size,
                      double grid[3 * grid_size]) {
   double * mep = (double *)calloc(grid_size, sizeof(double));
   for (int i = 0; i < nr_nuclei; i++) {
@@ -136,14 +184,39 @@ double * nuclear_mep(int nr_nuclei, double charges[nr_nuclei],
   return mep;
 }
 
+double reactionField(double radius,
+                     double eps_0,
+                     double eps_d,
+                     double tau,
+                     double t) {
+  double tauOns = tau * (2 * eps_d + 1) / (2 * eps_0 + 1);
+  double tmp_a = (2 * eps_d - 2) / (pow(radius, 3) * (2 * eps_d + 1));
+  double tmp_b = (6 * (eps_0 - eps_d)) / ((2 * eps_d - 2) * (2 * eps_0 + 1));
+  double tmp_c = exp(-t / tauOns) - 1;
+
+  return tmp_a * (1 - tmp_b * tmp_c);
+}
+
+double Lambda_lm(int l) { return -(2 * M_PI) / (2 * l + 1); }
+
+double K_lm(double eps, int l) { return (eps - 1) / (eps + l / (l + 1)); }
+
+double tau_lm(double eps_0, double eps_d, double tau, int l) {
+  return tau * ((l + 1) * eps_d + l) / ((l + 1) * eps_0 + l);
+}
+
 bool check_unsigned_error(double calculated, double reference, double threshold) {
   double err = calculated - reference;
   return (fabs(err) <= fabs(calculated) * threshold);
 }
 
-int test_surface_functions(FILE * fp, int grid_size, double mep[grid_size],
-                           double asc_Ag[grid_size], double asc_B3g[grid_size],
-                           double asc_neq_B3g[grid_size], double areas[grid_size]) {
+int test_surface_functions(FILE * fp,
+                           int grid_size,
+                           double mep[grid_size],
+                           double asc_Ag[grid_size],
+                           double asc_B3g[grid_size],
+                           double asc_neq_B3g[grid_size],
+                           double areas[grid_size]) {
   const int MEP_ERROR = 1;
   const int ASC_Ag_ERROR = 2;
   const int ASC_B3g_ERROR = 3;
@@ -151,28 +224,38 @@ int test_surface_functions(FILE * fp, int grid_size, double mep[grid_size],
   const int AREAS_ERROR = 5;
   for (int i = 0; i < grid_size; i++) {
     if (!check_unsigned_error(mep[i], mep_reference(i), 1.0e-07)) {
-      fprintf(stderr, "%s\n", "Error in MEP, please file an issue on: "
-                              "https://github.com/PCMSolver/pcmsolver");
+      fprintf(stderr,
+              "%s\n",
+              "Error in MEP, please file an issue on: "
+              "https://github.com/PCMSolver/pcmsolver");
       return MEP_ERROR;
     }
     if (!check_unsigned_error(asc_Ag[i], asc_Ag_reference(i), 1.0e-07)) {
-      fprintf(stderr, "%s\n", "Error in ASC Ag, please file an issue on: "
-                              "https://github.com/PCMSolver/pcmsolver");
+      fprintf(stderr,
+              "%s\n",
+              "Error in ASC Ag, please file an issue on: "
+              "https://github.com/PCMSolver/pcmsolver");
       return ASC_Ag_ERROR;
     }
     if (!check_unsigned_error(asc_B3g[i], asc_B3g_reference(i), 1.0e-07)) {
-      fprintf(stderr, "%s\n", "Error in ASC B3g, please file an issue on: "
-                              "https://github.com/PCMSolver/pcmsolver");
+      fprintf(stderr,
+              "%s\n",
+              "Error in ASC B3g, please file an issue on: "
+              "https://github.com/PCMSolver/pcmsolver");
       return ASC_B3g_ERROR;
     }
     if (!check_unsigned_error(asc_neq_B3g[i], asc_neq_B3g_reference(i), 1.0e-07)) {
-      fprintf(stderr, "%s\n", "Error in nonequilibrium ASC B3g, please file an "
-                              "issue on: https://github.com/PCMSolver/pcmsolver");
+      fprintf(stderr,
+              "%s\n",
+              "Error in nonequilibrium ASC B3g, please file an "
+              "issue on: https://github.com/PCMSolver/pcmsolver");
       return ASC_NEQ_B3g_ERROR;
     }
     if (!check_unsigned_error(areas[i], areas_reference(i), 1.0e-07)) {
-      fprintf(stderr, "%s\n", "Error in finite elements areas, please file an issue "
-                              "on: https://github.com/PCMSolver/pcmsolver");
+      fprintf(stderr,
+              "%s\n",
+              "Error in finite elements areas, please file an issue "
+              "on: https://github.com/PCMSolver/pcmsolver");
       return AREAS_ERROR;
     }
   }

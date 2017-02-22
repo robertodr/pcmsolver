@@ -29,6 +29,11 @@
 
 #include <Eigen/Core>
 
+#include "bi_operators/BIOperatorData.hpp"
+#include "cavity/CavityData.hpp"
+#include "green/GreenData.hpp"
+#include "solver/SolverData.hpp"
+#include "td_solver/TDSolverData.hpp"
 #include "interface/Input.hpp"
 #include "utils/Sphere.hpp"
 

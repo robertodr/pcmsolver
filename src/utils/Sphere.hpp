@@ -54,10 +54,15 @@ struct Sphere {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW /* See
                                      http://eigen.tuxfamily.org/dox/group__TopicStructHavingEigenMembers.html
                                      */
+      friend std::ostream &
+      operator<<(std::ostream & os, Sphere & sph) {
+    os << "Sphere radius " << sph.radius << std::endl;
+    os << "Sphere center " << sph.center.transpose();
+
+    return os;
+  }
 };
 } // namespace utils
-
-std::ostream & operator<<(std::ostream & os, utils::Sphere & sph);
 
 /*! \fn inline void transfer_spheres(const std::vector<Sphere> & spheres,
  *Eigen::Matrix3Xd & sphereCenter, Eigen::VectorXd & sphereRadius)

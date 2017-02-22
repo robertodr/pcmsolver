@@ -25,18 +25,19 @@
 #define MEDDLE_HPP
 
 #include "pcmsolver.h"
+
+#include <map>
 #include <string>
 
 #include "Config.hpp"
 
 #include <Eigen/Core>
 
-#include <boost/container/flat_map.hpp>
-
 namespace pcm {
 class ICavity;
 class IGreensFunction;
 class ISolver;
+class ITDSolver;
 } // namespace pcm
 struct PCMInput;
 
@@ -51,33 +52,34 @@ struct PCMInput;
 
 /*! \namespace pcm */
 namespace pcm {
-typedef boost::container::flat_map<std::string, Eigen::VectorXd> SurfaceFunctionMap;
-typedef SurfaceFunctionMap::value_type SurfaceFunctionPair;
-typedef SurfaceFunctionMap::iterator SurfaceFunctionMapIter;
-typedef SurfaceFunctionMap::const_iterator SurfaceFunctionMapConstIter;
+unsigned int pcmsolver_get_version(void) attribute(const);
 
-struct Printer {
-  HostWriter writer_;
-  void operator()(const std::string & message);
-  void operator()(const std::ostringstream & stream);
-};
-void initMolecule(const Input & inp,
-                  const Symmetry & group,
-                  int nuclei,
-                  const Eigen::VectorXd & charges,
-                  const Eigen::Matrix3Xd & centers,
-                  Molecule & molecule);
+namespace detail {
+Molecule initMolecule(const Input & inp,
+                      const Symmetry & group,
+                      int nuclei,
+                      const Eigen::VectorXd & charges,
+                      const Eigen::Matrix3Xd & centers);
 void initSpheresAtoms(const Input &,
                       const Eigen::Matrix3Xd &,
                       std::vector<Sphere> &);
-unsigned int pcmsolver_get_version(void) attribute(const);
 void print(const PCMInput &);
+} // namespace detail
 
 /*! \class Meddle
  *  \brief Contains functions exposing an interface to the module internals
+ *  \author Roberto Di Remigio
+ *  \date 2015-2017
  */
 class Meddle __final {
 public:
+  /*! \brief CTOR from Input object
+      *  \param[in] input an Input object
+      *  \param[in] write the global HostWriter object
+      *  \warning This CTOR is meant to be used with the standalone
+      *  executable only
+      */
+  Meddle(const Input & input, const HostWriter & write);
   /*! \brief CTOR from own input reader
       *  \param[in] inputFileName name of the parsed, machine-readable input file
       *  \param[in] write the global HostWriter object
@@ -173,6 +175,43 @@ public:
          *  \return the ASC dipole, i.e. \sqrt{\sum_i \mu_i^2}
          */
   double getASCDipole(const char * asc_name, double dipole[]) const;
+  /*! \brief Initializes the time propagation of the ASC.
+        *  \param[in] mep_0   label of the MEP surface function at time 0
+        *  \param[in] asc_0   label of the ASC surface function at time 0
+        *  \param[in] mep_t   label of the MEP surface function at time t
+        *  \param[in] asc_t   label of the ASC surface function at time t
+        *  \param[in] mep_tdt label of the MEP surface function at time t+dt
+        *  \param[in] asc_tdt label of the ASC surface function at time t+dt
+        *  \param[in] irrep index of the desired irreducible representation
+        *  This function initializes the time-evolution algorithm described in
+        *  \cite Corni2014
+        *  Labels are set in the internal surface function map. The surface function
+        *  values are initialized to their values to those at time 0
+        */
+  void initializePropagation(const char * mep_0,
+                             const char * asc_0,
+                             const char * mep_t,
+                             const char * asc_t,
+                             const char * mep_tdt,
+                             const char * asc_tdt,
+                             int irrep) const;
+  /*! \brief Time propagation of the ASC
+   *  \param[in] mep_t    label of the MEP surface function at time t
+   *  \param[in] asc_t    label of the ASC surface function at time t
+   *  \param[in] mep_tdt label of the MEP surface function at time t+dt
+   *  \param[in] asc_tdt label of the ASC surface function at time t+dt
+   *  \param[in] dt   propagation time-step
+   *  \param[in] irrep index of the desired irreducible representation
+   *  \return the polarization energy at time t+dt
+   *  Based on user input, switches between the delayed or equilibrium ASC
+   * formalisms.
+   */
+  double propagateASC(const char * mep_t,
+                      const char * asc_t,
+                      const char * mep_tdt,
+                      const char * asc_tdt,
+                      double dt,
+                      int irrep) const;
   /*! \brief Retrieves data wrapped in a given surface function
    *  \param[in] size the size of the surface function
    *  \param[in] values the values wrapped in the surface function
@@ -213,6 +252,21 @@ public:
   void writeTimings() const;
 
 private:
+  typedef std::map<std::string, Eigen::VectorXd> SurfaceFunctionMap;
+  typedef SurfaceFunctionMap::value_type SurfaceFunctionPair;
+  typedef SurfaceFunctionMap::iterator SurfaceFunctionMapIter;
+  typedef SurfaceFunctionMap::const_iterator SurfaceFunctionMapConstIter;
+
+  struct Printer {
+    Printer(const HostWriter & hw) : writer_(hw) {}
+    HostWriter writer_;
+    void operator()(const std::string & message) const { writer_(message.c_str()); }
+    void operator()(const std::ostringstream & stream) const {
+      writer_(stream.str().c_str());
+    }
+  };
+  /*! Output redirect-or to host program output */
+  Printer hostWriter_;
   /*! Input object */
   Input input_;
   /*! Cavity */
@@ -221,14 +275,18 @@ private:
   ISolver * K_0_;
   /*! Solver with dynamic permittivity */
   ISolver * K_d_;
+  /*! Time-dependent solver */
+  ITDSolver * TD_K_;
   /*! PCMSolver set up information */
   mutable std::ostringstream infoStream_;
   /*! Whether K_d_ was initialized */
   bool hasDynamic_;
+  /*! Whether TD_K_ was initialized */
+  bool hasTD_;
   /*! SurfaceFunction map */
   mutable SurfaceFunctionMap functions_;
-  /*! Collects info on atomic radii set */
-  std::string radiiSetName_;
+  /*! Common implemenation for the CTOR-s */
+  void CTORBody();
   /*! \brief Initialize input_
    *  \param[in] input_reading input processing strategy
    *  \param[in] nr_nuclei     number of atoms in the molecule
@@ -251,6 +309,21 @@ private:
   void initDynamicSolver();
   /*! Collect info on medium */
   void mediumInfo(IGreensFunction * gf_i, IGreensFunction * gf_o) const;
+  /*! Initialize TD solver */
+  void initTDSolver();
+  /*! Delayed propagation of ASC
+   *  \param[in] mep_t    label of the MEP surface function at time t
+   *  \param[in] asc_t    label of the ASC surface function at time t
+   *  \param[in] mep_tdt label of the MEP surface function at time t+dt
+   *  \param[in] asc_tdt label of the ASC surface function at time t+dt
+   *  \return the polarization energy at time t+dt
+   */
+  double delayedASC(const char * mep_t,
+                    const char * asc_t,
+                    const char * mep_tdt,
+                    const char * asc_tdt,
+                    double dt,
+                    int irrep) const;
 };
 } // namespace pcm
 

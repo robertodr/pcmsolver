@@ -41,6 +41,7 @@
 #include "interface/Input.hpp"
 #include "interface/Meddle.hpp"
 #include "utils/Molecule.hpp"
+#include "utils/ChargeDistribution.hpp"
 
 std::ofstream pcmsolver_out;
 
@@ -53,7 +54,10 @@ int main(int argc, char * argv[]) {
     PCMSOLVER_ERROR("Too many arguments supplied");
   using namespace pcm;
 
-  Meddle context_(std::string(argv[1]), host_writer);
+  TIMER_ON("Input parsing");
+  Input input(argv[1]);
+  TIMER_OFF("Input parsing");
+  Meddle context_(input, host_writer);
 
   // Prepare output filename
   std::string filename(remove_extension(argv[1]).erase(0, 1) + ".out");
@@ -63,16 +67,17 @@ int main(int argc, char * argv[]) {
   PCMSolverIndex size = context_.getCavitySize();
 
   // Form vector with electrostatic potential
-  // FIXME
-  // 1. Try to understand why this is needed
-  // 2. Try to re-write this such that the input object is not needed!!!
   // First compute the potential from the classical point multipoles distribution
   // then add the one from the molecule
   TIMER_ON("Computing MEP");
-  // Eigen::VectorXd mep = Eigen::VectorXd::Zero(size);
-  // if (input.MEPfromMolecule())
-  //  mep += computeMEP(context_.molecule(), context_.getCenters());
-  Eigen::VectorXd mep = computeMEP(context_.molecule(), context_.getCenters());
+  // FIXME currently hardcoded to the dipole-dipole interaction potential in vacuum
+  Eigen::VectorXd mep =
+      computeDipolarPotential(context_.getCenters(), input.multipoles());
+  // FIXME
+  // 1. Try to understand why this is needed
+  // 2. Try to re-write this such that the input object is not needed!!!
+  if (input.MEPfromMolecule())
+    mep += computeMEP(context_.molecule(), context_.getCenters());
   TIMER_OFF("Computing MEP");
   context_.setSurfaceFunction(mep.size(), mep.data(), "MEP");
   // Compute apparent surface charge
@@ -90,9 +95,43 @@ int main(int argc, char * argv[]) {
                 << context_.computePolarizationEnergy("MEP", "ASC") << std::endl;
   pcmsolver_out << "DONE!" << std::endl;
 
+  if (input.isTD()) {
+    pcmsolver_out << "~~~~~~~~~~ Real-time time-evolution of the ASC" << std::endl;
+    context_.initializePropagation(
+        "MEP", "ASC", "MEP_t", "ASC_t", "MEP_tdt", "ASC_tdt", irrep);
+    double dt = input.timeStep();
+    double total_time = input.totalTime();
+    int steps = int(total_time / dt) + 1;
+    pcmsolver_out << "Total simulation time = " << total_time * AUToFemtoseconds()
+                  << " fs" << std::endl;
+    pcmsolver_out << "Time step = " << dt * AUToFemtoseconds() << " fs" << std::endl;
+    pcmsolver_out << "Number of steps = " << steps << std::endl;
+    double energy = context_.computePolarizationEnergy("MEP_t", "ASC_t");
+    double t_0 = 0.0, t = 0.0;
+    pcmsolver_out << " t (fs)            U_pol (a.u.)            mu_x (a.u.)        "
+                     "    mu_y (a.u.)            mu_z (a.u.)            mu (a.u.) "
+                  << std::endl;
+    pcmsolver_out << "--------------------------------------------------------------"
+                     "------------------------------------------------------------"
+                  << std::endl;
+    Eigen::Vector3d asc_dipole = Eigen::Vector3d::Zero();
+    double mu = context_.getASCDipole("ASC_tdt", asc_dipole.data());
+    for (int i = 0; i < steps; ++i) {
+      t = t_0 + i * dt;
+      pcmsolver_out
+          << boost::format(
+                 "%10.6f    %20.12f    %20.12f    %20.12f    %20.12f    %20.12f\n") %
+                 (t * AUToFemtoseconds()) % energy % asc_dipole(0) % asc_dipole(1) %
+                 asc_dipole(2) % mu;
+      energy =
+          context_.propagateASC("MEP_t", "ASC_t", "MEP_tdt", "ASC_tdt", dt, irrep);
+    }
+  }
+
   pcmsolver_out.close();
   // Write timings out
   context_.writeTimings();
+  TIMER_DONE("pcmsolver.timer.dat");
 
   return EXIT_SUCCESS;
 }

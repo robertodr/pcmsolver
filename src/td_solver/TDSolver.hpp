@@ -27,8 +27,9 @@
 #include "Config.hpp"
 
 #include "ITDSolver.hpp"
-#include "TDIEFSolver.hpp"
 #include "TDCPCMSolver.hpp"
+#include "TDIEFSolver.hpp"
+#include "TDSingleIEFSolver.hpp"
 #include "utils/Factory.hpp"
 
 /*!

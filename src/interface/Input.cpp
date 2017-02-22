@@ -39,6 +39,7 @@
 #include "cavity/CavityData.hpp"
 #include "green/GreenData.hpp"
 #include "solver/SolverData.hpp"
+#include "td_solver/TDSolverData.hpp"
 #include "PCMInput.h"
 #include "utils/Factory.hpp"
 #include "utils/Solvent.hpp"
@@ -171,6 +172,53 @@ void Input::reader(const std::string & filename) {
   hermitivitize_ = medium.getBool("MATRIXSYMM");
   isDynamic_ = medium.getBool("NONEQUILIBRIUM");
 
+  // Get the contents of the RealTime section
+  const Section & realtime = input_.getSect("REALTIME");
+  isTD_ = false;
+  if (realtime.isDefined()) {
+    TDsolverType_ = realtime.getStr("TDTYPE");
+    isTD_ = (TDsolverType_ == "EQUILIBRIUM") ? false : true;
+    initWithDynamic_ = (realtime.getStr("INITIALVALUE") == "STATIC") ? false : true;
+    tau_ = realtime.getDbl("TAU");
+    tauIEF_ = realtime.getDbl("TAUIEF");
+    cholesky_ = realtime.getBool("CHOLESKY");
+    timeStep_ = realtime.getDbl("TIMESTEP");
+    totalTime_ = realtime.getDbl("TOTALTIME");
+  }
+
+  const Section & chgdist = input_.getSect("CHARGEDISTRIBUTION");
+  if (chgdist.isDefined()) {
+    // Set monopoles
+    if (chgdist.getKey<std::vector<double> >("MONOPOLES").isDefined()) {
+      std::vector<double> mono = chgdist.getDblVec("MONOPOLES");
+      int j = 0;
+      int n = int(mono.size() / 4);
+      multipoles_.monopoles = Eigen::VectorXd::Zero(n);
+      multipoles_.monopolesSites = Eigen::Matrix3Xd::Zero(3, n);
+      for (int i = 0; i < n; ++i) {
+        multipoles_.monopolesSites.col(i) =
+            (Eigen::Vector3d() << mono[j], mono[j + 1], mono[j + 2]).finished();
+        multipoles_.monopoles(i) = mono[j + 3];
+        j += 4;
+      }
+    }
+    // Set dipoles
+    if (chgdist.getKey<std::vector<double> >("DIPOLES").isDefined()) {
+      std::vector<double> dipo = chgdist.getDblVec("DIPOLES");
+      int j = 0;
+      int n = int(dipo.size() / 6);
+      multipoles_.dipoles = Eigen::Matrix3Xd::Zero(3, n);
+      multipoles_.dipolesSites = Eigen::Matrix3Xd::Zero(3, n);
+      for (int i = 0; i < n; ++i) {
+        multipoles_.dipolesSites.col(i) =
+            (Eigen::Vector3d() << dipo[j], dipo[j + 1], dipo[j + 2]).finished();
+        multipoles_.dipoles.col(i) =
+            (Eigen::Vector3d() << dipo[j + 3], dipo[j + 4], dipo[j + 5]).finished();
+        j += 6;
+      }
+    }
+  }
+
   providedBy_ = std::string("API-side");
 }
 
@@ -241,15 +289,9 @@ void Input::reader(const PCMInput & host_input) {
   correction_ = host_input.correction;
   hermitivitize_ = true;
   isDynamic_ = false;
+  isTD_ = false;
 
   providedBy_ = std::string("host-side");
-
-  // Fill the input wrapping structs
-  insideGreenData_ = GreenData(derivativeInsideType_, profileType_, epsilonInside_);
-  outsideStaticGreenData_ =
-      GreenData(derivativeOutsideType_, profileType_, epsilonStaticOutside_);
-  outsideDynamicGreenData_ =
-      GreenData(derivativeOutsideType_, profileType_, epsilonDynamicOutside_);
 }
 
 void Input::semanticCheck() {}
@@ -320,76 +362,67 @@ void Input::initMolecule() {
   }
 }
 
-CavityData Input::cavityParams() {
-  if (cavData_.empty) {
-    cavData_ = CavityData(molecule_,
-                          area_,
-                          probeRadius_,
-                          minDistance_,
-                          derOrder_,
-                          minimalRadius_,
-                          patchLevel_,
-                          coarsity_,
-                          cavFilename_,
-                          dyadicFilename_);
-  }
-  return cavData_;
+CavityData Input::cavityParams() const {
+  return CavityData(molecule_,
+                    area_,
+                    probeRadius_,
+                    minDistance_,
+                    derOrder_,
+                    minimalRadius_,
+                    patchLevel_,
+                    coarsity_,
+                    cavFilename_,
+                    dyadicFilename_);
 }
 
-GreenData Input::insideGreenParams() {
-  if (insideGreenData_.empty) {
-    insideGreenData_ =
-        GreenData(derivativeInsideType_, profileType_, epsilonInside_);
-  }
-  return insideGreenData_;
+GreenData Input::insideGreenParams() const {
+  return GreenData(derivativeInsideType_, profileType_, epsilonInside_);
 }
 
-GreenData Input::outsideStaticGreenParams() {
-  if (outsideStaticGreenData_.empty) {
-    outsideStaticGreenData_ =
-        GreenData(derivativeOutsideType_, profileType_, epsilonStaticOutside_);
-    if (not hasSolvent_) {
-      outsideStaticGreenData_.howProfile = profileType_;
-      outsideStaticGreenData_.epsilon1 = epsilonStatic1_;
-      outsideStaticGreenData_.epsilon2 = epsilonStatic2_;
-      outsideStaticGreenData_.center = center_;
-      outsideStaticGreenData_.width = width_;
-      outsideStaticGreenData_.origin << origin_[0], origin_[1], origin_[2];
-      outsideStaticGreenData_.maxL = maxL_;
-    }
+GreenData Input::outsideStaticGreenParams() const {
+  GreenData retval(derivativeOutsideType_, profileType_, epsilonStaticOutside_);
+  if (not hasSolvent_) {
+    retval.howProfile = profileType_;
+    retval.epsilon1 = epsilonStatic1_;
+    retval.epsilon2 = epsilonStatic2_;
+    retval.center = center_;
+    retval.width = width_;
+    retval.origin << origin_[0], origin_[1], origin_[2];
+    retval.maxL = maxL_;
   }
-  return outsideStaticGreenData_;
+  return retval;
 }
 
-GreenData Input::outsideDynamicGreenParams() {
-  if (outsideDynamicGreenData_.empty) {
-    outsideDynamicGreenData_ =
-        GreenData(derivativeOutsideType_, profileType_, epsilonDynamicOutside_);
-    if (not hasSolvent_) {
-      outsideDynamicGreenData_.howProfile = profileType_;
-      outsideDynamicGreenData_.epsilon1 = epsilonDynamic1_;
-      outsideDynamicGreenData_.epsilon2 = epsilonDynamic2_;
-      outsideDynamicGreenData_.center = center_;
-      outsideDynamicGreenData_.width = width_;
-      outsideDynamicGreenData_.origin << origin_[0], origin_[1], origin_[2];
-      outsideDynamicGreenData_.maxL = maxL_;
-    }
+GreenData Input::outsideDynamicGreenParams() const {
+  GreenData retval(derivativeOutsideType_, profileType_, epsilonDynamicOutside_);
+  if (not hasSolvent_) {
+    retval.howProfile = profileType_;
+    retval.epsilon1 = epsilonDynamic1_;
+    retval.epsilon2 = epsilonDynamic2_;
+    retval.center = center_;
+    retval.width = width_;
+    retval.origin << origin_[0], origin_[1], origin_[2];
+    retval.maxL = maxL_;
   }
-  return outsideDynamicGreenData_;
+  return retval;
 }
 
-SolverData Input::solverParams() {
-  if (SolverData_.empty) {
-    SolverData_ = SolverData(correction_, equationType_, hermitivitize_);
-  }
-  return SolverData_;
+SolverData Input::solverParams() const {
+  return SolverData(correction_, equationType_, hermitivitize_);
 }
 
-BIOperatorData Input::integratorParams() {
-  if (integratorData_.empty) {
-    integratorData_ = BIOperatorData(integratorScaling_);
-  }
-  return integratorData_;
+BIOperatorData Input::integratorParams() const {
+  return BIOperatorData(integratorScaling_);
+}
+
+TDSolverData Input::TDSolverParams() const {
+  return TDSolverData(epsilonStaticOutside_,
+                      epsilonDynamicOutside_,
+                      tau_,
+                      correction_,
+                      tauIEF_,
+                      initWithDynamic_,
+                      cholesky_);
 }
 
 namespace detail {
