@@ -52,9 +52,10 @@ inline std::string citation_message() {
   rest << "     U. Ekstroem        (automatic differentiation library)" << std::endl;
   rest << "     J. Juselius        (input parsing library and CMake framework)"
        << std::endl;
-  rest << "   Theory: - J. Tomasi, B. Mennucci and R. Cammi:" << std::endl;
-  rest << "            \"Quantum Mechanical Continuum Solvation Models\", Chem. "
-          "Rev., 105 (2005) 2999" << std::endl;
+  rest << "   Theory: - J. Tomasi, B. Mennucci and R. Cammi, Chem. Rev., 105 (2005) "
+          "2999" << std::endl;
+  rest << "           - S. Corni, S. Pipolo and R. Cammi, J. Phys. Chem. A, 119 "
+          "(2015) 5405" << std::endl;
   rest << "   PCMSolver is distributed under the terms of the GNU Lesser General "
           "Public License." << std::endl;
   return rest.str();
