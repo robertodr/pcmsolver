@@ -16,7 +16,7 @@ void host_writer(const char * message) { fprintf(output, "%s\n", message); }
 
 int main() {
 
-  output = fopen("TD-C_host.log", "w+");
+  output = fopen("TD-C_host.out", "w+");
   if (!pcmsolver_is_compatible_library()) {
     fprintf(stderr, "%s\n", "PCMSolver library not compatible");
     exit(EXIT_FAILURE);

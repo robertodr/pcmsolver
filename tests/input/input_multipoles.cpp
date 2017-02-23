@@ -1,4 +1,3 @@
-/* pcmsolver_copyright_start */
 /*
  *     PCMSolver, an API for the Polarizable Continuum Model
  *     Copyright (C) 2018 Roberto Di Remigio, Luca Frediani and contributors.
@@ -21,7 +20,6 @@
  *     For information on the complete list of contributors to the
  *     PCMSolver API, see: <http://pcmsolver.readthedocs.io/>
  */
-/* pcmsolver_copyright_end */
 
 #include "catch.hpp"
 
@@ -36,6 +34,7 @@
 #include "bi_operators/BIOperatorData.hpp"
 #include "cavity/CavityData.hpp"
 #include "green/GreenData.hpp"
+#include "td_solver/TDSolverData.hpp"
 #include "interface/Input.hpp"
 #include "solver/SolverData.hpp"
 #include "utils/Sphere.hpp"

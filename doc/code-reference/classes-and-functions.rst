@@ -13,5 +13,6 @@ Classes and functions reference
    dielectric-profiles
    solvers
    bi-operators
+   td-solvers
    helper-classes
    namespaces

@@ -36,6 +36,15 @@ Medium {
              MaxL = [Integer]
        }
 }
+RealTime {
+       TDType = [String]
+       InitialValue = [String]
+       Cholesky = [Bool]
+       Tau = [Double]
+       TauIEF = [Double]
+       TimeStep = [Double]
+       TotalTime = [Double]
+}
 Molecule {
    MEP = [Bool]
    Geometry = [Double]

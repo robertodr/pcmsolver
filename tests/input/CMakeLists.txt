@@ -14,6 +14,8 @@ file(
     multipoles.inp
     restart.inp
     sharp.inp
+    tdsolver.inp
+    explicit_td.inp
   DESTINATION
     ${CMAKE_CURRENT_BINARY_DIR}
   )
@@ -90,7 +92,6 @@ add_Catch_test(
     parser_script-restart
   )
 
-
 add_test(
   NAME
     parser_script-cpcm
@@ -137,4 +138,42 @@ add_Catch_test(
     input_sharp
   DEPENDS
     parser_script-sharp
+  )
+
+add_test(
+  NAME
+    parser_script-tdsolver
+  COMMAND
+    ${PYTHON_EXECUTABLE} "-c" "from pcmsolver import parse_pcm_input; \
+     parsed = parse_pcm_input('tdsolver.inp', write_out=True)"
+  WORKING_DIRECTORY
+    ${CMAKE_CURRENT_BINARY_DIR}
+  )
+set_tests_properties(parser_script-tdsolver
+  PROPERTIES
+  LABELS "parser;parser_script"
+  ENVIRONMENT PYTHONPATH=${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/${PYMOD_INSTALL_LIBDIR}:$ENV{PYTHONPATH}
+  )
+add_test(
+  NAME
+    parser_script-tdsolver-explicit
+  COMMAND
+    ${PYTHON_EXECUTABLE} "-c" "from pcmsolver import parse_pcm_input; \
+     parsed = parse_pcm_input('explicit_td.inp', write_out=True)"
+  WORKING_DIRECTORY
+    ${CMAKE_CURRENT_BINARY_DIR}
+  )
+set_tests_properties(parser_script-tdsolver-explicit
+  PROPERTIES
+  LABELS "parser;parser_script"
+  ENVIRONMENT PYTHONPATH=${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/${PYMOD_INSTALL_LIBDIR}:$ENV{PYTHONPATH}
+  )
+add_Catch_test(
+  NAME
+    input_tdsolver
+  LABELS
+    input
+    input_tdsolver
+  DEPENDS
+    parser_script-tdsolver-explicit
   )

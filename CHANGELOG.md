@@ -252,6 +252,21 @@
 
 ## [Version 1.1.10] - 2017-03-27
 
+### Added
+
+- Time-dependent solvers for real-time time-evolution. The solvers work for
+  both the C-PCM and general IEF-PCM. The delayed ASC formulation of Corni,
+  Pipolo and Cammi is available with a Debye profile (single transverse
+  relaxation time). The real-time time-evolution can also be used in an
+  equilibrium framework for the solvent response.
+- The input learnt to parse a `RealTime` section for the real-time time-evolution parameters.
+  It is now possible to perform real-time time-evolution for systems of point
+  charges _via_ the standalone executable.
+- The input learnt to parse the additional `ChargeDistribution` section.
+  It is possible to specify a classical charge distribution of point multipoles.
+  This can be an additional source of electrostatic potential for the calculation
+  of the ASC.
+
 ### Changed
 
 - Updated the `cloc.pl` script to version 1.72
