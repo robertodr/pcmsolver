@@ -10,7 +10,7 @@ macro(add_Catch_test _name _labels)
   unset(_labels)
 
   add_test(NAME ${_name}
-           COMMAND ${PROJECT_BINARY_DIR}/tests/unit_tests --success [${_name}]
+           COMMAND ${PROJECT_BINARY_DIR}/tests/unit_tests [${_name}] --success --out ${PROJECT_BINARY_DIR}/tests/${_name}.log --durations yes
            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
   if(labels)
