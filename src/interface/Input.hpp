@@ -38,6 +38,7 @@ struct BIOperatorData;
 struct CavityData;
 struct GreenData;
 struct SolverData;
+struct TDSolverData;
 } // namespace pcm
 
 #include "utils/ChargeDistribution.hpp"
