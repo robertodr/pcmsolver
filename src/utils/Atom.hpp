@@ -92,7 +92,7 @@ struct Atom {
                                      */
 };
 
-typedef tuple<std::string, std::vector<Atom> > RadiiSet;
+typedef pcm::tuple<std::string, std::vector<Atom> > RadiiSet;
 
 namespace detail {
 /*! \brief Returns a vector<Atom> containing Bondi van der Waals
