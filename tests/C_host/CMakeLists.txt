@@ -53,9 +53,9 @@ target_include_directories(td-C_host
     ${PROJECT_SOURCE_DIR}/tests/C_host
     ${PROJECT_SOURCE_DIR}/api
   )
-target_link_libraries(td-C_host PCMSolver)
-target_link_libraries(td-C_host m)
-set_target_properties(td-C_host
+target_link_libraries(TD-C_host PCMSolver)
+target_link_libraries(TD-C_host m)
+set_target_properties(TD-C_host
   PROPERTIES
     LINKER_LANGUAGE C
   )
@@ -81,14 +81,14 @@ set_tests_properties(parse-tdsolver
   )
 add_test(
   NAME
-    td-C_host
+    TD-C_host
   COMMAND
-    td-C_host
+    TD-C_host
   WORKING_DIRECTORY
     ${CMAKE_CURRENT_BINARY_DIR}
   )
-set_tests_properties(td-C_host
+set_tests_properties(TD-C_host
   PROPERTIES
-    LABELS "api;C_host;td_solver"
+    LABELS "api;C_host;TD-C_host;td_solver"
     DEPENDS parse-tdsolver
   )
