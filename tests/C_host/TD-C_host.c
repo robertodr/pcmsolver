@@ -97,6 +97,10 @@ int main() {
             rf_energy);
     energy = pcmsolver_propagate_asc(
         pcm_context, mept_lbl, asct_lbl, meptdt_lbl, asctdt_lbl, dt, irrep);
+    char suffix[15];
+    sprintf(suffix, "%d", i);
+    pcmsolver_save_surface_function_to_npz(pcm_context, "tdMEP", meptdt_lbl, suffix);
+    pcmsolver_save_surface_function_to_npz(pcm_context, "tdASC", asctdt_lbl, suffix);
   }
 
   pcmsolver_write_timings(pcm_context);

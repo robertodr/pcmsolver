@@ -274,6 +274,18 @@ public:
    */
   void saveSurfaceFunction(const std::string & name) const;
 
+  /*! \brief Dump a surface function to a NumPy array archive .npz file
+   *  \param[in] npz_name name of the NumPy array archive .npz file
+   *  \param[in] name label of the surface function
+   *  \param[in] suffix string that will be appended to the given label
+   *
+   *  \note The npz_name parameter is the name of the NumPy array archive file
+   *  **without** .npz extension
+   */
+  void saveSurfaceFunctionToNPZ(const char * npz_name,
+                                const char * name,
+                                const char * suffix) const;
+
   /*! \brief Loads a surface function from a .npy file
    *  \param[in] name label of the surface function
    *

@@ -320,6 +320,21 @@ PCMSolver_API void pcmsolver_save_surface_functions(pcmsolver_context_t * contex
 PCMSolver_API void pcmsolver_save_surface_function(pcmsolver_context_t * context,
                                                    const char * name);
 
+/*! \brief Dump a surface function to a NumPy array archive .npz file
+ *  \param[in, out] context the PCM context object
+ *  \param[in] npz_name name of the NumPy array archive .npz file
+ *  \param[in] name label of the surface function
+ *  \param[in] suffix string that will be appended to the given label
+ *
+ *  \note The npz_name parameter is the name of the NumPy array archive file
+ *  **without** .npz extension
+ */
+PCMSolver_API void pcmsolver_save_surface_function_to_npz(
+    pcmsolver_context_t * context,
+    const char * npz_name,
+    const char * name,
+    const char * suffix);
+
 /*! \brief Loads a surface function from a .npy file
  *  \param[in, out] context the PCM context object
  *  \param[in] name label of the surface function

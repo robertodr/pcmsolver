@@ -532,6 +532,22 @@ void pcm::Meddle::saveSurfaceFunction(const std::string & name) const {
   cnpy::custom::npy_save(name + ".npy", it->second);
 }
 
+void pcmsolver_save_surface_function_to_npz(pcmsolver_context_t * context,
+                                            const char * npz_name,
+                                            const char * name,
+                                            const char * suffix) {
+  AS_TYPE(pcm::Meddle, context)->saveSurfaceFunctionToNPZ(npz_name, name, suffix);
+}
+void pcm::Meddle::saveSurfaceFunctionToNPZ(const char * npz_name,
+                                           const char * name,
+                                           const char * suffix) const {
+  std::string label = std::string(name) + "_" + suffix;
+  std::string fname = std::string(npz_name) + ".npz";
+
+  SurfaceFunctionMapConstIter it = functions_.find(name);
+  cnpy::custom::npz_save(fname, label, it->second);
+}
+
 void pcmsolver_load_surface_function(pcmsolver_context_t * context,
                                      const char * name) {
   AS_TYPE(pcm::Meddle, context)->loadSurfaceFunction(std::string(name));

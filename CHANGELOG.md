@@ -14,6 +14,16 @@
 
 ### Added
 
+- Time-dependent solvers for real-time time-evolution. The solvers work for
+  both the C-PCM and general IEF-PCM. The delayed ASC formulation of Corni,
+  Pipolo and Cammi is available with a Debye profile (single transverse
+  relaxation time). The real-time time-evolution can also be used in an
+  equilibrium framework for the solvent response.
+- The input learnt to parse a `RealTime` section for the real-time time-evolution parameters.
+  It is now possible to perform real-time time-evolution for systems of point
+  charges _via_ the standalone executable.
+- An API function to save surface functions to a NumPy compressed array file:
+  `pcmsolver_save_surface_function_to_npz`.
 - Green’s function for a spherical nanoparticle with **real** permittivity.
   The Green's function is known in analytical form from the work of
   Messina (J. Chem. Phys. 2002, 117 (24), 11062) and

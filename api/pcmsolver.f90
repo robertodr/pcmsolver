@@ -248,6 +248,16 @@ interface pcmsolver_save_surface_function
   end subroutine
 end interface
 
+interface pcmsolver_save_surface_function_to_npz
+  subroutine pcmsolver_save_surface_function_to_npz(context, npz_name, name, suffix) bind(C)
+    import
+    type(c_ptr), value :: context
+    character(kind=c_char, len=1), intent(in) :: npz_name
+    character(kind=c_char, len=1), intent(in) :: name
+    character(kind=c_char, len=1), intent(in) :: suffix
+  end subroutine
+end interface
+
 interface pcmsolver_load_surface_function
   subroutine pcmsolver_load_surface_function(context, name) bind(C)
     import
