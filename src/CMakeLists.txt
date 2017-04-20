@@ -9,6 +9,7 @@ add_subdirectory(interface)
 add_subdirectory(metal)
 add_subdirectory(bi_operators)
 add_subdirectory(pedra)
+add_subdirectory(ddpcm)
 add_subdirectory(solver)
 add_subdirectory(utils)
 
@@ -18,6 +19,7 @@ list(APPEND _objects $<TARGET_OBJECTS:cavity>
                      $<TARGET_OBJECTS:metal>
                      $<TARGET_OBJECTS:bi_operators>
                      $<TARGET_OBJECTS:pedra>
+                     $<TARGET_OBJECTS:ddpcm>
                      $<TARGET_OBJECTS:solver>
                      $<TARGET_OBJECTS:utils>
                      $<TARGET_OBJECTS:getkw>
