@@ -22,9 +22,11 @@
  */
 
 #include "ddPCM.hpp"
-#include "utils/Molecule.hpp" 
+
+#include "utils/Molecule.hpp"
 
 namespace pcm {
+namespace solver {
 ddPCM::ddPCM(const Molecule & m) {
   int ncav = 0;
   int size = m.spheres().size();
@@ -38,11 +40,12 @@ ddPCM::ddPCM(const Molecule & m) {
     zs[i] = m.spheres(i).center(2);
     rs[i] = m.spheres(i).radius;
   }
-  ddinit(& size, xs, ys, zs, rs, & ncav);
-  Eigen::Matrix3Xd cavity = Eigen::Matrix3Xd::Zero(3,ncav);
-  copy_cavity(cavity.data());
+  ddinit(&size, xs, ys, zs, rs, &ncav);
+  cavity_ = Eigen::Matrix3Xd::Zero(3, ncav);
+  copy_cavity(cavity_.data());
   delete[] xs, ys, zs, rs;
 }
 
 ddPCM::~ddPCM() { memfree(); }
-}
+} // namespace solver
+} // namespace pcm

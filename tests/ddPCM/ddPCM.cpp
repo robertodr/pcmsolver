@@ -32,11 +32,12 @@
 #include "solver/ddPCM.hpp"
 
 using namespace pcm;
+using solver::ddPCM;
 
 /*! \class ddPCM
- *  
+ *
  */
-TEST_CASE("XXX","[ddPCM]") {
+TEST_CASE("XXX", "[ddPCM]") {
   Molecule molec = NH3();
   ddPCM solver(molec);
 }
