@@ -49,9 +49,12 @@ public:
   ddPCM(const Molecule & m);
   ~ddPCM();
   Eigen::Matrix3Xd cavity() const { return cavity_; }
+  Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> computeCharges(Eigen::VectorXd phi);  
+  //subroutine itsolv(star,phi,psi,sigma,ene)
 
 private:
   Eigen::Matrix3Xd cavity_;
+    int nspheres;
 };
 
 #define ddinit FortranCInterface_MODULE(ddcosmo, ddinit, DDCOSMO, DDINIT)
@@ -91,11 +94,11 @@ extern "C" void fdokb(int * isph,
                       double * fx);
 
 #define itsolv FortranCInterface_MODULE(ddcosmo, itsolv, DDCOSMO, ITSOLV)
-extern "C" void itsolv(bool * star,
+extern "C" void itsolv(bool star,
                        double * phi,
                        double * psi,
-                       double * ene,
-                       double * sigma);
+                       double * sigma,
+                       double * ene);
 
 #define copy_cavity                                                                 \
   FortranCInterface_MODULE(ddcosmo, copy_cavity, DDCOSMO, COPY_CAVITY)

@@ -40,4 +40,6 @@ using solver::ddPCM;
 TEST_CASE("XXX", "[ddPCM]") {
   Molecule molec = NH3();
   ddPCM solver(molec);
+  Eigen::VectorXd potential = computeMEP(molec, solver.cavity());
+  Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> charges = solver.computeCharges(potential);
 }

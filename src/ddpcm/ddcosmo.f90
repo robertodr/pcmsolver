@@ -882,7 +882,7 @@ return
 end function intmlp
 !
 subroutine itsolv(star,phi,psi,sigma,ene)
-logical,                        intent(in)    :: star
+logical(1),                      intent(in)    :: star
 real(8), dimension(ncav),        intent(in)    :: phi
 real(8), dimension(nbasis,nsph), intent(in)    :: psi
 real(8),                         intent(inout) :: ene
@@ -923,7 +923,9 @@ allocate (g(ngrid,nsph),pot(ngrid),vlm(nbasis),sigold(nbasis,nsph))
 sigold = zero
 allocate (delta(nbasis),norm(nsph))
 allocate(vplm(nbasis),basloc(nbasis),vcos(lmax+1),vsin(lmax+1))
+print *, "STAR ", star, ngrid, nsph
 if (star) allocate(xi(ngrid,nsph))
+print *, "STAR ", star, ngrid, nsph
 memuse = memuse + ngrid*nsph + ngrid*nproc + 2*nbasis*nproc + nbasis*nsph + &
          2*nbasis*nproc + 2*(lmax+1)*nproc + nsph
 if (star) memuse = memuse + nsph*ngrid
