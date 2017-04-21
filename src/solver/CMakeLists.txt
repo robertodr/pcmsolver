@@ -1,8 +1,8 @@
 # List of headers
-list(APPEND headers_list Solver.hpp CPCMSolver.hpp IEFSolver.hpp ISolver.hpp SolverData.hpp SolverImpl.hpp)
+list(APPEND headers_list Solver.hpp CPCMSolver.hpp IEFSolver.hpp ISolver.hpp SolverData.hpp SolverImpl.hpp ddPCM.hpp)
 
 # List of sources
-list(APPEND sources_list CPCMSolver.cpp IEFSolver.cpp SolverImpl.cpp)
+list(APPEND sources_list CPCMSolver.cpp IEFSolver.cpp SolverImpl.cpp ddPCM.cpp)
 
 add_library(solver OBJECT ${sources_list} ${headers_list})
 set_target_properties(solver PROPERTIES POSITION_INDEPENDENT_CODE 1 )

@@ -30,6 +30,8 @@
 
 #include "FCMangle.hpp"
 
+#include "utils/Molecule.hpp" 
+
 namespace pcm {
 
 /*! \file ddPCM.hpp
@@ -49,7 +51,7 @@ private:
 };
 
 #define ddinit FortranCInterface_MODULE(ddcosmo, ddinit, DDCOSMO, DDINIT)
-extern "C" void ddinit(int * n, double * x, double * y, double * z, double * rvdw);
+extern "C" void ddinit(int * n, double * x, double * y, double * z, double * rvdw, int * ncav);
 
 #define memfree FortranCInterface_MODULE(ddcosmo, memfree, DDCOSMO, MEMFREE)
 extern "C" void memfree();
@@ -85,6 +87,10 @@ extern "C" void itsolv(bool * star,
                        double * psi,
                        double * ene,
                        double * sigma);
+
+#define copy_cavity FortranCInterface_MODULE(ddcosmo, copy_cavity, DDCOSMO, COPY_CAVITY)
+    extern "C" void copy_cavity(double * cavity);
+
 } // namespace pcm
 
 #endif // DDPCM_HPP

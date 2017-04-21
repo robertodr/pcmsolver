@@ -21,28 +21,22 @@
  * PCMSolver API, see: <http://pcmsolver.readthedocs.io/>
  */
 
-#include "ddPCM.hpp"
-#include "utils/Molecule.hpp" 
+#include "catch.hpp"
 
-namespace pcm {
-ddPCM::ddPCM(const Molecule & m) {
-  int ncav = 0;
-  int size = m.spheres().size();
-  double * xs = new double[size];
-  double * ys = new double[size];
-  double * zs = new double[size];
-  double * rs = new double[size];
-  for (int i = 0; i < size; ++i) {
-    xs[i] = m.spheres(i).center(0);
-    ys[i] = m.spheres(i).center(1);
-    zs[i] = m.spheres(i).center(2);
-    rs[i] = m.spheres(i).radius;
-  }
-  ddinit(& size, xs, ys, zs, rs, & ncav);
-  Eigen::Matrix3Xd cavity = Eigen::Matrix3Xd::Zero(3,ncav);
-  copy_cavity(cavity.data());
-  delete[] xs, ys, zs, rs;
-}
+#include <iostream>
 
-ddPCM::~ddPCM() { memfree(); }
+#include <Eigen/Core>
+
+#include "utils/Molecule.hpp"
+#include "TestingMolecules.hpp"
+#include "solver/ddPCM.hpp"
+
+using namespace pcm;
+
+/*! \class ddPCM
+ *  
+ */
+TEST_CASE("XXX","[ddPCM]") {
+  Molecule molec = NH3();
+  ddPCM solver(molec);
 }
