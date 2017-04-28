@@ -50,7 +50,7 @@ public:
   ~ddPCM();
   Eigen::Matrix3Xd cavity() const { return cavity_; }
   Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> computeCharges(Eigen::VectorXd phi);  
-  //subroutine itsolv(star,phi,psi,sigma,ene)
+  //subroutine itsolv_direct(phi,psi,sigma,ene)
 
 private:
   Eigen::Matrix3Xd cavity_;
@@ -93,12 +93,11 @@ extern "C" void fdokb(int * isph,
                       double * vsin,
                       double * fx);
 
-#define itsolv FortranCInterface_MODULE(ddcosmo, itsolv, DDCOSMO, ITSOLV)
-extern "C" void itsolv(bool star,
-                       double * phi,
-                       double * psi,
-                       double * sigma,
-                       double * ene);
+#define itsolv_direct FortranCInterface_MODULE(ddcosmo, itsolv_direct, DDCOSMO, ITSOLV_DIRECT)
+extern "C" void itsolv_direct(double * phi,
+			      double * psi,
+			      double * sigma,
+			      double * ene);
 
 #define copy_cavity                                                                 \
   FortranCInterface_MODULE(ddcosmo, copy_cavity, DDCOSMO, COPY_CAVITY)
