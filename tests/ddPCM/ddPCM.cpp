@@ -37,9 +37,9 @@ using solver::ddPCM;
 /*! \class ddPCM
  *
  */
-TEST_CASE("XXX", "[ddPCM]") {
+TEST_CASE("ddCOSMO solver with NH3 molecule", "[ddPCM]") {
   Molecule molec = NH3();
   ddPCM solver(molec);
   Eigen::VectorXd potential = computeMEP(molec, solver.cavity());
-  Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> charges = solver.computeCharges(potential);
+  Eigen::MatrixXd charges = solver.computeCharges(potential);
 }

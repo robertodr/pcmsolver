@@ -1336,10 +1336,11 @@ subroutine header
              '   number of grid points:                  ',i8,/,   &
              '   number of spheres:                      ',i8,/,   &
              '   lmax for the spherical harmonics basis: ',i8,/,   &
+             '   permittivity:                           ',f8.2,/,   &
              '   convergence threshold:                  ',d8.1,/, &
              '   regularization parameter:               ',f8.2,/)
 if (iprint.gt.0) write(iout,1000)
-if (iprint.gt.0) write(iout,1010) ngrid, nsph, lmax, 10.0d0**(-iconv), eta
+if (iprint.gt.0) write(iout,1010) ngrid, nsph, lmax, eps, 10.0d0**(-iconv), eta
 return
 end subroutine header
 !

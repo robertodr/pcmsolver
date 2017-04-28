@@ -23,24 +23,26 @@
 
 #include "ddPCM.hpp"
 
+#include <cmath>
+
 #include "utils/Molecule.hpp"
 
 namespace pcm {
 namespace solver {
-ddPCM::ddPCM(const Molecule & m) {
+ddPCM::ddPCM(const Molecule & m) : nSpheres_(m.spheres().size()), molecule_(m) {
   int ncav = 0;
-  nspheres = m.spheres().size();
-  double * xs = new double[nspheres];
-  double * ys = new double[nspheres];
-  double * zs = new double[nspheres];
-  double * rs = new double[nspheres];
-  for (int i = 0; i < nspheres; ++i) {
+  nSpheres_ = m.spheres().size();
+  double * xs = new double[nSpheres_];
+  double * ys = new double[nSpheres_];
+  double * zs = new double[nSpheres_];
+  double * rs = new double[nSpheres_];
+  for (int i = 0; i < nSpheres_; ++i) {
     xs[i] = m.spheres(i).center(0);
     ys[i] = m.spheres(i).center(1);
     zs[i] = m.spheres(i).center(2);
     rs[i] = m.spheres(i).radius;
   }
-  ddinit(&nspheres, xs, ys, zs, rs, &ncav);
+  ddinit(&nSpheres_, xs, ys, zs, rs, &ncav);
   cavity_ = Eigen::Matrix3Xd::Zero(3, ncav);
   copy_cavity(cavity_.data());
   delete[] xs;
@@ -51,20 +53,16 @@ ddPCM::ddPCM(const Molecule & m) {
 
 ddPCM::~ddPCM() { memfree(); }
 
-Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> ddPCM::computeCharges(
-    Eigen::VectorXd phi) {
+Eigen::MatrixXd ddPCM::computeCharges(const Eigen::VectorXd & phi) const {
   int nbasis = 7 * 7;
   double ene = 0.0;
-  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> psi =
-      Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>::Zero(nbasis, nspheres);
-  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> sigma =
-      Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>::Zero(nbasis, nspheres);
-  for (int i = 0; i<nspheres;++i){
-    psi(0,i) = sqrt(4.0*M_PI)*0.0 // as in mkrhs.f90 in test, "0.0" = charge inside
+  Eigen::MatrixXd psi = Eigen::MatrixXd::Zero(nbasis, nSpheres_);
+  Eigen::MatrixXd sigma = Eigen::MatrixXd::Zero(nbasis, nSpheres_);
+  for (int i = 0; i < nSpheres_; ++i) {
+    psi(0, i) = std::sqrt(4.0 * M_PI) * molecule_.charges(i);
   }
   itsolv_direct(phi.data(), psi.data(), sigma.data(), &ene);
   return sigma;
 }
-
 } // namespace solver
 } // namespace pcm

@@ -76,13 +76,16 @@ TEST_CASE("Test solver for the C-PCM with NH3 molecule and a GePol cavity",
   // for CPCM it will be -Q*(epsilon-1)/(epsilon + correction)
   Eigen::VectorXd fake_asc = Eigen::VectorXd::Zero(size);
   fake_asc = solver.computeCharge(fake_mep);
-  double energy = 0.5*fake_mep.dot(fake_asc);
-  std::cout << energy << std::endl;
   double totalASC =
       -(Ncharge + 3.0 * Hcharge) * (permittivity - 1) / (permittivity + correction);
   double totalFakeASC = fake_asc.sum();
+  CAPTURE(totalASC);
+  CAPTURE(totalFakeASC);
   CAPTURE(totalASC - totalFakeASC);
   REQUIRE(totalASC == Approx(totalFakeASC).epsilon(1.0e-03));
+
+  double energy = 0.5 * fake_mep.dot(fake_asc);
+  CAPTURE(energy);
 
   Eigen::VectorXd reference =
       cnpy::custom::npy_load<double>("ASC-cpcm_gepol-NH3.npy");

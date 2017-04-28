@@ -49,21 +49,33 @@ public:
   ddPCM(const Molecule & m);
   ~ddPCM();
   Eigen::Matrix3Xd cavity() const { return cavity_; }
-  Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> computeCharges(Eigen::VectorXd phi);  
-  //subroutine itsolv_direct(phi,psi,sigma,ene)
+  Eigen::MatrixXd computeCharges(const Eigen::VectorXd & phi) const;
+  // subroutine itsolv_direct(phi,psi,sigma,ene)
 
 private:
+  int nSpheres_;
+  Molecule molecule_;
   Eigen::Matrix3Xd cavity_;
-    int nspheres;
 };
 
 #define ddinit FortranCInterface_MODULE(ddcosmo, ddinit, DDCOSMO, DDINIT)
-extern "C" void ddinit(int * n,
-                       double * x,
-                       double * y,
-                       double * z,
-                       double * rvdw,
+extern "C" void ddinit(const int * n,
+                       const double * x,
+                       const double * y,
+                       const double * z,
+                       const double * rvdw,
                        int * ncav);
+
+#define copy_cavity                                                                 \
+  FortranCInterface_MODULE(ddcosmo, copy_cavity, DDCOSMO, COPY_CAVITY)
+extern "C" void copy_cavity(double * cavity);
+
+#define itsolv_direct                                                               \
+  FortranCInterface_MODULE(ddcosmo, itsolv_direct, DDCOSMO, ITSOLV_DIRECT)
+extern "C" void itsolv_direct(const double * phi,
+                              const double * psi,
+                              double * sigma,
+                              double * ene);
 
 #define memfree FortranCInterface_MODULE(ddcosmo, memfree, DDCOSMO, MEMFREE)
 extern "C" void memfree();
@@ -92,16 +104,6 @@ extern "C" void fdokb(int * isph,
                       double * vcos,
                       double * vsin,
                       double * fx);
-
-#define itsolv_direct FortranCInterface_MODULE(ddcosmo, itsolv_direct, DDCOSMO, ITSOLV_DIRECT)
-extern "C" void itsolv_direct(double * phi,
-			      double * psi,
-			      double * sigma,
-			      double * ene);
-
-#define copy_cavity                                                                 \
-  FortranCInterface_MODULE(ddcosmo, copy_cavity, DDCOSMO, COPY_CAVITY)
-extern "C" void copy_cavity(double * cavity);
 } // namespace solver
 } // namespace pcm
 
