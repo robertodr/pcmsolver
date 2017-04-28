@@ -43,21 +43,25 @@ ddPCM::ddPCM(const Molecule & m) {
   ddinit(&nspheres, xs, ys, zs, rs, &ncav);
   cavity_ = Eigen::Matrix3Xd::Zero(3, ncav);
   copy_cavity(cavity_.data());
-  delete[] xs, ys, zs, rs;
+  delete[] xs;
+  delete[] ys;
+  delete[] zs;
+  delete[] rs;
 }
 
 ddPCM::~ddPCM() { memfree(); }
 
-    Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> ddPCM::computeCharges(Eigen::VectorXd phi) {
-        int nbasis = 7*7;
-        double ene = 0.0;
-        Eigen::Matrix<double, Eigen::Dynamic,Eigen::Dynamic> psi, sigma;
-        psi.resize(nbasis, nspheres);
-        sigma.resize(nbasis, nspheres);
-        itsolv_direct(phi.data(), psi.data(), sigma.data(), & ene);
-        return sigma;
-    }
-
+Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> ddPCM::computeCharges(
+    Eigen::VectorXd phi) {
+  int nbasis = 7 * 7;
+  double ene = 0.0;
+  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> psi =
+      Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>::Zero(nbasis, nspheres);
+  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> sigma =
+      Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>::Zero(nbasis, nspheres);
+  itsolv_direct(phi.data(), psi.data(), sigma.data(), &ene);
+  return sigma;
+}
 
 } // namespace solver
 } // namespace pcm
