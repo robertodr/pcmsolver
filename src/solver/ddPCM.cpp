@@ -59,6 +59,9 @@ Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> ddPCM::computeCharges(
       Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>::Zero(nbasis, nspheres);
   Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> sigma =
       Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>::Zero(nbasis, nspheres);
+  for (int i = 0; i<nspheres;++i){
+    psi(0,i) = sqrt(4.0*M_PI)*0.0 // as in mkrhs.f90 in test, "0.0" = charge inside
+  }
   itsolv_direct(phi.data(), psi.data(), sigma.data(), &ene);
   return sigma;
 }
