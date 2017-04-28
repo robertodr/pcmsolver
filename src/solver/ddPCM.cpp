@@ -54,7 +54,7 @@ ddPCM::~ddPCM() { memfree(); }
         Eigen::Matrix<double, Eigen::Dynamic,Eigen::Dynamic> psi, sigma;
         psi.resize(nbasis, nspheres);
         sigma.resize(nbasis, nspheres);
-        itsolv(false, phi.data(), psi.data(), sigma.data(), & ene);
+        itsolv_direct(phi.data(), psi.data(), sigma.data(), & ene);
         return sigma;
     }
 
