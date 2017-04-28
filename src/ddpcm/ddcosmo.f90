@@ -882,7 +882,9 @@ return
 end function intmlp
 !
 subroutine itsolv(star,phi,psi,sigma,ene)
-logical(1),                      intent(in)    :: star
+use iso_c_binding
+logical(c_bool),                 intent(inout)    :: star
+!logical(1),                 intent(inout)    :: star
 real(8), dimension(ncav),        intent(in)    :: phi
 real(8), dimension(nbasis,nsph), intent(in)    :: psi
 real(8),                         intent(inout) :: ene
@@ -905,7 +907,7 @@ real(8), allocatable :: xdiis(:,:,:), ediis(:,:,:), bmat(:)
 !
 integer :: it, isph, nmat, lenb, ig, c1, c2, cr
 real(8)  :: tol, drms, dmax, fep
-logical :: dodiis, first
+logical :: dodiis, first, newstar
 !
 integer, parameter :: nitmax=300
 real(8),  parameter :: ten=10.d0, tredis=1.0d-2
@@ -917,18 +919,22 @@ call system_clock(count=c1)
 !
 ! allocate local variables and set convergence parameters
 !
+!print *, phi
+!print *, psi
+!print *, sigma
+
+newstar = .FALSE.
+
 fep = (eps-one)/eps
 tol = ten**(-iconv)
 allocate (g(ngrid,nsph),pot(ngrid),vlm(nbasis),sigold(nbasis,nsph))
 sigold = zero
 allocate (delta(nbasis),norm(nsph))
 allocate(vplm(nbasis),basloc(nbasis),vcos(lmax+1),vsin(lmax+1))
-print *, "STAR ", star, ngrid, nsph
-if (star) allocate(xi(ngrid,nsph))
-print *, "STAR ", star, ngrid, nsph
+if (newstar) allocate(xi(ngrid,nsph))
 memuse = memuse + ngrid*nsph + ngrid*nproc + 2*nbasis*nproc + nbasis*nsph + &
          2*nbasis*nproc + 2*(lmax+1)*nproc + nsph
-if (star) memuse = memuse + nsph*ngrid
+if (newstar) memuse = memuse + nsph*ngrid
 memmax = max(memmax,memuse)
 !
 ! set up diis:
@@ -942,7 +948,7 @@ memmax = max(memmax,memuse)
 !
 ! solve the direct equations
 !
-if (.not. star) then
+if (.not. newstar) then
 !
 ! build g:
 !
@@ -1025,7 +1031,7 @@ end if
 ! free the memory:
 !
 if (iprint.gt.1) write(iout,*)
-if (star) deallocate(xi)
+if (newstar) deallocate(xi)
 deallocate (g,pot,vlm,sigold)
 deallocate (delta,norm)
 deallocate (vplm,basloc,vcos,vsin)
@@ -1036,7 +1042,7 @@ memuse = memuse - 2*nbasis*nsph*ndiis - lenb*lenb
 !
 call system_clock(count=c2)
 if (iprint.gt.0) then
-  if (star) then
+  if (newstar) then
     write(iout,1010) 'adjoint ', dble(c2-c1)/dble(cr)
   else
     write(iout,1010) '', dble(c2-c1)/dble(cr)
@@ -1044,7 +1050,7 @@ if (iprint.gt.0) then
   write(iout,*)
 end if
 if (iprint.ge.3) then
-  if (star) then
+  if (newstar) then
     call prtsph('solution to the ddcosmo adjoint equations:',nsph,0,sigma)
   else
     call prtsph('solution to the ddcosmo equations:',nsph,0,sigma)
