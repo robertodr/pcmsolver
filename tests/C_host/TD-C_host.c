@@ -3,8 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "pcmsolver.h"
 #include "PCMInput.h"
+#include "pcmsolver.h"
 
 #include "C_host-functions.h"
 
@@ -31,13 +31,14 @@ int main() {
   int symmetry_info[4] = {0, 0, 0, 0};
   struct PCMInput host_input = pcmsolver_input();
 
-  pcmsolver_context_t * pcm_context = pcmsolver_new(PCMSOLVER_READER_OWN,
-                                                    NR_NUCLEI,
-                                                    charges,
-                                                    coordinates,
-                                                    symmetry_info,
-                                                    &host_input,
-                                                    host_writer);
+  pcmsolver_context_t * pcm_context = pcmsolver_new_v1112(PCMSOLVER_READER_OWN,
+                                                          NR_NUCLEI,
+                                                          charges,
+                                                          coordinates,
+                                                          symmetry_info,
+                                                          "@tdsolver.pcm",
+                                                          &host_input,
+                                                          host_writer);
 
   pcmsolver_print(pcm_context);
 

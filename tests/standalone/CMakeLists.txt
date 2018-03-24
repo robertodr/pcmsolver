@@ -1,9 +1,11 @@
 # Copy input files to ${PROJECT_BINARY_DIR}/tests/standalone (aka ${CMAKE_CURRENT_BINARY_DIR})
 file(
   COPY
+    onsager_tdsolver.pcm
     standalone.pcm
     standalone_atoms.pcm
     standalone_explicit.pcm
+    standalone_tdsolver.pcm
   DESTINATION
     ${CMAKE_CURRENT_BINARY_DIR}
   )

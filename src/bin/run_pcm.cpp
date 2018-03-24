@@ -39,7 +39,6 @@
 #include "interface/Meddle.hpp"
 #include "utils/ChargeDistribution.hpp"
 #include "utils/Molecule.hpp"
-#include "utils/ChargeDistribution.hpp"
 
 std::ofstream pcmsolver_out;
 
@@ -95,15 +94,17 @@ int main(int argc, char * argv[]) {
   pcmsolver_out << "DONE!" << std::endl;
 
   if (input.isTD()) {
+    double secondsToAU = 2.418884326509e-17;
+    double AUToFemtoseconds = secondsToAU / 1.0e-15;
     pcmsolver_out << "~~~~~~~~~~ Real-time time-evolution of the ASC" << std::endl;
     context_.initializePropagation(
         "MEP", "ASC", "MEP_t", "ASC_t", "MEP_tdt", "ASC_tdt", irrep);
     double dt = input.timeStep();
     double total_time = input.totalTime();
     int steps = int(total_time / dt) + 1;
-    pcmsolver_out << "Total simulation time = " << total_time * AUToFemtoseconds()
+    pcmsolver_out << "Total simulation time = " << total_time * AUToFemtoseconds
                   << " fs" << std::endl;
-    pcmsolver_out << "Time step = " << dt * AUToFemtoseconds() << " fs" << std::endl;
+    pcmsolver_out << "Time step = " << dt * AUToFemtoseconds << " fs" << std::endl;
     pcmsolver_out << "Number of steps = " << steps << std::endl;
     double energy = context_.computePolarizationEnergy("MEP_t", "ASC_t");
     double t_0 = 0.0, t = 0.0;
@@ -117,11 +118,10 @@ int main(int argc, char * argv[]) {
     double mu = context_.getASCDipole("ASC_tdt", asc_dipole.data());
     for (int i = 0; i < steps; ++i) {
       t = t_0 + i * dt;
-      pcmsolver_out
-          << boost::format(
-                 "%10.6f    %20.12f    %20.12f    %20.12f    %20.12f    %20.12f\n") %
-                 (t * AUToFemtoseconds()) % energy % asc_dipole(0) % asc_dipole(1) %
-                 asc_dipole(2) % mu;
+      pcmsolver_out << std::fixed << std::setprecision(6) << t * AUToFemtoseconds
+                    << std::setprecision(14) << energy << "  " << asc_dipole(0)
+                    << "  " << asc_dipole(1) << "  " << asc_dipole(2) << "  " << mu
+                    << std::endl;
       energy =
           context_.propagateASC("MEP_t", "ASC_t", "MEP_tdt", "ASC_tdt", dt, irrep);
     }

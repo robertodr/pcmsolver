@@ -48,7 +48,7 @@ set_tests_properties(fail-C_host
   )
 
 add_executable(TD-C_host TD-C_host.c)
-target_include_directories(td-C_host
+target_include_directories(TD-C_host
   PRIVATE
     ${PROJECT_SOURCE_DIR}/tests/C_host
     ${PROJECT_SOURCE_DIR}/api
@@ -60,22 +60,22 @@ set_target_properties(TD-C_host
     LINKER_LANGUAGE C
   )
 file(
-  COPY 
-    tdsolver.pcm 
-  DESTINATION 
+  COPY
+    tdsolver.pcm
+  DESTINATION
     ${CMAKE_CURRENT_BINARY_DIR}
   )
 add_test(
-  NAME 
-    parse-tdsolver 
-  COMMAND 
+  NAME
+    parse-tdsolver
+  COMMAND
     ${PYTHON_EXECUTABLE} ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/go_pcm.py
       --inp=tdsolver.pcm
-  WORKING_DIRECTORY 
+  WORKING_DIRECTORY
     ${CMAKE_CURRENT_BINARY_DIR}
   )
-set_tests_properties(parse-tdsolver 
-  PROPERTIES 
+set_tests_properties(parse-tdsolver
+  PROPERTIES
   LABELS "parser_script"
   ENVIRONMENT PYTHONPATH=${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/${PYMOD_INSTALL_LIBDIR}:$ENV{PYTHONPATH}
   )

@@ -328,7 +328,7 @@ def setup_keywords():
     green.add_sect(green_part)
 
     # Time-evolution section
-    realtime = getkw.Section('REALTIME', callback = verify_realtime)
+    realtime = Section('REALTIME', callback=verify_realtime)
     # Type of time-dependent solver
     # Valid values: TDIEF, TDCPCM, TDSINGLEIEF, TDONSAGERIEF, EQUILIBRIUM
     # Default: EQUILIBRIUM
@@ -346,7 +346,7 @@ def setup_keywords():
     # Valid for: TDIEF
     # Valid values: boolean
     # Default: False
-    realtime.add_kw('CHOLESKY',   'BOOL', False)
+    realtime.add_kw('CHOLESKY', 'BOOL', False)
     # Debye relaxation time for the solvent
     # Valid for: TDIEF, TDCPCM, TDSINGLEIEF and TDONSAGERIEF
     # Valid values: double

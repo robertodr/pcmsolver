@@ -201,18 +201,18 @@ public:
   double getASCDipole(const std::string & asc_name, double dipole[]) const;
 
   /*! \brief Initializes the time propagation of the ASC.
-        *  \param[in] mep_0   label of the MEP surface function at time 0
-        *  \param[in] asc_0   label of the ASC surface function at time 0
-        *  \param[in] mep_t   label of the MEP surface function at time t
-        *  \param[in] asc_t   label of the ASC surface function at time t
-        *  \param[in] mep_tdt label of the MEP surface function at time t+dt
-        *  \param[in] asc_tdt label of the ASC surface function at time t+dt
-        *  \param[in] irrep index of the desired irreducible representation
-        *  This function initializes the time-evolution algorithm described in
-        *  \cite Corni2014
-        *  Labels are set in the internal surface function map. The surface function
-        *  values are initialized to their values to those at time 0
-        */
+   *  \param[in] mep_0   label of the MEP surface function at time 0
+   *  \param[in] asc_0   label of the ASC surface function at time 0
+   *  \param[in] mep_t   label of the MEP surface function at time t
+   *  \param[in] asc_t   label of the ASC surface function at time t
+   *  \param[in] mep_tdt label of the MEP surface function at time t+dt
+   *  \param[in] asc_tdt label of the ASC surface function at time t+dt
+   *  \param[in] irrep index of the desired irreducible representation
+   *  This function initializes the time-evolution algorithm described in
+   *  \cite Corni2014
+   *  Labels are set in the internal surface function map. The surface function
+   *  values are initialized to their values to those at time 0
+   */
   void initializePropagation(const char * mep_0,
                              const char * asc_0,
                              const char * mep_t,

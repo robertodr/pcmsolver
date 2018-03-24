@@ -1,52 +1,50 @@
-/* pcmsolver_copyright_start */
 /*
- *     PCMSolver, an API for the Polarizable Continuum Model
- *     Copyright (C) 2017 Roberto Di Remigio, Luca Frediani and collaborators.
+ * PCMSolver, an API for the Polarizable Continuum Model
+ * Copyright (C) 2018 Roberto Di Remigio, Luca Frediani and contributors.
  *
- *     This file is part of PCMSolver.
+ * This file is part of PCMSolver.
  *
- *     PCMSolver is free software: you can redistribute it and/or modify
- *     it under the terms of the GNU Lesser General Public License as published by
- *     the Free Software Foundation, either version 3 of the License, or
- *     (at your option) any later version.
+ * PCMSolver is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *     PCMSolver is distributed in the hope that it will be useful,
- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *     GNU Lesser General Public License for more details.
+ * PCMSolver is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
  *
- *     You should have received a copy of the GNU Lesser General Public License
- *     along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with PCMSolver.  If not, see <http://www.gnu.org/licenses/>.
  *
- *     For information on the complete list of contributors to the
- *     PCMSolver API, see: <http://pcmsolver.readthedocs.io/>
+ * For information on the complete list of contributors to the
+ * PCMSolver API, see: <http://pcmsolver.readthedocs.io/>
  */
-/* pcmsolver_copyright_end */
 
 #include <cmath>
 #include <cstdlib>
 #include <fstream>
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 #include <limits>
 
 #include "Config.hpp"
 
 #include <Eigen/Core>
 
+#include "OnsagerReactionField.hpp"
 #include "bi_operators/Collocation.hpp"
 #include "cavity/GePolCavity.hpp"
-#include "OnsagerReactionField.hpp"
+#include "green/Vacuum.hpp"
 #include "td_solver/TDCPCMSolver.hpp"
 #include "td_solver/TDIEFSolver.hpp"
 #include "td_solver/TDSingleIEFSolver.hpp"
-#include "green/Vacuum.hpp"
-#include "utils/cnpy.hpp"
 #include "utils/MathUtils.hpp"
+#include "utils/cnpy.hpp"
 
 using namespace pcm;
-using cavity::GePolCavity;
 using bi_operators::Collocation;
+using cavity::GePolCavity;
 
 void plot_tdief_lowdin_collocation(const GePolCavity &,
                                    const IGreensFunction &,

@@ -1,41 +1,76 @@
-add_library(td_solver-tests OBJECT tdcpcm_gepol-point.cpp
-                                   tdief_gepol-point.cpp
-                                   tdonsagerief_gepol-point.cpp
-                                   tdsingleief_gepol-point.cpp)
+add_library(td_solver-tests OBJECT
+  tdcpcm_gepol-point.cpp
+  tdief_gepol-point.cpp
+  tdonsagerief_gepol-point.cpp
+  tdsingleief_gepol-point.cpp
+  )
 if(BUILD_CUSTOM_BOOST)
   add_dependencies(td_solver-tests custom_boost)
 endif()
 
-# Copy reference files to ${PROJECT_BINARY_DIR}/tests/td_solver (aka ${CMAKE_CURRENT_BINARY_DIR})
-list(APPEND reference_files tdcpcm_collocation.npy tdief_lowdin_collocation_K_d.npy
-      tdief_lowdin_collocation_tau.npy
-      tdief_lowdin_collocation_Lambda.npy tdonsagerief_collocation.npy
-      tdief_lowdin_collocation_K_0.npy tdief_lowdin_collocation.npy
-      tdsingleief_collocation.npy)
-file(COPY ${reference_files} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-
 # tdcpcm_gepol-point.cpp test
-add_Catch_test(tdcpcm_gepol-point "td_solver;tdcpcm;tdcpcm_gepol-point")
+add_Catch_test(
+  NAME
+    tdcpcm_gepol-point
+  LABELS
+    td_solvert
+    tdcpcm
+    tdcpcm_gepol-point
+  REFERENCE_FILES
+    tdcpcm_collocation.npy
+  )
 
 # tdsingleief_gepol-point.cpp test
-add_Catch_test(tdsingleief_gepol-point "td_solver;tdief;tdsingleief_gepol-point")
+add_Catch_test(
+  NAME
+    tdsingleief_gepol-point
+  LABELS
+    td_solver
+    tdief
+    tdsingleief_gepol-point
+  REFERENCE_FILES
+    tdsingleief_collocation.npy
+  )
 
 # tdonsagerief_gepol-point.cpp test
-add_Catch_test(tdonsagerief_gepol-point "td_solver;tdief;tdonsagerief_gepol-point")
+add_Catch_test(
+  NAME
+    tdonsagerief_gepol-point
+  LABELS
+    td_solver
+    tdief
+    tdonsagerief_gepol-point
+  REFERENCE_FILES
+    tdonsagerief_collocation.npy
+  )
 
 # tdief_gepol-point.cpp test
-add_Catch_test(tdief_gepol-point "td_solver;tdiefpcm;tdief_gepol-point")
+add_Catch_test(
+  NAME
+    tdief_gepol-point
+  LABELS
+    td_solver
+    tdiefpcm
+    tdief_gepol-point
+  REFERENCE_FILES
+    tdief_lowdin_collocation.npy
+    tdief_lowdin_collocation_K_0.npy
+    tdief_lowdin_collocation_K_d.npy
+    tdief_lowdin_collocation_Lambda.npy
+    tdief_lowdin_collocation_tau.npy
+  )
 
 # This executable updates the .npy files containing the reference values
 if(BUILD_STANDALONE)
-  link_directories(${PROJECT_BINARY_DIR}/lib)
   add_executable(update_tdsolver_reference_files update_tdsolver_reference_files.cpp)
+  target_link_libraries(update_tdsolver_reference_files pcm-static)
   if(BUILD_CUSTOM_BOOST)
     add_dependencies(update_tdsolver_reference_files custom_boost)
   endif()
-  if(STATIC_LIBRARY_ONLY)
-    target_link_libraries(update_tdsolver_reference_files pcm-static ${ZLIB_LIBRARIES})
-  else()
-    target_link_libraries(update_tdsolver_reference_files pcm-shared)
+
+  add_executable(plot_tdsolver plot_tdsolver.cpp)
+  target_link_libraries(plot_tdsolver pcm-static)
+  if(BUILD_CUSTOM_BOOST)
+    add_dependencies(plot_tdsolver custom_boost)
   endif()
 endif()

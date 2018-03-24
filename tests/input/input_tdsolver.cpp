@@ -36,9 +36,9 @@
 #include "bi_operators/BIOperatorData.hpp"
 #include "cavity/CavityData.hpp"
 #include "green/GreenData.hpp"
+#include "interface/Input.hpp"
 #include "solver/SolverData.hpp"
 #include "td_solver/TDSolverData.hpp"
-#include "interface/Input.hpp"
 #include "utils/Sphere.hpp"
 
 using pcm::Input;
@@ -60,8 +60,8 @@ TEST_CASE("Input reading using GetKw for an input file for a TD solver with solv
   std::string mode = "IMPLICIT";
   std::string solverType = "IEFPCM";
   std::string TDsolverType = "TDSINGLEIEF";
-  std::string greenInsideType = "VACUUM";
-  std::string greenOutsideType = "UNIFORMDIELECTRIC";
+  std::string greenInsideType = "VACUUM_DERIVATIVE";
+  std::string greenOutsideType = "UNIFORMDIELECTRIC_DERIVATIVE";
   bool initWithDynamic = false;
   int derivativeInsideType = 1;
   int derivativeOutsideType = 1;
@@ -72,17 +72,15 @@ TEST_CASE("Input reading using GetKw for an input file for a TD solver with solv
   bool isTD = true;
   REQUIRE(units == parsedInput.units());
   REQUIRE(CODATAyear == parsedInput.CODATAyear());
-  REQUIRE(type == parsedInput.cavityType());
+  REQUIRE(type == parsedInput.cavityParams().cavityType);
   REQUIRE(radiiSet == parsedInput.radiiSet());
   REQUIRE(mode == parsedInput.mode());
-  REQUIRE(solverType == parsedInput.solverType());
+  REQUIRE(solverType == parsedInput.solverParams().solverType);
   REQUIRE(TDsolverType == parsedInput.TDsolverType());
-  REQUIRE(greenInsideType == parsedInput.greenInsideType());
-  REQUIRE(greenOutsideType == parsedInput.greenOutsideType());
+  REQUIRE(greenInsideType == parsedInput.insideGreenParams().greensFunctionType);
+  REQUIRE(greenOutsideType ==
+          parsedInput.outsideStaticGreenParams().greensFunctionType);
   REQUIRE(initWithDynamic == parsedInput.TDSolverParams().initWithDynamic);
-  REQUIRE(derivativeInsideType == parsedInput.insideGreenParams().howDerivative);
-  REQUIRE(derivativeOutsideType ==
-          parsedInput.outsideStaticGreenParams().howDerivative);
   REQUIRE(area == Approx(parsedInput.cavityParams().area));
   REQUIRE(solvent == parsedInput.solvent().name);
   REQUIRE(tauIEF == Approx(parsedInput.TDSolverParams().tauIEF));
@@ -106,8 +104,8 @@ TEST_CASE("Input reading using GetKw for an input file for a TD solver with solv
   std::string mode = "IMPLICIT";
   std::string solverType = "IEFPCM";
   std::string TDsolverType = "TDSINGLEIEF";
-  std::string greenInsideType = "VACUUM";
-  std::string greenOutsideType = "UNIFORMDIELECTRIC";
+  std::string greenInsideType = "VACUUM_DERIVATIVE";
+  std::string greenOutsideType = "UNIFORMDIELECTRIC_DERIVATIVE";
   bool initWithDynamic = true;
   int derivativeInsideType = 1;
   int derivativeOutsideType = 1;
@@ -121,17 +119,15 @@ TEST_CASE("Input reading using GetKw for an input file for a TD solver with solv
   bool isTD = true;
   REQUIRE(units == parsedInput.units());
   REQUIRE(CODATAyear == parsedInput.CODATAyear());
-  REQUIRE(type == parsedInput.cavityType());
+  REQUIRE(type == parsedInput.cavityParams().cavityType);
   REQUIRE(radiiSet == parsedInput.radiiSet());
   REQUIRE(mode == parsedInput.mode());
-  REQUIRE(solverType == parsedInput.solverType());
+  REQUIRE(solverType == parsedInput.solverParams().solverType);
   REQUIRE(TDsolverType == parsedInput.TDsolverType());
-  REQUIRE(greenInsideType == parsedInput.greenInsideType());
-  REQUIRE(greenOutsideType == parsedInput.greenOutsideType());
+  REQUIRE(greenInsideType == parsedInput.insideGreenParams().greensFunctionType);
+  REQUIRE(greenOutsideType ==
+          parsedInput.outsideStaticGreenParams().greensFunctionType);
   REQUIRE(initWithDynamic == parsedInput.TDSolverParams().initWithDynamic);
-  REQUIRE(derivativeInsideType == parsedInput.insideGreenParams().howDerivative);
-  REQUIRE(derivativeOutsideType ==
-          parsedInput.outsideStaticGreenParams().howDerivative);
   REQUIRE(area == Approx(parsedInput.cavityParams().area));
   REQUIRE(tauIEF == Approx(parsedInput.TDSolverParams().tauIEF));
   REQUIRE(tau == Approx(parsedInput.TDSolverParams().tau));

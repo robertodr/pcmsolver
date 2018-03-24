@@ -44,8 +44,8 @@
 #include "green/GreenData.hpp"
 #include "solver/Solver.hpp"
 #include "solver/SolverData.hpp"
-#include "td_solver/TDSolverData.hpp"
 #include "td_solver/TDSolver.hpp"
+#include "td_solver/TDSolverData.hpp"
 
 #include "Citation.hpp"
 #include "VersionInfo.hpp"
