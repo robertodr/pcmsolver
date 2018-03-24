@@ -701,7 +701,7 @@ void Meddle::initDynamicSolver() {
 }
 
 void Meddle::initTDSolver() {
-  TD_K_ = td_solver::bootstrapFactory().create(input_.TDsolverType(),
+  TD_K_ = td_solver::bootstrapFactory().create(input_.TDSolverParams().TDsolverType,
                                                input_.TDSolverParams());
 
   IGreensFunction * gf_i = green::bootstrapFactory().create(

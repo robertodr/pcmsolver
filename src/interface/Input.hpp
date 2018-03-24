@@ -117,7 +117,6 @@ public:
   bool hermitivitize() const { return hermitivitize_; }
   bool isDynamic() const { return isDynamic_; }
   double integratorScaling() const { return integratorScaling_; }
-  std::string TDsolverType() const { return TDsolverType_; }
   bool isTD() const { return isTD_; }
   double timeStep() const { return timeStep_; }
   double totalTime() const { return totalTime_; }

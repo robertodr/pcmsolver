@@ -74,7 +74,7 @@ TEST_CASE("Input reading using GetKw for an input file for a TD solver with solv
   REQUIRE(radiiSet == parsedInput.radiiSet());
   REQUIRE(mode == parsedInput.mode());
   REQUIRE(solverType == parsedInput.solverParams().solverType);
-  REQUIRE(TDsolverType == parsedInput.TDsolverType());
+  REQUIRE(TDsolverType == parsedInput.TDSolverParams().TDsolverType);
   REQUIRE(greenInsideType == parsedInput.insideGreenParams().greensFunctionType);
   REQUIRE(greenOutsideType ==
           parsedInput.outsideStaticGreenParams().greensFunctionType);
@@ -121,7 +121,7 @@ TEST_CASE("Input reading using GetKw for an input file for a TD solver with solv
   REQUIRE(radiiSet == parsedInput.radiiSet());
   REQUIRE(mode == parsedInput.mode());
   REQUIRE(solverType == parsedInput.solverParams().solverType);
-  REQUIRE(TDsolverType == parsedInput.TDsolverType());
+  REQUIRE(TDsolverType == parsedInput.TDSolverParams().TDsolverType);
   REQUIRE(greenInsideType == parsedInput.insideGreenParams().greensFunctionType);
   REQUIRE(greenOutsideType ==
           parsedInput.outsideStaticGreenParams().greensFunctionType);

@@ -400,7 +400,8 @@ BIOperatorData Input::integratorParams() const {
 }
 
 TDSolverData Input::TDSolverParams() const {
-  return TDSolverData(epsilonStaticOutside_,
+  return TDSolverData(TDsolverType_,
+                      epsilonStaticOutside_,
                       epsilonDynamicOutside_,
                       tau_,
                       correction_,

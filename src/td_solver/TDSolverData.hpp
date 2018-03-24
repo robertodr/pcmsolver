@@ -23,6 +23,8 @@
 
 #pragma once
 
+#include <string>
+
 #include "Config.hpp"
 
 namespace pcm {
@@ -30,6 +32,8 @@ namespace pcm {
  *  \brief Contains all data defined from user input in the solver section.
  */
 struct TDSolverData {
+  /*! The type of solver */
+  std::string TDsolverType;
   /*! Static permittivity */
   double epsilonStatic;
   /*! Dynamic permittivity */
@@ -44,25 +48,22 @@ struct TDSolverData {
   bool cholesky;
   /*! Whether to initialize time-evolution with dynamic ASC */
   bool initWithDynamic;
-  /*! Whether the structure was initialized with user input or not */
-  bool empty;
 
-  TDSolverData() { empty = true; }
-  TDSolverData(double es,
+  TDSolverData(const std::string & type,
+               double es,
                double ed,
                double t,
                double corr,
                double tau,
                bool dyn,
                bool chol)
-      : epsilonStatic(es),
+      : TDsolverType(type),
+        epsilonStatic(es),
         epsilonDynamic(ed),
         tau(t),
         correction(corr),
         tauIEF(tau),
         cholesky(chol),
-        initWithDynamic(dyn) {
-    empty = false;
-  }
+        initWithDynamic(dyn) {}
 };
 } // namespace pcm
