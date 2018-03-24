@@ -61,8 +61,8 @@ src/utils/RungeKutta4.*   !licensefile
 tests/unit_tests.cpp             licensefile=.githooks/LICENSE-C++
 tests/TestingMolecules.hpp       licensefile=.githooks/LICENSE-C++
 tests/Fortran_host/*.f90         licensefile=.githooks/LICENSE-Fortran
-/tests/C_host/*.h                licensefile=.githooks/LICENSE-C
-/tests/C_host/*.c                licensefile=.githooks/LICENSE-C
+tests/C_host/*.h                 licensefile=.githooks/LICENSE-C
+tests/C_host/*.c                 licensefile=.githooks/LICENSE-C
 tests/bi_operators/*.cpp         licensefile=.githooks/LICENSE-C++
 tests/cpcm/*.cpp                 licensefile=.githooks/LICENSE-C++
 tests/dielectric_profile/*.cpp   licensefile=.githooks/LICENSE-C++

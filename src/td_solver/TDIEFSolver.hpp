@@ -1,6 +1,6 @@
-/**
+/*
  * PCMSolver, an API for the Polarizable Continuum Model
- * Copyright (C) 2017 Roberto Di Remigio, Luca Frediani and collaborators.
+ * Copyright (C) 2018 Roberto Di Remigio, Luca Frediani and contributors.
  *
  * This file is part of PCMSolver.
  *
@@ -21,8 +21,7 @@
  * PCMSolver API, see: <http://pcmsolver.readthedocs.io/>
  */
 
-#ifndef TDIEFSOLVER_HPP
-#define TDIEFSOLVER_HPP
+#pragma once
 
 #include <iosfwd>
 
@@ -39,15 +38,15 @@ struct TDSolverData;
 
 #include "ITDSolver.hpp"
 
-/*! \file TDIEFSolver.hpp
- *  \class TDIEFSolver
+/*! \file TDIEFSolver.hpp */
+
+namespace pcm {
+namespace td_solver {
+/*! \class TDIEFSolver
  *  \brief Time-dependent solver for the isotropic IEF model
  *  \author Roberto Di Remigio
  *  \date 2015-2017
  */
-
-namespace pcm {
-namespace td_solver {
 class TDIEFSolver : public ITDSolver {
 public:
   TDIEFSolver() {}
@@ -180,7 +179,6 @@ Eigen::VectorXd tau(const Eigen::VectorXd & Lambda,
  *  \param[in] e_d dynaminc permittivity
  *  \param[in] e_0 static permittivity
  *  \param[in] tau_D Debye relaxation time
- *  \return
  */
 Eigen::VectorXd tauInverse(const Eigen::VectorXd & Lambda,
                            double e_d,
@@ -189,5 +187,3 @@ Eigen::VectorXd tauInverse(const Eigen::VectorXd & Lambda,
 } // namespace detail
 } // namespace td_solver
 } // namespace pcm
-
-#endif // TDIEFSOLVER_HPP

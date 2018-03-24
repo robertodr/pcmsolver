@@ -1,6 +1,6 @@
-/**
+/*
  * PCMSolver, an API for the Polarizable Continuum Model
- * Copyright (C) 2017 Roberto Di Remigio, Luca Frediani and collaborators.
+ * Copyright (C) 2018 Roberto Di Remigio, Luca Frediani and contributors.
  *
  * This file is part of PCMSolver.
  *
@@ -21,8 +21,7 @@
  * PCMSolver API, see: <http://pcmsolver.readthedocs.io/>
  */
 
-#ifndef TDCPCMSOLVER_HPP
-#define TDCPCMSOLVER_HPP
+#pragma once
 
 #include <iosfwd>
 
@@ -39,15 +38,15 @@ struct TDSolverData;
 
 #include "ITDSolver.hpp"
 
-/*! \file TDCPCMSolver.hpp
- *  \class TDCPCMSolver
+/*! \file TDCPCMSolver.hpp */
+
+namespace pcm {
+namespace td_solver {
+/*! \class TDCPCMSolver
  *  \brief Time-dependent solver for conductor-like approximation: C-PCM (COSMO)
  *  \author Roberto Di Remigio
  *  \date 2015-2017
  */
-
-namespace pcm {
-namespace td_solver {
 class TDCPCMSolver : public ITDSolver {
 public:
   TDCPCMSolver() {}
@@ -100,5 +99,3 @@ private:
 ITDSolver * createTDCPCMSolver(const TDSolverData & data);
 } // namespace td_solver
 } // namespace pcm
-
-#endif // TDCPCMSOLVER_HPP

@@ -1,6 +1,6 @@
-/**
+/*
  * PCMSolver, an API for the Polarizable Continuum Model
- * Copyright (C) 2017 Roberto Di Remigio, Luca Frediani and collaborators.
+ * Copyright (C) 2018 Roberto Di Remigio, Luca Frediani and contributors.
  *
  * This file is part of PCMSolver.
  *
@@ -21,16 +21,14 @@
  * PCMSolver API, see: <http://pcmsolver.readthedocs.io/>
  */
 
-#ifndef TDSOLVERDATA_HPP
-#define TDSOLVERDATA_HPP
+#pragma once
 
 #include "Config.hpp"
 
-/*! @struct TDSolverData
- *  @brief Contains all data defined from user input in the solver section.
- */
-
 namespace pcm {
+/*! \struct TDSolverData
+ *  \brief Contains all data defined from user input in the solver section.
+ */
 struct TDSolverData {
   /*! Static permittivity */
   double epsilonStatic;
@@ -68,5 +66,3 @@ struct TDSolverData {
   }
 };
 } // namespace pcm
-
-#endif // SOLVERDATA_HPP

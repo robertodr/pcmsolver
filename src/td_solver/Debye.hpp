@@ -1,6 +1,6 @@
-/**
+/*
  * PCMSolver, an API for the Polarizable Continuum Model
- * Copyright (C) 2017 Roberto Di Remigio, Luca Frediani and collaborators.
+ * Copyright (C) 2018 Roberto Di Remigio, Luca Frediani and contributors.
  *
  * This file is part of PCMSolver.
  *
@@ -21,18 +21,18 @@
  * PCMSolver API, see: <http://pcmsolver.readthedocs.io/>
  */
 
-#ifndef DEBYE_HPP
-#define DEBYE_HPP
+#pragma once
 
 #include <cmath>
 #include <iosfwd>
 
 #include "Config.hpp"
 
+/*! \file Debye.hpp */
+
 namespace pcm {
 namespace td_solver {
-/*! \file Debye.hpp
- *  \struct Debye
+/*! \struct Debye
  *  \brief A time-dependent Debye-type dielectric profile
  *  \author Roberto Di Remigio
  *  \date 2015
@@ -69,5 +69,3 @@ struct Debye {
 };
 } // namespace td_solver
 } // namespace pcm
-
-#endif // DEBYE_HPP

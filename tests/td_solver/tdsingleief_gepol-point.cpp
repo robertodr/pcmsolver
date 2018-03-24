@@ -1,4 +1,4 @@
-/**
+/*
  * PCMSolver, an API for the Polarizable Continuum Model
  * Copyright (C) 2017 Roberto Di Remigio, Luca Frediani and collaborators.
  *
@@ -23,31 +23,31 @@
 
 #include "catch.hpp"
 
+#include <fstream>
 #include <iostream>
 #include <ostream>
-#include <fstream>
 #include <sstream>
 
 #include "Config.hpp"
 
 #include <Eigen/Core>
 
-#include "utils/cnpy.hpp"
-#include "bi_operators/Collocation.hpp"
-#include "green/DerivativeTypes.hpp"
-#include "cavity/GePolCavity.hpp"
-#include "td_solver/TDSingleIEFSolver.hpp"
-#include "TestingMolecules.hpp"
-#include "green/Vacuum.hpp"
-#include "green/UniformDielectric.hpp"
-#include "solver/IEFSolver.hpp"
 #include "PhysicalConstants.hpp"
+#include "TestingMolecules.hpp"
+#include "bi_operators/Collocation.hpp"
+#include "cavity/GePolCavity.hpp"
+#include "green/DerivativeTypes.hpp"
+#include "green/UniformDielectric.hpp"
+#include "green/Vacuum.hpp"
+#include "solver/IEFSolver.hpp"
+#include "td_solver/TDSingleIEFSolver.hpp"
+#include "utils/cnpy.hpp"
 
 using namespace pcm;
 using bi_operators::Collocation;
 using cavity::GePolCavity;
-using green::Vacuum;
 using green::UniformDielectric;
+using green::Vacuum;
 using solver::IEFSolver;
 using td_solver::TDSingleIEFSolver;
 

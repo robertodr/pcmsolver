@@ -1,6 +1,6 @@
-/**
+/*
  * PCMSolver, an API for the Polarizable Continuum Model
- * Copyright (C) 2017 Roberto Di Remigio, Luca Frediani and collaborators.
+ * Copyright (C) 2018 Roberto Di Remigio, Luca Frediani and contributors.
  *
  * This file is part of PCMSolver.
  *
@@ -21,8 +21,7 @@
  * PCMSolver API, see: <http://pcmsolver.readthedocs.io/>
  */
 
-#ifndef TDSINGLEIEFSOLVER_HPP
-#define TDSINGLEIEFSOLVER_HPP
+#pragma once
 
 #include <iosfwd>
 
@@ -39,15 +38,15 @@ struct TDSolverData;
 
 #include "ITDSolver.hpp"
 
-/*! \file TDSingleIEFSolver.hpp
- *  \class TDSingleIEFSolver
+/*! \file TDSingleIEFSolver.hpp */
+
+namespace pcm {
+namespace td_solver {
+/*! \class TDSingleIEFSolver
  *  \brief Time-dependent solver for isotropic IEF with a single relaxation time
  *  \author Roberto Di Remigio
  *  \date 2015-2017
  */
-
-namespace pcm {
-namespace td_solver {
 class TDSingleIEFSolver : public ITDSolver {
 public:
   TDSingleIEFSolver() {}
@@ -104,5 +103,3 @@ ITDSolver * createTDSingleIEFSolver(const TDSolverData & data);
 ITDSolver * createTDOnsagerIEFSolver(const TDSolverData & data);
 } // namespace td_solver
 } // namespace pcm
-
-#endif // TDSINGLEIEFSOLVER_HPP

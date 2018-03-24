@@ -1,6 +1,6 @@
-/**
+/*
  * PCMSolver, an API for the Polarizable Continuum Model
- * Copyright (C) 2017 Roberto Di Remigio, Luca Frediani and collaborators.
+ * Copyright (C) 2018 Roberto Di Remigio, Luca Frediani and contributors.
  *
  * This file is part of PCMSolver.
  *
@@ -21,8 +21,7 @@
  * PCMSolver API, see: <http://pcmsolver.readthedocs.io/>
  */
 
-#ifndef ITDSOLVER_HPP
-#define ITDSOLVER_HPP
+#pragma once
 
 #include <iosfwd>
 
@@ -38,16 +37,17 @@ class IBoundaryIntegralOperator;
 
 #include "Debye.hpp"
 
-/*! \file ITDSolver.hpp
- *  \class ITDSolver
+/*! \file ITDSolver.hpp */
+
+namespace pcm {
+using td_solver::Debye;
+
+/*!  \class ITDSolver
  *  \brief Abstract Base Class for time-dependent solvers inheritance hierarchy.
  *  \author Roberto Di Remigio
  *  \date 2017
  *  We use the Non-Virtual Interface idiom.
  */
-
-namespace pcm {
-using td_solver::Debye;
 class ITDSolver {
 public:
   ITDSolver() {}
@@ -142,5 +142,3 @@ protected:
   virtual std::ostream & printSolver(std::ostream & os) = 0;
 };
 } // namespace pcm
-
-#endif // ITDSOLVER_HPP

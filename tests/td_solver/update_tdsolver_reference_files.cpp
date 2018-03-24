@@ -1,4 +1,4 @@
-/**
+/*
  * PCMSolver, an API for the Polarizable Continuum Model
  * Copyright (C) 2017 Roberto Di Remigio, Luca Frediani and collaborators.
  *
@@ -23,8 +23,8 @@
 
 #include <cmath>
 #include <cstdlib>
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 #include <limits>
 
 #include "Config.hpp"
@@ -38,9 +38,8 @@
 #include "td_solver/TDCPCMSolver.hpp"
 #include "td_solver/TDIEFSolver.hpp"
 #include "td_solver/TDSingleIEFSolver.hpp"
-#include "utils/cnpy.hpp"
 #include "utils/MathUtils.hpp"
-#include "green/Vacuum.hpp"
+#include "utils/cnpy.hpp"
 
 using namespace pcm;
 using bi_operators::Collocation;

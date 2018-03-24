@@ -1,6 +1,6 @@
-/**
+/*
  * PCMSolver, an API for the Polarizable Continuum Model
- * Copyright (C) 2017 Roberto Di Remigio, Luca Frediani and collaborators.
+ * Copyright (C) 2018 Roberto Di Remigio, Luca Frediani and contributors.
  *
  * This file is part of PCMSolver.
  *
@@ -21,8 +21,7 @@
  * PCMSolver API, see: <http://pcmsolver.readthedocs.io/>
  */
 
-#ifndef TDSOLVER_HPP
-#define TDSOLVER_HPP
+#pragma once
 
 #include "Config.hpp"
 
@@ -32,15 +31,13 @@
 #include "TDSingleIEFSolver.hpp"
 #include "utils/Factory.hpp"
 
-/*!
- * \file TDSolver.hpp
- * \brief Top-level include file for time-dependent solvers
- * \author Roberto Di Remigio
- * \date 2017
+/*! \file TDSolver.hpp
+ *  \brief Top-level include file for time-dependent solvers
+ *  \author Roberto Di Remigio
+ *  \date 2017
  *
- * Includes all time-dependent solver-related headers and defines the bootstrap
- *function
- * for the Factory<ITDSolver, TDSolverData>
+ *  Includes all time-dependent solver-related headers and defines the bootstrap
+ *  function for the Factory<ITDSolver, TDSolverData>
  */
 
 namespace pcm {
@@ -61,5 +58,3 @@ inline Factory<detail::CreateTDSolver> bootstrapFactory() {
 }
 } // namespace td_solver
 } // namespace pcm
-
-#endif // TDSOLVER_HPP
