@@ -288,6 +288,6 @@ contains
         array_c(i) = string_f03(i:i)
     end do
     array_c(i) = c_null_char
-  end function pcmsolver_fstring_to_carray
+  end function
 
 end module pcmsolver
