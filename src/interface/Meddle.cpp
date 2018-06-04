@@ -190,7 +190,7 @@ Meddle::Meddle(int nr_nuclei,
       cavity_(__nullptr),
       K_0_(__nullptr),
       K_d_(__nullptr),
-      hasDynamic_(false), 
+      hasDynamic_(false),
       TD_K_(__nullptr),
       hasTD_(false) {
   TIMER_ON("Meddle::initInput");
@@ -354,65 +354,64 @@ void pcmsolver_initialize_propagation(pcmsolver_context_t * context,
                                       int irrep) {
   TIMER_ON("pcmsolver_initialize_propagation");
   AS_TYPE(pcm::Meddle, context)
-      ->initializePropagation(mep_0, asc_0, mep_t, asc_t, mep_tdt, asc_tdt, irrep);
+      ->initializePropagation(std::string(mep_0),
+                              std::string(asc_0),
+                              std::string(mep_t),
+                              std::string(asc_t),
+                              std::string(mep_tdt),
+                              std::string(asc_tdt),
+                              irrep);
   TIMER_OFF("pcmsolver_initialize_propagation");
 }
-void pcm::Meddle::initializePropagation(const char * mep_0,
-                                        const char * asc_0,
-                                        const char * mep_t,
-                                        const char * asc_t,
-                                        const char * mep_tdt,
-                                        const char * asc_tdt,
-                                        int irrep) const {
-  std::string MEP_0(mep_0);
-  std::string MEP_current(mep_tdt);
-  std::string MEP_previous(mep_t);
+void pcm::Meddle::initializePropagation(const std::string & mep_0,
+                                        const std::string & asc_0,
+                                        const std::string & mep_t,
+                                        const std::string & asc_t,
+                                        const std::string & mep_tdt,
+                                        const std::string & asc_tdt,
+                                        int irrep) {
   // Set previous and current MEP to the values at time t = 0
-  Eigen::VectorXd MEP_t = functions_[MEP_0];
-  functions_.insert(std::make_pair(MEP_previous, MEP_t));
-  functions_.insert(std::make_pair(MEP_current, MEP_t));
-
-  std::string ASC_0(asc_0);
-  std::string ASC_current(asc_tdt);
-  std::string ASC_previous(asc_t);
+  Eigen::VectorXd MEP_t = functions_[mep_0];
+  functions_.insert(std::make_pair(mep_t, MEP_t));
+  functions_.insert(std::make_pair(mep_tdt, MEP_t));
 
   if (hasTD_) {
     // Initialize delayed propagation of the ASC
     if (input_.TDSolverParams().initWithDynamic) {
       // Set previous and current ASC to the dynamic values from converged SCF
       // The initialValueASC function uses the dynamic matrix to calculate charges
-      Eigen::VectorXd dyn_asc = TD_K_->initialValueASC(functions_[MEP_0]);
-      functions_.insert(std::make_pair(ASC_previous, dyn_asc));
-      functions_.insert(std::make_pair(ASC_current, dyn_asc));
+      Eigen::VectorXd dyn_asc = TD_K_->initialValueASC(functions_[mep_0]);
+      functions_.insert(std::make_pair(asc_t, dyn_asc));
+      functions_.insert(std::make_pair(asc_tdt, dyn_asc));
     } else {
       // Set previous and current ASC to the static values from converged SCF
-      if (functions_.count(ASC_0) == 1) { // Key in map already
-        Eigen::VectorXd ASC_t = functions_[ASC_0];
-        functions_.insert(std::make_pair(ASC_previous, ASC_t));
-        functions_.insert(std::make_pair(ASC_current, ASC_t));
+      if (functions_.count(asc_0) == 1) { // Key in map already
+        Eigen::VectorXd ASC_t = functions_[asc_0];
+        functions_.insert(std::make_pair(asc_t, ASC_t));
+        functions_.insert(std::make_pair(asc_tdt, ASC_t));
       } else { // Create key-value pair
         Eigen::VectorXd ASC_t = K_0_->computeCharge(MEP_t, irrep);
-        functions_.insert(std::make_pair(ASC_previous, ASC_t));
-        functions_.insert(std::make_pair(ASC_current, ASC_t));
+        functions_.insert(std::make_pair(asc_t, ASC_t));
+        functions_.insert(std::make_pair(asc_tdt, ASC_t));
       }
     }
   } else {
     // Initialize instantaneous equilibrium propagation of the ASC
     if (hasDynamic_) {
       // Set previous and current ASC to the dynamic values from converged SCF
-      Eigen::VectorXd dyn_asc = K_d_->computeCharge(functions_[MEP_0], irrep);
-      functions_.insert(std::make_pair(ASC_previous, dyn_asc));
-      functions_.insert(std::make_pair(ASC_current, dyn_asc));
+      Eigen::VectorXd dyn_asc = K_d_->computeCharge(functions_[mep_0], irrep);
+      functions_.insert(std::make_pair(asc_t, dyn_asc));
+      functions_.insert(std::make_pair(asc_tdt, dyn_asc));
     } else {
       // Set previous and current ASC to the static values from converged SCF
-      if (functions_.count(ASC_0) == 1) { // Key in map already
-        Eigen::VectorXd ASC_t = functions_[ASC_0];
-        functions_.insert(std::make_pair(ASC_previous, ASC_t));
-        functions_.insert(std::make_pair(ASC_current, ASC_t));
+      if (functions_.count(asc_0) == 1) { // Key in map already
+        Eigen::VectorXd ASC_t = functions_[asc_0];
+        functions_.insert(std::make_pair(asc_t, ASC_t));
+        functions_.insert(std::make_pair(asc_tdt, ASC_t));
       } else { // Create key-value pair
         Eigen::VectorXd ASC_t = K_0_->computeCharge(MEP_t, irrep);
-        functions_.insert(std::make_pair(ASC_previous, ASC_t));
-        functions_.insert(std::make_pair(ASC_current, ASC_t));
+        functions_.insert(std::make_pair(asc_t, ASC_t));
+        functions_.insert(std::make_pair(asc_tdt, ASC_t));
       }
     }
   }
@@ -427,15 +426,20 @@ double pcmsolver_propagate_asc(pcmsolver_context_t * context,
                                int irrep) {
   TIMER_ON("pcmsolver_propagate_asc");
   return (AS_TYPE(pcm::Meddle, context)
-              ->propagateASC(mep_t, asc_t, mep_tdt, asc_tdt, dt, irrep));
+              ->propagateASC(std::string(mep_t),
+                             std::string(asc_t),
+                             std::string(mep_tdt),
+                             std::string(asc_tdt),
+                             dt,
+                             irrep));
   TIMER_OFF("pcmsolver_propagate_asc");
 }
-double pcm::Meddle::propagateASC(const char * mep_t,
-                                 const char * asc_t,
-                                 const char * mep_tdt,
-                                 const char * asc_tdt,
+double pcm::Meddle::propagateASC(const std::string & mep_t,
+                                 const std::string & asc_t,
+                                 const std::string & mep_tdt,
+                                 const std::string & asc_tdt,
                                  double dt,
-                                 int irrep) const {
+                                 int irrep) {
   double energy = 0.0;
   if (input_.isTD()) {
     energy = delayedASC(mep_t, asc_t, mep_tdt, asc_tdt, dt, irrep);
@@ -536,13 +540,15 @@ void pcmsolver_save_surface_function_to_npz(pcmsolver_context_t * context,
                                             const char * npz_name,
                                             const char * name,
                                             const char * suffix) {
-  AS_TYPE(pcm::Meddle, context)->saveSurfaceFunctionToNPZ(npz_name, name, suffix);
+  AS_TYPE(pcm::Meddle, context)
+      ->saveSurfaceFunctionToNPZ(
+          std::string(npz_name), std::string(name), std::string(suffix));
 }
-void pcm::Meddle::saveSurfaceFunctionToNPZ(const char * npz_name,
-                                           const char * name,
-                                           const char * suffix) const {
-  std::string label = std::string(name) + "_" + suffix;
-  std::string fname = std::string(npz_name) + ".npz";
+void pcm::Meddle::saveSurfaceFunctionToNPZ(const std::string & npz_name,
+                                           const std::string & name,
+                                           const std::string & suffix) const {
+  std::string label = name + "_" + suffix;
+  std::string fname = npz_name + ".npz";
 
   SurfaceFunctionMapConstIter it = functions_.find(name);
   cnpy::custom::npz_save(fname, label, it->second);
@@ -590,26 +596,21 @@ Molecule Meddle::molecule() const { return input_.molecule(); }
 
 Eigen::Matrix3Xd Meddle::getCenters() const { return cavity_->elementCenter(); }
 
-double Meddle::delayedASC(const char * mep_t,
-                          const char * asc_t,
-                          const char * mep_tdt,
-                          const char * asc_tdt,
+double Meddle::delayedASC(const std::string & mep_t,
+                          const std::string & asc_t,
+                          const std::string & mep_tdt,
+                          const std::string & asc_tdt,
                           double dt,
-                          int /* irrep */) const {
-  std::string MEP_current(mep_tdt);
-  std::string MEP_previous(mep_t);
-  std::string ASC_current(asc_tdt);
-  std::string ASC_previous(asc_t);
-
+                          int /* irrep */) {
   // Get the proper iterators
-  SurfaceFunctionMapConstIter iter_mep_tdt = functions_.find(MEP_current);
+  SurfaceFunctionMapConstIter iter_mep_tdt = functions_.find(mep_tdt);
   // Iterators to MEP and ASC at time t
-  // They are non-const as we will overwrite their contents with those of MEP_current
-  // and ASC_current
+  // They are non-const as we will overwrite their contents with those of mep_tdt
+  // and asc_tdt
   // after propagation
-  SurfaceFunctionMapIter iter_mep_t = functions_.find(MEP_previous);
-  SurfaceFunctionMapIter iter_asc_t = functions_.find(ASC_previous);
-  SurfaceFunctionMapIter iter_asc_tdt = functions_.find(ASC_current);
+  SurfaceFunctionMapIter iter_mep_t = functions_.find(mep_t);
+  SurfaceFunctionMapIter iter_asc_t = functions_.find(asc_t);
+  SurfaceFunctionMapIter iter_asc_tdt = functions_.find(asc_tdt);
   Eigen::VectorXd ASC_tdt = TD_K_->propagateASC(
       dt, iter_mep_tdt->second, iter_mep_t->second, iter_asc_t->second);
 
@@ -617,12 +618,12 @@ double Meddle::delayedASC(const char * mep_t,
   // group
   ASC_tdt /= double(cavity_->pointGroup().nrIrrep());
   // Insert it into the map
-  if (functions_.count(ASC_current) == 1) { // Key in map already
-    functions_[ASC_current] = ASC_tdt;
+  if (functions_.count(asc_tdt) == 1) { // Key in map already
+    functions_[asc_tdt] = ASC_tdt;
   } else { // Create key-value pair
-    functions_.insert(std::make_pair(ASC_current, ASC_tdt));
+    functions_.insert(std::make_pair(asc_tdt, ASC_tdt));
   }
-  // Update contents of MEP_previous and ASC_previous surface functions
+  // Update contents of mep_t and asc_t surface functions
   (iter_mep_t->second) = (iter_mep_tdt->second);
   (iter_asc_t->second) = (iter_asc_tdt->second);
 
@@ -705,10 +706,10 @@ void Meddle::initTDSolver() {
                                                input_.TDSolverParams());
 
   IGreensFunction * gf_i = green::bootstrapFactory().create(
-      input_.greenInsideType(), input_.insideGreenParams());
+      input_.insideGreenParams().greensFunctionType, input_.insideGreenParams());
 
   IBoundaryIntegralOperator * biop = bi_operators::bootstrapFactory().create(
-      input_.integratorType(), input_.integratorParams());
+      input_.integratorParams().integratorType, input_.integratorParams());
   TD_K_->buildSystemMatrix(*cavity_, *gf_i, *biop);
   hasTD_ = true;
   delete biop;

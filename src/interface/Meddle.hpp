@@ -213,13 +213,13 @@ public:
    *  Labels are set in the internal surface function map. The surface function
    *  values are initialized to their values to those at time 0
    */
-  void initializePropagation(const char * mep_0,
-                             const char * asc_0,
-                             const char * mep_t,
-                             const char * asc_t,
-                             const char * mep_tdt,
-                             const char * asc_tdt,
-                             int irrep) const;
+  void initializePropagation(const std::string & mep_0,
+                             const std::string & asc_0,
+                             const std::string & mep_t,
+                             const std::string & asc_t,
+                             const std::string & mep_tdt,
+                             const std::string & asc_tdt,
+                             int irrep);
   /*! \brief Time propagation of the ASC
    *  \param[in] mep_t    label of the MEP surface function at time t
    *  \param[in] asc_t    label of the ASC surface function at time t
@@ -231,12 +231,12 @@ public:
    *  Based on user input, switches between the delayed or equilibrium ASC
    * formalisms.
    */
-  double propagateASC(const char * mep_t,
-                      const char * asc_t,
-                      const char * mep_tdt,
-                      const char * asc_tdt,
+  double propagateASC(const std::string & mep_t,
+                      const std::string & asc_t,
+                      const std::string & mep_tdt,
+                      const std::string & asc_tdt,
                       double dt,
-                      int irrep) const;
+                      int irrep);
 
   /*! \brief Retrieves data wrapped in a given surface function
    *  \param[in] size the size of the surface function
@@ -282,9 +282,9 @@ public:
    *  \note The npz_name parameter is the name of the NumPy array archive file
    *  **without** .npz extension
    */
-  void saveSurfaceFunctionToNPZ(const char * npz_name,
-                                const char * name,
-                                const char * suffix) const;
+  void saveSurfaceFunctionToNPZ(const std::string & npz_name,
+                                const std::string & name,
+                                const std::string & suffix) const;
 
   /*! \brief Loads a surface function from a .npy file
    *  \param[in] name label of the surface function
@@ -326,14 +326,14 @@ private:
   ISolver * K_0_;
   /*! Solver with dynamic permittivity */
   ISolver * K_d_;
-  /*! Time-dependent solver */
-  ITDSolver * TD_K_;
-  /*! PCMSolver set up information */
-  std::ostringstream infoStream_;
   /*! Whether K_d_ was initialized */
   bool hasDynamic_;
+  /*! Time-dependent solver */
+  ITDSolver * TD_K_;
   /*! Whether TD_K_ was initialized */
   bool hasTD_;
+  /*! PCMSolver set up information */
+  std::ostringstream infoStream_;
   /*! SurfaceFunction map */
   SurfaceFunctionMap functions_;
   /*! Common implemenation for the CTOR-s */
@@ -365,11 +365,11 @@ private:
    *  \param[in] asc_tdt label of the ASC surface function at time t+dt
    *  \return the polarization energy at time t+dt
    */
-  double delayedASC(const char * mep_t,
-                    const char * asc_t,
-                    const char * mep_tdt,
-                    const char * asc_tdt,
+  double delayedASC(const std::string & mep_t,
+                    const std::string & asc_t,
+                    const std::string & mep_tdt,
+                    const std::string & asc_tdt,
                     double dt,
-                    int irrep) const;
+                    int irrep);
 };
 } // namespace pcm

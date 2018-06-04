@@ -84,7 +84,7 @@ if(NOT STATIC_LIBRARY_ONLY)
 endif()
 
 if(NOT SHARED_LIBRARY_ONLY)
-  add_library(pcm-static STATIC ${_objects})
+  add_library(pcm-static STATIC $<TARGET_OBJECTS:pcm-objlib>)
   target_compile_definitions(pcm-static
     PUBLIC
       PCMSolver_STATIC_DEFINE
